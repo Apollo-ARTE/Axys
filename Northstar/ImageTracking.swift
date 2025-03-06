@@ -1,0 +1,52 @@
+//
+//  ImageTracking.swift
+//  Image Calibration
+//
+//  Created by Alessandro Bortoluzzi on 05/03/25.
+//
+
+import ARKit
+import RealityKit
+
+@MainActor
+@Observable
+class ImageTracking {
+	let session = ARKitSession()
+
+	var rootEntity = ModelEntity()
+	var planeAnchors: [UUID: ImageAnchor] = [:]
+	var entityMap: [UUID: Entity] = [:]
+
+	let imageInfo = ImageTrackingProvider(
+		referenceImages: ReferenceImage.loadReferenceImages(inGroupNamed: "photos")
+	)
+
+	init() {
+		startTracking()
+	}
+
+	func startTracking() {
+		if ImageTrackingProvider.isSupported {
+			Task {
+				try await session.run([imageInfo])
+				for await update in imageInfo.anchorUpdates {
+					updateImage(update.anchor)
+				}
+			}
+		}
+	}
+
+	func updateImage(_ anchor: ImageAnchor) {
+		if planeAnchors[anchor.id] == nil {
+			// Add a new entity to represent this image.
+			let entity = ModelEntity(mesh: .generateSphere(radius: 0.05))
+			entityMap[anchor.id] = entity
+			planeAnchors[anchor.id] = anchor
+			rootEntity.addChild(entity)
+		}
+
+		if anchor.isTracked {
+			entityMap[anchor.id]?.transform = Transform(matrix: anchor.originFromAnchorTransform)
+		}
+	}
+}
