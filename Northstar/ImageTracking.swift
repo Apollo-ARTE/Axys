@@ -18,7 +18,7 @@ class ImageTracking {
 	var entityMap: [UUID: Entity] = [:]
 
 	let imageInfo = ImageTrackingProvider(
-		referenceImages: ReferenceImage.loadReferenceImages(inGroupNamed: "photos")
+		referenceImages: ReferenceImage.loadReferenceImages(inGroupNamed: "images")
 	)
 
 	init() {
