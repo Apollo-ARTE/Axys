@@ -19,5 +19,7 @@
 			</array>
 		</dict>
 	</dict>
+	<key>NSWorldSensingUsageDescription</key>
+	<string>&quot;World recognition&quot;</string>
 </dict>
 </plist>

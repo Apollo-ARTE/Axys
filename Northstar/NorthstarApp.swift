@@ -11,6 +11,7 @@ import SwiftUI
 struct NorthstarApp: App {
 
     @State private var appModel = AppModel()
+	@State private var imageTracking = ImageTracking()
 
     var body: some Scene {
         WindowGroup {
@@ -21,6 +22,7 @@ struct NorthstarApp: App {
         ImmersiveSpace(id: appModel.immersiveSpaceID) {
             ImmersiveView()
                 .environment(appModel)
+				.environment(imageTracking)
                 .onAppear {
                     appModel.immersiveSpaceState = .open
                 }

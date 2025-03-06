@@ -10,11 +10,12 @@ import RealityKit
 import RealityKitContent
 
 struct ImmersiveView: View {
+	@Environment(ImageTracking.self) private var imageTracking
 
     var body: some View {
         RealityView { content in
-
-        }
+			content.add(imageTracking.rootEntity)
+		}
     }
 }
 
