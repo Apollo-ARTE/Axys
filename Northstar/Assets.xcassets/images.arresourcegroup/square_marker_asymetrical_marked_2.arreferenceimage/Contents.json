@@ -1,7 +1,7 @@
 {
   "images" : [
     {
-      "filename" : "1.png",
+      "filename" : "square_marker_asymetrical_marked_2.png",
       "idiom" : "universal"
     }
   ],
@@ -10,6 +10,7 @@
     "version" : 1
   },
   "properties" : {
-    "width" : 0.10000000000000001
+    "unit" : "centimeters",
+    "width" : 13
   }
 }

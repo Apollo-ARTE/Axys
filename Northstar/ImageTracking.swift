@@ -39,10 +39,11 @@ class ImageTracking {
 	func updateImage(_ anchor: ImageAnchor) {
 		if planeAnchors[anchor.id] == nil {
 			// Add a new entity to represent this image.
-			let entity = ModelEntity(mesh: .generateSphere(radius: 0.05))
-			entityMap[anchor.id] = entity
+			let sphere = ModelEntity.centerSphere()
+			sphere.name = "centerSphere"
+			entityMap[anchor.id] = sphere
 			planeAnchors[anchor.id] = anchor
-			rootEntity.addChild(entity)
+			rootEntity.addChild(sphere)
 		}
 
 		if anchor.isTracked {
