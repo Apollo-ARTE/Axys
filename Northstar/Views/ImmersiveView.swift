@@ -11,26 +11,24 @@ import RealityKitContent
 
 struct ImmersiveView: View {
 	@Environment(ImageTracking.self) private var imageTracking
-	@State var sphere: ModelEntity = ModelEntity()
-	@State private var modelPosition: SIMD3<Float> = .zero
 
     var body: some View {
 		RealityView { content, attachments in
 			content.add(imageTracking.rootEntity)
-			sphere = ModelEntity.movableSphere()
-			imageTracking.rootEntity.addChild(sphere)
+			imageTracking.sphere = ModelEntity.movableSphere()
+			imageTracking.rootEntity.addChild(imageTracking.sphere)
 
 			if let attachment = attachments.entity(for: "coordinates") {
 				attachment.position = [0, 0.05, 0]
-				sphere.addChild(attachment)
+				imageTracking.sphere.addChild(attachment)
 			}
 		} update: { content, attachments in
 		} attachments: {
 			Attachment(id: "coordinates") {
 				HStack {
-					Text("X: \(convertToMeters(meters: modelPosition.x))")
-					Text("Y: \(convertToMeters(meters: modelPosition.y))")
-					Text("Z: \(convertToMeters(meters: modelPosition.z))")
+					Text("X: \(convertToMeters(meters: imageTracking.modelPosition.x))")
+					Text("Y: \(convertToMeters(meters: imageTracking.modelPosition.y))")
+					Text("Z: \(convertToMeters(meters: imageTracking.modelPosition.z))")
 				}
 				.padding()
 				.glassBackgroundEffect()
@@ -38,12 +36,12 @@ struct ImmersiveView: View {
 		}
 		.gesture(
 			DragGesture()
-				.targetedToEntity(sphere)
+				.targetedToEntity(imageTracking.sphere)
 				.onChanged { value in
 					value.entity.position = value.convert(value.location3D, from: .local, to: value.entity.parent!)
 					let centerSphere = imageTracking.rootEntity.findEntity(named: "centerSphere")
 					print("Spere: \(centerSphere)")
-					modelPosition = sphere.position(relativeTo: centerSphere!)
+					imageTracking.modelPosition = imageTracking.sphere.position(relativeTo: centerSphere!)
 				}
 		)
     }

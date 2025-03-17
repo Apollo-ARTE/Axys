@@ -17,6 +17,10 @@ class ImageTracking {
 	var planeAnchors: [UUID: ImageAnchor] = [:]
 	var entityMap: [UUID: Entity] = [:]
 
+	var centerSphere: Entity = Entity()
+	var sphere: ModelEntity = ModelEntity()
+	var modelPosition: SIMD3<Float> = .zero
+
 	let imageInfo = ImageTrackingProvider(
 		referenceImages: ReferenceImage.loadReferenceImages(inGroupNamed: "images")
 	)
@@ -31,6 +35,7 @@ class ImageTracking {
 				try await session.run([imageInfo])
 				for await update in imageInfo.anchorUpdates {
 					updateImage(update.anchor)
+					modelPosition = sphere.position(relativeTo: centerSphere)
 				}
 			}
 		}
@@ -41,6 +46,7 @@ class ImageTracking {
 			// Add a new entity to represent this image.
 			let sphere = ModelEntity.centerSphere()
 			sphere.name = "centerSphere"
+			centerSphere = sphere
 			entityMap[anchor.id] = sphere
 			planeAnchors[anchor.id] = anchor
 			rootEntity.addChild(sphere)
