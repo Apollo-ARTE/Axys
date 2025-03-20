@@ -69,4 +69,39 @@ enum CalibrationStep: String, Identifiable, CaseIterable {
 			"Your models will now appear exactly where they will be printed."
 		}
 	}
+
+	var next: CalibrationStep? {
+		switch self {
+		case .placeMarker:
+				return .scanMarker
+		case .scanMarker:
+				return .scanCompleted
+		case .scanCompleted:
+				return .moveRobot
+		case .moveRobot:
+				return .insertCoordinates
+		case .insertCoordinates:
+			return .calibrationCompleted
+		case .calibrationCompleted:
+			return nil
+		}
+	}
+
+	var previous: CalibrationStep? {
+		switch self {
+		case .placeMarker:
+			return nil
+		case .scanMarker:
+			return .placeMarker
+		case .scanCompleted:
+			return .scanMarker
+		case .moveRobot:
+			return .scanCompleted
+		case .insertCoordinates:
+			return .moveRobot
+		case .calibrationCompleted:
+			return .insertCoordinates
+		}
+
+	}
 }

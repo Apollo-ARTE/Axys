@@ -11,7 +11,7 @@ struct CalibrationProcessView: View {
 	@State private var calibrationStep: CalibrationStep = .placeMarker
 
     var body: some View {
-		CalibrationStepView(step: calibrationStep)
+		CalibrationStepView(step: $calibrationStep)
     }
 }
 
