@@ -14,15 +14,14 @@ struct ImmersiveView: View {
 
     var body: some View {
 		RealityView { content, attachments in
-			content.add(imageTracking.rootEntity)
-			imageTracking.sphere = ModelEntity.movableSphere()
-			imageTracking.rootEntity.addChild(imageTracking.sphere)
+			content.add(imageTracking.centerEntity)
 
 			if let attachment = attachments.entity(for: "coordinates") {
 				attachment.position = [0, 0.05, 0]
-				imageTracking.sphere.addChild(attachment)
+				imageTracking.movableEntity.addChild(attachment)
 			}
 		} update: { content, attachments in
+
 		} attachments: {
 			Attachment(id: "coordinates") {
 				HStack {
@@ -36,12 +35,10 @@ struct ImmersiveView: View {
 		}
 		.gesture(
 			DragGesture()
-				.targetedToEntity(imageTracking.sphere)
+				.targetedToEntity(imageTracking.movableEntity)
 				.onChanged { value in
 					value.entity.position = value.convert(value.location3D, from: .local, to: value.entity.parent!)
-					let centerSphere = imageTracking.rootEntity.findEntity(named: "centerSphere")
-					print("Spere: \(centerSphere)")
-					imageTracking.modelPosition = imageTracking.sphere.position(relativeTo: centerSphere!)
+					imageTracking.modelPosition = imageTracking.movableEntity.position(relativeTo: imageTracking.centerEntity)
 				}
 		)
     }

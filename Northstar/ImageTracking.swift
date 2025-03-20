@@ -13,12 +13,12 @@ import RealityKit
 class ImageTracking {
 	let session = ARKitSession()
 
-	var rootEntity = ModelEntity()
 	var planeAnchors: [UUID: ImageAnchor] = [:]
 	var entityMap: [UUID: Entity] = [:]
 
-	var centerSphere: Entity = Entity()
-	var sphere: ModelEntity = ModelEntity()
+	var centerEntity: Entity
+	var movableEntity: ModelEntity
+
 	var modelPosition: SIMD3<Float> = .zero
 
 	let imageInfo = ImageTrackingProvider(
@@ -26,6 +26,12 @@ class ImageTracking {
 	)
 
 	init() {
+		centerEntity = ModelEntity.centerSphere()
+		movableEntity = ModelEntity.movableSphere()
+
+		centerEntity.addChild(movableEntity)
+		movableEntity.position.y = 0.001
+
 		startTracking()
 	}
 
@@ -35,7 +41,7 @@ class ImageTracking {
 				try await session.run([imageInfo])
 				for await update in imageInfo.anchorUpdates {
 					updateImage(update.anchor)
-					modelPosition = sphere.position(relativeTo: centerSphere)
+					modelPosition = movableEntity.position
 				}
 			}
 		}
@@ -44,12 +50,8 @@ class ImageTracking {
 	func updateImage(_ anchor: ImageAnchor) {
 		if planeAnchors[anchor.id] == nil {
 			// Add a new entity to represent this image.
-			let sphere = ModelEntity.centerSphere()
-			sphere.name = "centerSphere"
-			centerSphere = sphere
-			entityMap[anchor.id] = sphere
+			entityMap[anchor.id] = centerEntity
 			planeAnchors[anchor.id] = anchor
-			rootEntity.addChild(sphere)
 		}
 
 		if anchor.isTracked {

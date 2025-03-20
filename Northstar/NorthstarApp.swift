@@ -14,10 +14,22 @@ struct NorthstarApp: App {
 	@State private var imageTracking = ImageTracking()
 
     var body: some Scene {
-        WindowGroup {
-            ContentView()
-                .environment(appModel)
+		WindowGroup("Northstar", id: "toolbar") {
+			ToolbarView()
+				.environment(appModel)
+				.environment(imageTracking)
         }
+		.windowStyle(.plain)
+		.windowResizability(.contentSize)
+		.defaultWindowPlacement { content, context in
+				.init(.utilityPanel)
+		}
+
+		WindowGroup("Calibration", id: "calibration") {
+			CalibrationProcessView()
+				.frame(width: 320)
+		}
+		.windowResizability(.contentSize)
 
         ImmersiveSpace(id: appModel.immersiveSpaceID) {
             ImmersiveView()
