@@ -8,54 +8,45 @@
 import SwiftUI
 
 struct ToolbarView: View {
+	@Environment(AppModel.self) private var appModel
+	@Environment(\.dismissImmersiveSpace) private var dismissImmersiveSpace
+	@Environment(\.openImmersiveSpace) private var openImmersiveSpace
 	@Environment(\.openWindow) private var openWindow
 	@Environment(\.dismissWindow) private var dismissWindow
 
-	@State private var showCalibrationWindow = false
 	@State private var showInfoPopover = false
 
     var body: some View {
+		@Bindable var appModel = appModel
+
 		HStack {
-			Button("Model", systemImage: "cube.fill") {
-
-			}
-
-			Button("Robot's Reach", systemImage: "skew") {
-
-			}
+			Toggle("Model", systemImage: "cube.fill", isOn: $appModel.showModels)
+			Toggle("Robot's Reach", systemImage: "skew", isOn: $appModel.showRobotReach)
 
 			Divider()
 				.frame(height: 40)
 
-			Toggle("Calibrate", systemImage: "perspective", isOn: $showCalibrationWindow)
-				.toggleStyle(.button)
-				.onChange(of: showCalibrationWindow) {
-					if showCalibrationWindow {
+			Toggle("Calibrate", systemImage: "perspective", isOn: $appModel.showCalibrationWindow)
+				.onChange(of: appModel.showCalibrationWindow) {
+					if appModel.showCalibrationWindow {
 						openCalibrationWindow()
 					} else {
 						dismissCalibrationWindow()
 					}
+					Task {
+						await toggleImmersiveSpace()
+					}
 				}
+				.disabled(appModel.immersiveSpaceState == .inTransition)
 
 			Toggle("Info", systemImage: "info", isOn: $showInfoPopover)
-				.toggleStyle(.button)
 				.labelStyle(.iconOnly)
 				.popover(isPresented: $showInfoPopover, arrowEdge: .bottom) {
-					VStack(alignment: .leading, spacing: 16) {
-						Text("Available Data")
-							.font(.title2)
-
-						Text("Here is the available data provided by the integration with rhino or the dimensions.")
-							.multilineTextAlignment(.leading)
-							.foregroundStyle(.secondary)
-
-//						Spacer(minLength: 0)
-					}
-					.frame(width: 200)
-					.padding(32)
+					InfoView()
 				}
 
 		}
+		.toggleStyle(.button)
 		.padding()
 		.glassBackgroundEffect()
     }
@@ -66,6 +57,36 @@ struct ToolbarView: View {
 
 	private func dismissCalibrationWindow() {
 		dismissWindow(id: "calibration")
+	}
+
+	private func toggleCalibration() async {
+		await toggleImmersiveSpace()
+		if appModel.showCalibrationWindow {
+			openCalibrationWindow()
+		} else {
+			dismissCalibrationWindow()
+		}
+	}
+
+	@MainActor
+	private func toggleImmersiveSpace() async {
+			switch appModel.immersiveSpaceState {
+			case .open:
+				appModel.immersiveSpaceState = .inTransition
+				await dismissImmersiveSpace()
+			case .closed:
+				appModel.immersiveSpaceState = .inTransition
+				switch await openImmersiveSpace(id: appModel.immersiveSpaceID) {
+				case .opened:
+					break
+				case .userCancelled, .error:
+					fallthrough
+				@unknown default:
+					appModel.immersiveSpaceState = .closed
+				}
+			case .inTransition:
+				break
+			}
 	}
 }
 

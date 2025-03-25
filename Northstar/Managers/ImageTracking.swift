@@ -31,8 +31,6 @@ class ImageTracking {
 
 		centerEntity.addChild(movableEntity)
 		movableEntity.position.y = 0.001
-
-		startTracking()
 	}
 
 	func startTracking() {
@@ -47,7 +45,7 @@ class ImageTracking {
 		}
 	}
 
-	func updateImage(_ anchor: ImageAnchor) {
+	private func updateImage(_ anchor: ImageAnchor) {
 		if planeAnchors[anchor.id] == nil {
 			// Add a new entity to represent this image.
 			entityMap[anchor.id] = centerEntity

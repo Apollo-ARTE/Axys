@@ -7,13 +7,15 @@
 
 import SwiftUI
 
-struct CalibrationStepView: View {
+struct CalibrationStepView<Content: View>: View {
+	@Environment(\.dismissWindow) private var dismissWindow
+	@Environment(ImageTracking.self) private var imageTracking
 	@Binding var step: CalibrationStep
+	@ViewBuilder let content: Content
 
     var body: some View {
 		VStack(spacing: 16) {
 			Image(systemName: step.systemName)
-				.animation(.easeInOut, value: step)
 				.contentTransition(.symbolEffect(.replace))
 				.font(.title2)
 				.symbolVariant(.fill)
@@ -26,62 +28,56 @@ struct CalibrationStepView: View {
 					.foregroundStyle(.secondary)
 					.multilineTextAlignment(.center)
 
-			Spacer(minLength: 0)
+			content
 
 			VStack {
 				Button {
 					if let nextStep = step.next {
+						switch step {
+						case .placeMarker:
+							imageTracking.startTracking()
+						case .insertCoordinates:
+							break
+						default:
+							break
+						}
 						step = nextStep
+					} else {
+						dismissWindow()
 					}
 				} label: {
 					Text("Done")
 						.frame(maxWidth: .infinity)
 						.padding(12)
 				}
+				.disabled(step == .scanMarker && imageTracking.planeAnchors.isEmpty)
 				.tint(.blue)
 				.buttonBorderShape(.roundedRectangle(radius: 16))
 
-				Button {
-					if let previousStep = step.previous {
+				if let previousStep = step.previous, step != .calibrationCompleted {
+					Button {
 						step = previousStep
+					} label: {
+						Text("Go Back")
+							.foregroundStyle(.secondary)
+							.frame(maxWidth: .infinity)
+							.padding(12)
 					}
-				} label: {
-					Text("Go Back")
-						.foregroundStyle(.secondary)
-						.frame(maxWidth: .infinity)
-						.padding(12)
+					.disabled(step.previous == nil)
+					.buttonBorderShape(.roundedRectangle(radius: 12))
+					.buttonStyle(.plain)
 				}
-				.disabled(step.previous == nil)
-				.buttonBorderShape(.roundedRectangle(radius: 12))
-				.buttonStyle(.plain)
 			}
 		}
-		.frame(maxHeight: 320)
+		.frame(maxWidth: 280)
 		.padding(32)
+		.glassBackgroundEffect()
     }
 }
 
-//#Preview("Place Marker", windowStyle: .automatic, traits: .fixedLayout(width: 320, height: 380)) {
-//	CalibrationStepView(step: .placeMarker)
-//}
+#Preview("Place Marker", windowStyle: .plain) {
+	@Previewable @State var step: CalibrationStep = .placeMarker
+	CalibrationStepView(step: $step) {
 
-
-//#Preview("Scan Marker", windowStyle: .automatic, traits: .fixedLayout(width: 320, height: 380)) {
-//	CalibrationStepView(step: .scanMarker)
-//}
-//
-//#Preview("Scan Completed", windowStyle: .automatic, traits: .fixedLayout(width: 320, height: 380)) {
-//	CalibrationStepView(step: .scanCompleted)
-//}
-//
-//#Preview("Move Robot", windowStyle: .automatic, traits: .fixedLayout(width: 320, height: 380)) {
-//	CalibrationStepView(step: .moveRobot)
-//}
-//
-//#Preview("Insert Coordinates", windowStyle: .automatic, traits: .fixedLayout(width: 320, height: 380)) {
-//	CalibrationStepView(step: .insertCoordinates)
-//}
-//
-//#Preview("Calibration Completed", windowStyle: .automatic, traits: .fixedLayout(width: 320, height: 380)) {
-//	CalibrationStepView(step: .calibrationCompleted)
-//}
+	}
+}

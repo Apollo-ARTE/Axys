@@ -12,12 +12,13 @@ struct NorthstarApp: App {
 
     @State private var appModel = AppModel()
 	@State private var imageTracking = ImageTracking()
+	@State private var rhinoConnection = RhinoConnectionManager()
 
     var body: some Scene {
 		WindowGroup("Northstar", id: "toolbar") {
 			ToolbarView()
 				.environment(appModel)
-				.environment(imageTracking)
+				.environment(rhinoConnection)
         }
 		.windowStyle(.plain)
 		.windowResizability(.contentSize)
@@ -27,14 +28,16 @@ struct NorthstarApp: App {
 
 		WindowGroup("Calibration", id: "calibration") {
 			CalibrationProcessView()
+				.environment(imageTracking)
 				.frame(width: 320)
 		}
-		.windowResizability(.contentSize)
+		.windowStyle(.plain)
 
         ImmersiveSpace(id: appModel.immersiveSpaceID) {
             ImmersiveView()
                 .environment(appModel)
 				.environment(imageTracking)
+				.environment(rhinoConnection)
                 .onAppear {
                     appModel.immersiveSpaceState = .open
                 }

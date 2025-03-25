@@ -18,4 +18,8 @@ class AppModel {
         case open
     }
     var immersiveSpaceState = ImmersiveSpaceState.closed
+
+	var showCalibrationWindow = false
+	var showModels = false
+	var showRobotReach = false
 }

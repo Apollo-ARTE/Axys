@@ -9,7 +9,15 @@ import SwiftUI
 
 struct InfoView: View {
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+		VStack(alignment: .leading, spacing: 16) {
+			Text("Available Data")
+				.font(.title2)
+			Text("Here is the available data provided by the integration with rhino or the dimensions.")
+				.multilineTextAlignment(.leading)
+				.foregroundStyle(.secondary)
+		}
+		.frame(width: 200)
+		.padding(32)
     }
 }
 
