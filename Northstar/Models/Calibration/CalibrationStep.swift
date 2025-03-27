@@ -96,16 +96,14 @@ enum CalibrationStep: Identifiable, Equatable {
 	}
 
 	var next: CalibrationStep? {
-		guard let currentIndex = Self.allCases.firstIndex(of: self),
-			  currentIndex < Self.allCases.count - 1 else {
+		guard let currentIndex = Self.allCases.firstIndex(of: self), currentIndex < Self.allCases.count - 1 else {
 			return nil
 		}
 		return Self.allCases[currentIndex + 1]
 	}
 
 	var previous: CalibrationStep? {
-		guard let currentIndex = Self.allCases.firstIndex(of: self),
-			  currentIndex > 0 else {
+		guard let currentIndex = Self.allCases.firstIndex(of: self), currentIndex > 0 else {
 			return nil
 		}
 		return Self.allCases[currentIndex - 1]

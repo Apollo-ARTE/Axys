@@ -7,7 +7,6 @@
 
 import SwiftUI
 
-/// Maintains app-wide state
 @MainActor
 @Observable
 class AppModel {
@@ -22,8 +21,4 @@ class AppModel {
 	var showCalibrationWindow = false
 	var showModels = false
 	var showRobotReach = false
-
-	var coordinates1 = (robot: Coordinate.init(), local: Coordinate.init())
-	var coordinates2 = (robot: Coordinate.init(), local: Coordinate.init())
-	var coordinates3 = (robot: Coordinate.init(), local: Coordinate.init())
 }

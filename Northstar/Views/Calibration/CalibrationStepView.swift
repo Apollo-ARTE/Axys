@@ -9,11 +9,12 @@ import SwiftUI
 
 struct CalibrationStepView<Content: View>: View {
 	@Environment(\.dismissWindow) private var dismissWindow
-	@Environment(ImageTracking.self) private var imageTracking
+	@Environment(ImageTrackingManager.self) private var imageTracking
 	@Binding var step: CalibrationStep
+
 	@ViewBuilder let content: Content
 
-    var body: some View {
+	var body: some View {
 		VStack(spacing: 16) {
 			Image(systemName: step.systemName)
 				.contentTransition(.symbolEffect(.replace))
@@ -21,12 +22,13 @@ struct CalibrationStepView<Content: View>: View {
 				.symbolVariant(.fill)
 				.padding()
 				.background(.blue, in: .circle)
+				.accessibilityHidden(true)
 
 			Text(step.title)
-					.font(.title)
+				.font(.title)
 			Text(step.description)
-					.foregroundStyle(.secondary)
-					.multilineTextAlignment(.center)
+				.foregroundStyle(.secondary)
+				.multilineTextAlignment(.center)
 
 			content
 
@@ -50,7 +52,7 @@ struct CalibrationStepView<Content: View>: View {
 						.frame(maxWidth: .infinity)
 						.padding(12)
 				}
-//				.disabled(step == .scanMarker && imageTracking.planeAnchors.isEmpty)
+				//				.disabled(step == .scanMarker && imageTracking.planeAnchors.isEmpty)
 				.tint(.blue)
 				.buttonBorderShape(.roundedRectangle(radius: 16))
 
@@ -72,13 +74,11 @@ struct CalibrationStepView<Content: View>: View {
 		.frame(maxWidth: 280)
 		.padding(32)
 		.glassBackgroundEffect()
-    }
+	}
 }
 
 #Preview("Place Marker", windowStyle: .plain) {
 	@Previewable @State var step: CalibrationStep = .placeMarkers
-	CalibrationStepView(step: $step) {
-
-	}
-	.environment(ImageTracking())
+	CalibrationStepView(step: $step) {}
+	.environment(ImageTrackingManager())
 }

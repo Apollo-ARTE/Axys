@@ -8,34 +8,34 @@
 import SwiftUI
 
 struct CalibrationProcessView: View {
-	@Environment(AppModel.self) private var appModel
+	@Environment(CalibrationManager.self) private var calibrationManager
 
 	@State private var calibrationStep: CalibrationStep = .placeMarkers
 
     var body: some View {
-		@Bindable var appModel = appModel
+		@Bindable var calibrationManager = calibrationManager
 
 		CalibrationStepView(step: $calibrationStep) {
 			switch calibrationStep {
 			case .insertCoordinates(let number) where number == 1:
 				VStack {
-					TextField("X", text: $appModel.coordinates1.robot.x)
-					TextField("Y", text: $appModel.coordinates1.robot.y)
-					TextField("Z", text: $appModel.coordinates1.robot.z)
+					TextField("X", text: $calibrationManager.coordinates1.robot.x)
+					TextField("Y", text: $calibrationManager.coordinates1.robot.y)
+					TextField("Z", text: $calibrationManager.coordinates1.robot.z)
 				}
 				.textFieldStyle(.roundedBorder)
 			case .insertCoordinates(let number) where number == 2:
 				VStack {
-					TextField("X", text: $appModel.coordinates2.robot.x)
-					TextField("Y", text: $appModel.coordinates2.robot.y)
-					TextField("Z", text: $appModel.coordinates2.robot.z)
+					TextField("X", text: $calibrationManager.coordinates2.robot.x)
+					TextField("Y", text: $calibrationManager.coordinates2.robot.y)
+					TextField("Z", text: $calibrationManager.coordinates2.robot.z)
 				}
 				.textFieldStyle(.roundedBorder)
 			case .insertCoordinates(let number) where number == 3:
 				VStack {
-					TextField("X", text: $appModel.coordinates3.robot.x)
-					TextField("Y", text: $appModel.coordinates3.robot.y)
-					TextField("Z", text: $appModel.coordinates3.robot.z)
+					TextField("X", text: $calibrationManager.coordinates3.robot.x)
+					TextField("Y", text: $calibrationManager.coordinates3.robot.y)
+					TextField("Z", text: $calibrationManager.coordinates3.robot.z)
 				}
 				.textFieldStyle(.roundedBorder)
 			default:
@@ -48,6 +48,6 @@ struct CalibrationProcessView: View {
 
 #Preview(windowStyle: .plain) {
     CalibrationProcessView()
-		.environment(ImageTracking())
-		.environment(AppModel())
+		.environment(ImageTrackingManager())
+		.environment(CalibrationManager())
 }

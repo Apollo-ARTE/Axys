@@ -9,42 +9,43 @@ import SwiftUI
 
 @main
 struct NorthstarApp: App {
-    @State private var appModel = AppModel()
-	@State private var imageTracking = ImageTracking()
-	@State private var rhinoConnection = RhinoConnectionManager()
+	@State private var appModel = AppModel()
+	@State private var imageTrackingManager = ImageTrackingManager()
+	@State private var rhinoConnectionManager = RhinoConnectionManager()
+	@State private var calibrationManager = CalibrationManager()
 
-    var body: some Scene {
+	var body: some Scene {
 		WindowGroup("Northstar", id: "toolbar") {
 			ToolbarView()
 				.environment(appModel)
-				.environment(rhinoConnection)
-        }
+		}
 		.windowStyle(.plain)
 		.windowResizability(.contentSize)
-		.defaultWindowPlacement { content, context in
-				.init(.utilityPanel)
+		.defaultWindowPlacement { _, _ in
+			.init(.utilityPanel)
 		}
 
 		WindowGroup("Calibration", id: "calibration") {
 			CalibrationProcessView()
-				.environment(imageTracking)
 				.environment(appModel)
+				.environment(imageTrackingManager)
+				.environment(calibrationManager)
 				.frame(width: 320)
 		}
 		.windowStyle(.plain)
 
-        ImmersiveSpace(id: appModel.immersiveSpaceID) {
-            ImmersiveView()
-                .environment(appModel)
-				.environment(imageTracking)
-				.environment(rhinoConnection)
-                .onAppear {
-                    appModel.immersiveSpaceState = .open
-                }
-                .onDisappear {
-                    appModel.immersiveSpaceState = .closed
-                }
-        }
+		ImmersiveSpace(id: appModel.immersiveSpaceID) {
+			ImmersiveView()
+				.environment(appModel)
+				.environment(imageTrackingManager)
+				.environment(rhinoConnectionManager)
+				.onAppear {
+					appModel.immersiveSpaceState = .open
+				}
+				.onDisappear {
+					appModel.immersiveSpaceState = .closed
+				}
+		}
 		.immersionStyle(selection: .constant(.mixed), in: .mixed)
-    }
+	}
 }

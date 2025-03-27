@@ -1,5 +1,5 @@
 //
-//  ImageTracking.swift
+//  ImageTrackingManager.swift
 //  Image Calibration
 //
 //  Created by Alessandro Bortoluzzi on 05/03/25.
@@ -10,7 +10,7 @@ import RealityKit
 
 @MainActor
 @Observable
-class ImageTracking {
+class ImageTrackingManager {
 	let session = ARKitSession()
 
 	var planeAnchors: [UUID: ImageAnchor] = [:]

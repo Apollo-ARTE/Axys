@@ -16,7 +16,7 @@ class RhinoConnectionManager {
 	var entityID: String?
 
 	func connectToWebSocket() {
-		guard let url = URL(string: "ws://10.20.48.161:8765") else { return }
+		guard let url = URL(string: "ws://\(Constants.ipAddress):8765") else { return }
 		webSocketTask = URLSession.shared.webSocketTask(with: url)
 		webSocketTask?.resume()
 		receiveMessages()
@@ -89,8 +89,7 @@ class RhinoConnectionManager {
 		)
 
 		let encoder = JSONEncoder()
-		if let data = try? encoder.encode(updateMessage),
-		   let jsonString = String(data: data, encoding: .utf8) {
+		if let data = try? encoder.encode(updateMessage), let jsonString = String(data: data, encoding: .utf8) {
 			let message = URLSessionWebSocketTask.Message.string(jsonString)
 			webSocketTask.send(message) { error in
 				if let error = error {

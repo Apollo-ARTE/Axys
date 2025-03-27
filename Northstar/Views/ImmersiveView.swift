@@ -11,62 +11,29 @@ import RealityKitContent
 
 struct ImmersiveView: View {
 	@Environment(AppModel.self) private var appModel
-	@Environment(ImageTracking.self) private var imageTracking
+	@Environment(ImageTrackingManager.self) private var imageTracking
 	@Environment(RhinoConnectionManager.self) var rhinoConnectionManager
 
-    var body: some View {
-		RealityView { content, attachments in
-//			if appModel.showModels {
-//				content.add(imageTracking.centerEntity)
-//				if let attachment = attachments.entity(for: "coordinates") {
-//					attachment.position = [0, 0.05, 0]
-//					imageTracking.movableEntity.addChild(attachment)
-//				}
-
-				let mesh = MeshResource.generateSphere(radius: 0.01)
-				let sphere = ModelEntity(mesh: mesh)
-				sphere.generateCollisionShapes(recursive: false)
-				sphere.components.set(InputTargetComponent())
-				sphere.position = [0, 1.3, -1]
-				rhinoConnectionManager.sphereEntity = sphere
-				content.add(sphere)
-//			}
-		} update: { content, attachments in
-//			if appModel.showModels {
-//				if content.entities.first(where: { $0.name == "centerSphere" }) == nil {
-//					content.add(imageTracking.centerEntity)
-//				}
-//			} else {
-//				content.entities.removeAll(where: { $0.name == "centerSphere" })
-//			}
-		} attachments: {
-			Attachment(id: "coordinates") {
-				HStack {
-					Text("X: \(convertToMeters(meters: imageTracking.modelPosition.x))")
-					Text("Y: \(convertToMeters(meters: imageTracking.modelPosition.y))")
-					Text("Z: \(convertToMeters(meters: imageTracking.modelPosition.z))")
-				}
-				.padding()
-				.glassBackgroundEffect()
-			}
+	var body: some View {
+		RealityView { content in
+			let sphere = ModelEntity.movableSphere()
+			rhinoConnectionManager.sphereEntity = sphere
+			content.add(sphere)
 		}
-		.onAppear(perform: {
+		.onAppear {
 			rhinoConnectionManager.connectToWebSocket()
-		})
+		}
 		.gesture(
 			DragGesture()
-//				.targetedToEntity(imageTracking.movableEntity)
 				.targetedToAnyEntity()
 				.onChanged { value in
 					value.entity.position = value.convert(value.location3D, from: .local, to: value.entity.parent!)
 					rhinoConnectionManager.sendPositionUpdate(for: value.entity)
-//					imageTracking.modelPosition = imageTracking.movableEntity.position(relativeTo: imageTracking.centerEntity)
 				}
 		)
-    }
+	}
 
-	func convertToMeters(meters: Float)-> String {
-
+	func convertToMeters(meters: Float) -> String {
 		let formatter = MeasurementFormatter()
 
 		var distanceInMeters = Measurement(value: Double(meters), unit: UnitLength.meters)
@@ -79,6 +46,6 @@ struct ImmersiveView: View {
 }
 
 #Preview(immersionStyle: .mixed) {
-    ImmersiveView()
-        .environment(AppModel())
+	ImmersiveView()
+		.environment(AppModel())
 }

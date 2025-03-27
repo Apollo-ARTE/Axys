@@ -19,7 +19,6 @@ extension ModelEntity {
 	}
 
 	static func movableSphere() -> ModelEntity {
-//		let rectangle = ModelEntity(mesh: .generateBox(size: [0.13, 0.001, 0.13]), materials: [UnlitMaterial(color: .yellow)])
 		let sphere = ModelEntity(mesh: .generateSphere(radius: 0.05), materials: [UnlitMaterial(color: .yellow)])
 		sphere.components.set(InputTargetComponent())
 		sphere.components.set(HoverEffectComponent())
@@ -27,5 +26,4 @@ extension ModelEntity {
 		sphere.name = "movableSphere"
 		return sphere
 	}
-
 }
