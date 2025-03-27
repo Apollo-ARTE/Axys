@@ -7,21 +7,46 @@
 
 import SwiftUICore
 
-enum CalibrationStep: String, Identifiable, CaseIterable {
-	case placeMarker = "placeMarker"
-	case scanMarker = "scanMarker"
-	case scanCompleted = "scanCompleted"
-	case moveRobot = "moveRobot"
-	case insertCoordinates = "insertCoordinates"
-	case calibrationCompleted = "calibrationCompleted"
+enum CalibrationStep: Identifiable, Equatable {
+	case placeMarkers
+	case scanMarker(number: Int)
+	case scanCompleted
+	case moveRobot(number: Int)
+	case insertCoordinates(number: Int)
+	case calibrationCompleted
 
 	var id: String {
-		self.rawValue
+		switch self {
+		case .placeMarkers:
+			"placeMarkers"
+		case .scanMarker(let number):
+			"scanMarker\(number)"
+		case .scanCompleted:
+			"scanCompleted"
+		case .moveRobot(let number):
+			"moveRobot\(number)"
+		case .insertCoordinates(let number):
+			"insertCoordinates\(number)"
+		case .calibrationCompleted:
+			"calibrationCompleted"
+		}
+	}
+
+	static var allCases: [CalibrationStep] {
+		[
+			.placeMarkers,
+			.scanMarker(number: 1), .scanMarker(number: 2), .scanMarker(number: 3),
+			.scanCompleted,
+			.moveRobot(number: 1), .insertCoordinates(number: 1),
+			.moveRobot(number: 2), .insertCoordinates(number: 2),
+			.moveRobot(number: 3), .insertCoordinates(number: 3),
+			.calibrationCompleted
+		]
 	}
 
 	var systemName: String {
 		switch self {
-		case .placeMarker:
+		case .placeMarkers:
 			"qrcode"
 		case .scanMarker:
 			"qrcode.viewfinder"
@@ -38,10 +63,10 @@ enum CalibrationStep: String, Identifiable, CaseIterable {
 
 	var title: LocalizedStringKey {
 		switch self {
-		case .placeMarker:
+		case .placeMarkers:
 			"Place the Marker"
-		case .scanMarker:
-			"Scan the Marker"
+		case .scanMarker(let number):
+			"Scan the Marker \(number)"
 		case .scanCompleted:
 			"Scan Completed"
 		case .moveRobot:
@@ -55,53 +80,34 @@ enum CalibrationStep: String, Identifiable, CaseIterable {
 
 	var description: LocalizedStringKey {
 		switch self {
-		case .placeMarker:
+		case .placeMarkers:
 			"Position the marker where it remains visible and accessible for the robot."
-		case .scanMarker:
-			"Use your Vision Pro to scan the marker, ensuring it is clearly visible."
+		case .scanMarker(let number):
+			"Use your Vision Pro to scan the marker \(number), ensuring it is clearly visible."
 		case .scanCompleted:
 			"Use your Vision Pro to scan the marker, ensuring it is clearly visible."
-		case .moveRobot:
-			"Align the robot to the center of the marker to set new coordinates."
-		case .insertCoordinates:
-			"Enter the updated origin point for precise positioning."
+		case .moveRobot(let number):
+			"Align the robot to the center of the marker \(number) to set new coordinates."
+		case .insertCoordinates(let number):
+			"Enter the robot's position coordinates for marker \(number)."
 		case .calibrationCompleted:
 			"Your models will now appear exactly where they will be printed."
 		}
 	}
 
 	var next: CalibrationStep? {
-		switch self {
-		case .placeMarker:
-				return .scanMarker
-		case .scanMarker:
-				return .scanCompleted
-		case .scanCompleted:
-				return .moveRobot
-		case .moveRobot:
-				return .insertCoordinates
-		case .insertCoordinates:
-			return .calibrationCompleted
-		case .calibrationCompleted:
+		guard let currentIndex = Self.allCases.firstIndex(of: self),
+			  currentIndex < Self.allCases.count - 1 else {
 			return nil
 		}
+		return Self.allCases[currentIndex + 1]
 	}
 
 	var previous: CalibrationStep? {
-		switch self {
-		case .placeMarker:
+		guard let currentIndex = Self.allCases.firstIndex(of: self),
+			  currentIndex > 0 else {
 			return nil
-		case .scanMarker:
-			return .placeMarker
-		case .scanCompleted:
-			return .scanMarker
-		case .moveRobot:
-			return .scanCompleted
-		case .insertCoordinates:
-			return .moveRobot
-		case .calibrationCompleted:
-			return .insertCoordinates
 		}
-
+		return Self.allCases[currentIndex - 1]
 	}
 }

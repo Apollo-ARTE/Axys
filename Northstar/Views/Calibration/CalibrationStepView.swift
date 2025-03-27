@@ -34,7 +34,7 @@ struct CalibrationStepView<Content: View>: View {
 				Button {
 					if let nextStep = step.next {
 						switch step {
-						case .placeMarker:
+						case .placeMarkers:
 							imageTracking.startTracking()
 						case .insertCoordinates:
 							break
@@ -50,7 +50,7 @@ struct CalibrationStepView<Content: View>: View {
 						.frame(maxWidth: .infinity)
 						.padding(12)
 				}
-				.disabled(step == .scanMarker && imageTracking.planeAnchors.isEmpty)
+//				.disabled(step == .scanMarker && imageTracking.planeAnchors.isEmpty)
 				.tint(.blue)
 				.buttonBorderShape(.roundedRectangle(radius: 16))
 
@@ -76,8 +76,9 @@ struct CalibrationStepView<Content: View>: View {
 }
 
 #Preview("Place Marker", windowStyle: .plain) {
-	@Previewable @State var step: CalibrationStep = .placeMarker
+	@Previewable @State var step: CalibrationStep = .placeMarkers
 	CalibrationStepView(step: $step) {
 
 	}
+	.environment(ImageTracking())
 }
