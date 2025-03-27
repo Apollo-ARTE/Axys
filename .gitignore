@@ -2,7 +2,6 @@
 .DS_Store
 
 # Configurations
-.swiftlint.yml
 .periphery.yml
 
 # Xcode - User files
