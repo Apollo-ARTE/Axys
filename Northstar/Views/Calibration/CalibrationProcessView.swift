@@ -18,26 +18,23 @@ struct CalibrationProcessView: View {
 		CalibrationStepView(step: $calibrationStep) {
 			switch calibrationStep {
 			case .insertCoordinates(let number) where number == 1:
-				VStack {
-					TextField("X", text: $calibrationManager.coordinates1.robot.x)
-					TextField("Y", text: $calibrationManager.coordinates1.robot.y)
-					TextField("Z", text: $calibrationManager.coordinates1.robot.z)
-				}
-				.textFieldStyle(.roundedBorder)
+				CoordinatesInputView(
+					x: $calibrationManager.coordinates1.robotX,
+					y: $calibrationManager.coordinates1.robotY,
+					z: $calibrationManager.coordinates1.robotZ
+				)
 			case .insertCoordinates(let number) where number == 2:
-				VStack {
-					TextField("X", text: $calibrationManager.coordinates2.robot.x)
-					TextField("Y", text: $calibrationManager.coordinates2.robot.y)
-					TextField("Z", text: $calibrationManager.coordinates2.robot.z)
-				}
-				.textFieldStyle(.roundedBorder)
+				CoordinatesInputView(
+					x: $calibrationManager.coordinates2.robotX,
+					y: $calibrationManager.coordinates2.robotY,
+					z: $calibrationManager.coordinates2.robotZ
+				)
 			case .insertCoordinates(let number) where number == 3:
-				VStack {
-					TextField("X", text: $calibrationManager.coordinates3.robot.x)
-					TextField("Y", text: $calibrationManager.coordinates3.robot.y)
-					TextField("Z", text: $calibrationManager.coordinates3.robot.z)
-				}
-				.textFieldStyle(.roundedBorder)
+				CoordinatesInputView(
+					x: $calibrationManager.coordinates3.robotX,
+					y: $calibrationManager.coordinates3.robotY,
+					z: $calibrationManager.coordinates3.robotZ
+				)
 			default:
 				EmptyView()
 			}
