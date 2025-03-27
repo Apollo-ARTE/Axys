@@ -9,7 +9,6 @@ import SwiftUI
 
 @main
 struct NorthstarApp: App {
-
     @State private var appModel = AppModel()
 	@State private var imageTracking = ImageTracking()
 	@State private var rhinoConnection = RhinoConnectionManager()
@@ -29,6 +28,7 @@ struct NorthstarApp: App {
 		WindowGroup("Calibration", id: "calibration") {
 			CalibrationProcessView()
 				.environment(imageTracking)
+				.environment(appModel)
 				.frame(width: 320)
 		}
 		.windowStyle(.plain)
