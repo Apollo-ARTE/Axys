@@ -7,6 +7,7 @@
 
 import Foundation
 import RealityKit
+import OSLog
 
 @Observable
 class RhinoConnectionManager {
@@ -29,10 +30,10 @@ class RhinoConnectionManager {
 				case .string(let text):
 					self.handleIncomingJSON(text)
 				default:
-					print("Unsupported message type")
+					Logger.calibration.info("Unsupported message type")
 				}
 			case .failure(let error):
-				print("WebSocket error: \(error)")
+				Logger.calibration.error("WebSocket error: \(error)")
 			}
 			// Continue listening for messages.
 			self.receiveMessages()
@@ -58,7 +59,7 @@ class RhinoConnectionManager {
 				}
 			}
 		} else {
-			print("Failed to decode JSON: \(text)")
+			Logger.calibration.error("Failed to decode JSON: \(text)")
 		}
 	}
 
@@ -68,7 +69,7 @@ class RhinoConnectionManager {
 		// Use the stored object ID or the sphere's name.
 		let objectIDToSend = entityID ?? sphere.name
 		if objectIDToSend.isEmpty {
-			print("No valid object ID available; update will not be sent.")
+			Logger.calibration.error("No valid object ID available; update will not be sent.")
 			return
 		}
 
@@ -93,9 +94,9 @@ class RhinoConnectionManager {
 			let message = URLSessionWebSocketTask.Message.string(jsonString)
 			webSocketTask.send(message) { error in
 				if let error = error {
-					print("Failed to send update: \(error)")
+					Logger.calibration.error("Failed to send update: \(error)")
 				} else {
-					print("Update sent: \(jsonString)")
+					Logger.calibration.info("Update sent: \(jsonString)")
 				}
 			}
 		}
