@@ -16,7 +16,7 @@ struct ImmersiveView: View {
 
 	var body: some View {
 		RealityView { content in
-			let sphere = ModelEntity.movableSphere()
+			let sphere = ModelEntity.movableSphere(color: .white)
 			rhinoConnectionManager.sphereEntity = sphere
 			content.add(sphere)
 		}

@@ -9,16 +9,6 @@ import RealityKit
 import UIKit
 
 extension ModelEntity {
-	static func centerSphere() -> Entity {
-		let mesh = MeshResource.generateBox(size: [0.13, 0.001, 0.13])
-		let material = SimpleMaterial(color: .gray, isMetallic: true)
-		let entity = ModelEntity(mesh: mesh, materials: [material])
-		entity.components.set(InputTargetComponent())
-		entity.generateCollisionShapes(recursive: true)
-		entity.name = "centerSphere"
-		return entity
-	}
-
 	static func movableSphere(color: UIColor) -> ModelEntity {
 		let sphere = ModelEntity(mesh: .generateSphere(radius: 0.05), materials: [UnlitMaterial(color: color)])
 		sphere.components.set(InputTargetComponent())

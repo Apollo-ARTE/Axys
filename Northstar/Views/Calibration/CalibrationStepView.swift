@@ -14,6 +14,16 @@ struct CalibrationStepView<Content: View>: View {
 
 	@ViewBuilder let content: Content
 
+	private var isNextButtonDisabled: Bool {
+		switch step {
+		case .scanMarker(let number):
+			let markerName = "marker\(number)"
+			return !imageTracking.isMarkerScanned(markerName)
+		default:
+			return false
+		}
+	}
+
 	var body: some View {
 		VStack(spacing: 16) {
 			Image(systemName: step.systemName)
@@ -52,7 +62,7 @@ struct CalibrationStepView<Content: View>: View {
 						.frame(maxWidth: .infinity)
 						.padding(12)
 				}
-				//				.disabled(step == .scanMarker && imageTracking.planeAnchors.isEmpty)
+				.disabled(isNextButtonDisabled)
 				.tint(.blue)
 				.buttonBorderShape(.roundedRectangle(radius: 16))
 

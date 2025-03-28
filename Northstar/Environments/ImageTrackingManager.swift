@@ -13,23 +13,17 @@ import RealityKit
 class ImageTrackingManager {
 	let session = ARKitSession()
 
-	var firstMarkerEntity = Entity()
-	var secondMarkerEntity = Entity()
-	var thirdMarkerEntity = Entity()
+	var firstMarkerEntity: Entity?
+	var secondMarkerEntity: Entity?
+	var thirdMarkerEntity: Entity?
 
+	private(set) var scannedMarkers: Set<String> = []
 	private var imageAnchors: [UUID: ImageAnchor] = [:]
 	private var entityMap: [UUID: Entity] = [:]
 
 	private let imageInfo = ImageTrackingProvider(
 		referenceImages: ReferenceImage.loadReferenceImages(inGroupNamed: "images")
 	)
-
-	init() {
-		// Initialize each entity (customize these as needed)
-		firstMarkerEntity = ModelEntity.movableSphere(color: .red)
-		secondMarkerEntity = ModelEntity.movableSphere(color: .green)
-		thirdMarkerEntity = ModelEntity.movableSphere(color: .blue)
-	}
 
 	func startTracking() {
 		guard ImageTrackingProvider.isSupported else { return }
@@ -48,18 +42,29 @@ class ImageTrackingManager {
 		}
 	}
 
+	func isMarkerScanned(_ markerName: String) -> Bool {
+		scannedMarkers.contains(markerName)
+	}
+
 	private func updateImage(_ anchor: ImageAnchor) {
-		guard anchor.isTracked,
-				let imageName = anchor.referenceImage.name else { return }
+		guard anchor.isTracked, let imageName = anchor.referenceImage.name else {
+			return
+		}
+
+		// Mark the marker as scanned
+		scannedMarkers.insert(imageName)
 
 		// Assign entity based on the reference image name
 		if entityMap[anchor.id] == nil {
 			switch imageName {
 			case "marker1":
+				firstMarkerEntity = ModelEntity.movableSphere(color: .red)
 				entityMap[anchor.id] = firstMarkerEntity
 			case "marker2":
+				secondMarkerEntity = ModelEntity.movableSphere(color: .green)
 				entityMap[anchor.id] = secondMarkerEntity
 			case "marker3":
+				thirdMarkerEntity = ModelEntity.movableSphere(color: .blue)
 				entityMap[anchor.id] = thirdMarkerEntity
 			default:
 				break // Ignore unrecognized markers
