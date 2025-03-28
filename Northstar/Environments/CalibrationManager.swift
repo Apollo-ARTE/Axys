@@ -6,6 +6,8 @@
 //
 
 import Foundation
+import simd
+import RealityFoundation
 
 @Observable
 class CalibrationManager {

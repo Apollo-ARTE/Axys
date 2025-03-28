@@ -9,7 +9,9 @@ import SwiftUI
 
 struct CalibrationStepView<Content: View>: View {
 	@Environment(\.dismissWindow) private var dismissWindow
-	@Environment(ImageTrackingManager.self) private var imageTracking
+	@Environment(CalibrationManager.self) private var calibrationManager
+	@Environment(ImageTrackingManager.self) private var imageTrackingManager
+
 	@Binding var step: CalibrationStep
 
 	@ViewBuilder let content: Content
@@ -18,7 +20,7 @@ struct CalibrationStepView<Content: View>: View {
 		switch step {
 		case .scanMarker(let number):
 			let markerName = "marker\(number)"
-			return !imageTracking.isMarkerScanned(markerName)
+			return !imageTrackingManager.isMarkerScanned(markerName)
 		default:
 			return false
 		}
@@ -47,14 +49,24 @@ struct CalibrationStepView<Content: View>: View {
 					if let nextStep = step.next {
 						switch step {
 						case .placeMarkers:
-							imageTracking.startTracking()
-						case .insertCoordinates:
-							break
+							imageTrackingManager.startTracking()
 						default:
 							break
 						}
 						step = nextStep
 					} else {
+						calibrationManager.coordinates1.localX = imageTrackingManager.firstMarkerEntity?.position.x ?? 0
+						calibrationManager.coordinates1.localY = imageTrackingManager.firstMarkerEntity?.position.y ?? 0
+						calibrationManager.coordinates1.localZ = imageTrackingManager.firstMarkerEntity?.position.z ?? 0
+
+						calibrationManager.coordinates2.localX = imageTrackingManager.secondMarkerEntity?.position.x ?? 0
+						calibrationManager.coordinates2.localY = imageTrackingManager.secondMarkerEntity?.position.y ?? 0
+						calibrationManager.coordinates2.localZ = imageTrackingManager.secondMarkerEntity?.position.z ?? 0
+
+						calibrationManager.coordinates3.localX = imageTrackingManager.thirdMarkerEntity?.position.x ?? 0
+						calibrationManager.coordinates3.localY = imageTrackingManager.thirdMarkerEntity?.position.y ?? 0
+						calibrationManager.coordinates3.localZ = imageTrackingManager.thirdMarkerEntity?.position.z ?? 0
+						
 						dismissWindow()
 					}
 				} label: {
@@ -62,7 +74,7 @@ struct CalibrationStepView<Content: View>: View {
 						.frame(maxWidth: .infinity)
 						.padding(12)
 				}
-				.disabled(isNextButtonDisabled)
+//				.disabled(isNextButtonDisabled)
 				.tint(.blue)
 				.buttonBorderShape(.roundedRectangle(radius: 16))
 

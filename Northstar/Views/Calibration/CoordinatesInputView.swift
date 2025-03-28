@@ -8,24 +8,24 @@
 import SwiftUI
 
 struct CoordinatesInputView: View {
-	@Binding var x: String
-	@Binding var y: String
-	@Binding var z: String
+	@Binding var x: Float
+	@Binding var y: Float
+	@Binding var z: Float
 
     var body: some View {
 		VStack {
-			TextField("X", text: $x)
-			TextField("Y", text: $y)
-			TextField("Z", text: $z)
+			TextField("X", value: $x, format: .number)
+			TextField("Y", value: $y, format: .number)
+			TextField("Z", value: $z, format: .number)
 		}
 		.textFieldStyle(.roundedBorder)
     }
 }
 
 #Preview {
-	@Previewable @State var x: String = ""
-	@Previewable @State var y: String = ""
-	@Previewable @State var z: String = ""
+	@Previewable @State var x: Float = 0
+	@Previewable @State var y: Float = 0
+	@Previewable @State var z: Float = 0
 
 	CoordinatesInputView(x: $x, y: $y, z: $z)
 }

@@ -8,15 +8,15 @@
 import Foundation
 
 class Coordinate {
-	var robotX: String
-	var robotY: String
-	var robotZ: String
+	var robotX: Float
+	var robotY: Float
+	var robotZ: Float
 
-	var localX: String
-	var localY: String
-	var localZ: String
+	var localX: Float
+	var localY: Float
+	var localZ: Float
 
-	init(robotX: String = "", robotY: String = "", robotZ: String = "", localX: String = "", localY: String = "", localZ: String = "") {
+	init(robotX: Float = 0, robotY: Float = 0, robotZ: Float = 0, localX: Float = 0, localY: Float = 0, localZ: Float = 0) {
 		self.robotX = robotX
 		self.robotY = robotY
 		self.robotZ = robotZ
