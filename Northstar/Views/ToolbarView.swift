@@ -12,7 +12,6 @@ struct ToolbarView: View {
 	@Environment(\.openImmersiveSpace) private var openImmersiveSpace
 	@Environment(\.openWindow) private var openWindow
 	@Environment(\.dismissWindow) private var dismissWindow
-
 	@Environment(AppModel.self) private var appModel
 
 	@State private var showInfoPopover = false

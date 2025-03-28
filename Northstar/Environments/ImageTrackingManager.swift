@@ -13,47 +13,66 @@ import RealityKit
 class ImageTrackingManager {
 	let session = ARKitSession()
 
-	var planeAnchors: [UUID: ImageAnchor] = [:]
-	var entityMap: [UUID: Entity] = [:]
+	var firstMarkerEntity = Entity()
+	var secondMarkerEntity = Entity()
+	var thirdMarkerEntity = Entity()
 
-	var centerEntity: Entity
-	var movableEntity: ModelEntity
+	private var imageAnchors: [UUID: ImageAnchor] = [:]
+	private var entityMap: [UUID: Entity] = [:]
 
-	var modelPosition: SIMD3<Float> = .zero
-
-	let imageInfo = ImageTrackingProvider(
+	private let imageInfo = ImageTrackingProvider(
 		referenceImages: ReferenceImage.loadReferenceImages(inGroupNamed: "images")
 	)
 
 	init() {
-		centerEntity = ModelEntity.centerSphere()
-		movableEntity = ModelEntity.movableSphere()
-
-		centerEntity.addChild(movableEntity)
-		movableEntity.position.y = 0.001
+		// Initialize each entity (customize these as needed)
+		firstMarkerEntity = ModelEntity.movableSphere(color: .red)
+		secondMarkerEntity = ModelEntity.movableSphere(color: .green)
+		thirdMarkerEntity = ModelEntity.movableSphere(color: .blue)
 	}
 
 	func startTracking() {
-		if ImageTrackingProvider.isSupported {
-			Task {
-				try await session.run([imageInfo])
-				for await update in imageInfo.anchorUpdates {
+		guard ImageTrackingProvider.isSupported else { return }
+
+		Task {
+			try await session.run([imageInfo])
+
+			for await update in imageInfo.anchorUpdates {
+				switch update.event {
+				case .added, .updated:
 					updateImage(update.anchor)
-					modelPosition = movableEntity.position
+				case .removed:
+					removeImage(update.anchor)
 				}
 			}
 		}
 	}
 
 	private func updateImage(_ anchor: ImageAnchor) {
-		if planeAnchors[anchor.id] == nil {
-			// Add a new entity to represent this image.
-			entityMap[anchor.id] = centerEntity
-			planeAnchors[anchor.id] = anchor
+		guard anchor.isTracked,
+				let imageName = anchor.referenceImage.name else { return }
+
+		// Assign entity based on the reference image name
+		if entityMap[anchor.id] == nil {
+			switch imageName {
+			case "marker1":
+				entityMap[anchor.id] = firstMarkerEntity
+			case "marker2":
+				entityMap[anchor.id] = secondMarkerEntity
+			case "marker3":
+				entityMap[anchor.id] = thirdMarkerEntity
+			default:
+				break // Ignore unrecognized markers
+			}
+			imageAnchors[anchor.id] = anchor
 		}
 
-		if anchor.isTracked {
-			entityMap[anchor.id]?.transform = Transform(matrix: anchor.originFromAnchorTransform)
-		}
+		// Update the corresponding entity's transform
+		entityMap[anchor.id]?.transform = Transform(matrix: anchor.originFromAnchorTransform)
+	}
+
+	private func removeImage(_ anchor: ImageAnchor) {
+		entityMap.removeValue(forKey: anchor.id)
+		imageAnchors.removeValue(forKey: anchor.id)
 	}
 }
