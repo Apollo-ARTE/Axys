@@ -74,7 +74,7 @@ struct CalibrationStepView<Content: View>: View {
 						.frame(maxWidth: .infinity)
 						.padding(12)
 				}
-//				.disabled(isNextButtonDisabled)
+				.disabled(isNextButtonDisabled)
 				.tint(.blue)
 				.buttonBorderShape(.roundedRectangle(radius: 16))
 
