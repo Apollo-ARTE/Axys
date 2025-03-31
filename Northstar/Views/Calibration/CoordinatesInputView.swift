@@ -19,6 +19,7 @@ struct CoordinatesInputView: View {
 			TextField("Z", value: $z, format: .number)
 		}
 		.textFieldStyle(.roundedBorder)
+		.keyboardType(.numbersAndPunctuation)
     }
 }
 
