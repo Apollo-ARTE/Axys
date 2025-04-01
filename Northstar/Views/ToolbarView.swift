@@ -8,18 +8,24 @@
 import SwiftUI
 
 struct ToolbarView: View {
-	@Environment(AppModel.self) private var appModel
 	@Environment(\.dismissImmersiveSpace) private var dismissImmersiveSpace
 	@Environment(\.openImmersiveSpace) private var openImmersiveSpace
 	@Environment(\.openWindow) private var openWindow
 	@Environment(\.dismissWindow) private var dismissWindow
-
+	
+	@Environment(AppModel.self) private var appModel
+	@Environment(RhinoConnectionManager.self) private var rhinoConnectionManager
+	
 	@State private var showInfoPopover = false
 
     var body: some View {
 		@Bindable var appModel = appModel
 
 		HStack {
+			Button("Export", systemImage: "square.and.arrow.up.on.square") {
+				rhinoConnectionManager.sendExportCommand()
+			}
+			
 			Toggle("Model", systemImage: "cube.fill", isOn: $appModel.showModels)
 			Toggle("Robot's Reach", systemImage: "skew", isOn: $appModel.showRobotReach)
 
@@ -92,4 +98,6 @@ struct ToolbarView: View {
 
 #Preview {
     ToolbarView()
+		.environment(AppModel())
+		.environment(RhinoConnectionManager())
 }
