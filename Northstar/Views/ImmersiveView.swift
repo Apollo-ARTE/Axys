@@ -12,13 +12,35 @@ import RealityKitContent
 struct ImmersiveView: View {
 	@Environment(AppModel.self) private var appModel
 	@Environment(ImageTrackingManager.self) private var imageTracking
-	@Environment(RhinoConnectionManager.self) var rhinoConnectionManager
+	@Environment(RhinoConnectionManager.self) private var rhinoConnectionManager
+	@Environment(CalibrationManager.self) private var calibrationManager
+
+	@State private var movableSphere = Entity()
 
 	var body: some View {
-		RealityView { content in
+		RealityView { content, attachments in
 			let sphere = ModelEntity.movableSphere(color: .white)
+			sphere.position = [0, 0, 0]
+			movableSphere = sphere
 			rhinoConnectionManager.sphereEntity = sphere
+
+			if let coordinatesAttachment = attachments.entity(for: "movableSphere") {
+				coordinatesAttachment.position = [0, -0.1, 0]
+				movableSphere.addChild(coordinatesAttachment)
+			}
+
 			content.add(sphere)
+			content.add(imageTracking.rootEntity)
+		} update: { content, attachments in
+
+		} attachments: {
+			Attachment(id: "movableSphere") {
+				VStack {
+					Text(movableSphere.position.description)
+					Text(calibrationManager.localToRobot(localPoint: movableSphere.position)?.description ?? "")
+				}
+				.glassBackgroundEffect()
+			}
 		}
 		.onAppear {
 			rhinoConnectionManager.connectToWebSocket()

@@ -19,6 +19,7 @@ class CalibrationManager {
 	private var rotationMatrix: matrix_float3x3?
 	private var translationVector: SIMD3<Float>?
 
+	@discardableResult
 	func computeTransformation() -> Bool {
 		let localPoints: [SIMD3<Float>] = [
 			SIMD3(coordinates1.localX, coordinates1.localY, coordinates1.localZ),

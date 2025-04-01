@@ -39,6 +39,7 @@ struct NorthstarApp: App {
 				.environment(appModel)
 				.environment(imageTrackingManager)
 				.environment(rhinoConnectionManager)
+				.environment(calibrationManager)
 				.onAppear {
 					appModel.immersiveSpaceState = .open
 				}

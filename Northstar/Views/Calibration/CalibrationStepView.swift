@@ -66,7 +66,8 @@ struct CalibrationStepView<Content: View>: View {
 						calibrationManager.coordinates3.localX = imageTrackingManager.thirdMarkerEntity?.position.x ?? 0
 						calibrationManager.coordinates3.localY = imageTrackingManager.thirdMarkerEntity?.position.y ?? 0
 						calibrationManager.coordinates3.localZ = imageTrackingManager.thirdMarkerEntity?.position.z ?? 0
-						
+
+						calibrationManager.computeTransformation()
 						dismissWindow()
 					}
 				} label: {

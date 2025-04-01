@@ -13,6 +13,7 @@ import RealityKit
 class ImageTrackingManager {
 	let session = ARKitSession()
 
+	var rootEntity = Entity()
 	var firstMarkerEntity: Entity?
 	var secondMarkerEntity: Entity?
 	var thirdMarkerEntity: Entity?
@@ -59,12 +60,15 @@ class ImageTrackingManager {
 			switch imageName {
 			case "marker1":
 				firstMarkerEntity = ModelEntity.movableSphere(color: .red)
+				rootEntity.addChild(firstMarkerEntity!)
 				entityMap[anchor.id] = firstMarkerEntity
 			case "marker2":
 				secondMarkerEntity = ModelEntity.movableSphere(color: .green)
+				rootEntity.addChild(secondMarkerEntity!)
 				entityMap[anchor.id] = secondMarkerEntity
 			case "marker3":
 				thirdMarkerEntity = ModelEntity.movableSphere(color: .blue)
+				rootEntity.addChild(thirdMarkerEntity!)
 				entityMap[anchor.id] = thirdMarkerEntity
 			default:
 				break // Ignore unrecognized markers
