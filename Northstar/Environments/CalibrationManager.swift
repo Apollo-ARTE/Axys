@@ -10,118 +10,126 @@ import simd
 import RealityFoundation
 import OSLog
 
+/// Manages the calibration and coordinate conversion between the Vision Pro (local) and ABB robot systems.
+/// It uses three markers (non-collinear points) to compute a 3D rigid transformation.
 @Observable
 class CalibrationManager {
-	var coordinates1 = Coordinate()
-	var coordinates2 = Coordinate()
-	var coordinates3 = Coordinate()
+	// Markers with known coordinates in both systems.
+	var marker1 = Coordinate()
+	var marker2 = Coordinate()
+	var marker3 = Coordinate()
 
-	private var rotationMatrix: matrix_float3x3?
-	private var translationVector: SIMD3<Float>?
+	// Transformation from local (Vision Pro) to robot coordinates.
+	// 'rotation' is a 3x3 rotation matrix and 'translation' is a 3D translation vector.
+	private var rotation = simd_float3x3(1) // Identity matrix as default.
+	private var translation = simd_float3(0, 0, 0)
 
-	@discardableResult
-	func computeTransformation() -> Bool {
-		let localPoints: [SIMD3<Float>] = [
-			SIMD3(coordinates1.localX, coordinates1.localY, coordinates1.localZ),
-			SIMD3(coordinates2.localX, coordinates2.localY, coordinates2.localZ),
-			SIMD3(coordinates3.localX, coordinates3.localY, coordinates3.localZ)
-		]
-		let robotPoints: [SIMD3<Float>] = [
-			SIMD3(coordinates1.robotX, coordinates1.robotY, coordinates1.robotZ),
-			SIMD3(coordinates2.robotX, coordinates2.robotY, coordinates2.robotZ),
-			SIMD3(coordinates3.robotX, coordinates3.robotY, coordinates3.robotZ)
-		]
+	/// Computes the rigid (rotation + translation) transform that maps local (Vision Pro) coordinates to robot coordinates.
+	/// It uses the three markers stored in the class.
+	func calibrate() {
+		// Convert marker coordinates to simd_float3 for math operations.
+		let v1 = simd_float3(marker1.localX, marker1.localY, marker1.localZ)
+		let v2 = simd_float3(marker2.localX, marker2.localY, marker2.localZ)
+		let v3 = simd_float3(marker3.localX, marker3.localY, marker3.localZ)
 
-		let localCentroid = localPoints.reduce(SIMD3<Float>(0, 0, 0), { $0 + $1 }) / 3.0
-		let robotCentroid = robotPoints.reduce(SIMD3<Float>(0, 0, 0), { $0 + $1 }) / 3.0
+		let r1 = simd_float3(marker1.robotX, marker1.robotY, marker1.robotZ)
+		let r2 = simd_float3(marker2.robotX, marker2.robotY, marker2.robotZ)
+		let r3 = simd_float3(marker3.robotX, marker3.robotY, marker3.robotZ)
 
-		let centeredLocal = localPoints.map { $0 - localCentroid }
-		let centeredRobot = robotPoints.map { $0 - robotCentroid }
+		// --- Construct an orthonormal basis for the local (Vision Pro) coordinate system ---
+		let a1 = v2 - v1
+		let a2 = v3 - v1
 
-		var H = matrix_float3x3(0)
-		for i in 0..<3 {
-			let cl = centeredLocal[i]
-			let cr = centeredRobot[i]
-			H += matrix_float3x3(rows: [
-				SIMD3(cl.x * cr.x, cl.x * cr.y, cl.x * cr.z),
-				SIMD3(cl.y * cr.x, cl.y * cr.y, cl.y * cr.z),
-				SIMD3(cl.z * cr.x, cl.z * cr.y, cl.z * cr.z)
-			])
+		let e1 = simd_normalize(a1)
+		let u2 = a2 - simd_dot(a2, e1) * e1   // Remove the component along e1.
+		let e2 = simd_normalize(u2)
+		let e3 = simd_normalize(simd_cross(e1, e2)) // Perpendicular to both e1 and e2.
+
+		// --- Construct an orthonormal basis for the robot coordinate system ---
+		let b1 = r2 - r1
+		let b2 = r3 - r1
+
+		let f1 = simd_normalize(b1)
+		let u4 = b2 - simd_dot(b2, f1) * f1   // Remove the component along f1.
+		let f2 = simd_normalize(u4)
+		let f3 = simd_normalize(simd_cross(f1, f2))
+
+		// --- Determine the rotation matrix ---
+		// Build matrices whose columns are the basis vectors.
+		let E = simd_float3x3(columns: (e1, e2, e3))
+		let F = simd_float3x3(columns: (f1, f2, f3))
+		var Rmat = F * simd_transpose(E)   // This rotates vectors from the local to the robot frame.
+
+		// Correct for potential reflection: if the determinant is negative, flip one axis.
+		if simd_determinant(Rmat) < 0 {
+			let Ffixed = simd_float3x3(columns: (f1, f2, -f3))
+			Rmat = Ffixed * simd_transpose(E)
 		}
 
-		guard let svd = H.svd() else { return false }
-		let U = svd.U
-		let V = svd.V
+		rotation = Rmat
 
-		var R = V * U.transpose
-
-		if R.determinant < 0 {
-			var adjustedV = V
-			adjustedV.columns.2 = -adjustedV.columns.2
-			R = adjustedV * U.transpose
-		}
-
-		let T = robotCentroid - R * localCentroid
-
-		rotationMatrix = R
-		translationVector = T
-
-		return true
+		// --- Compute the translation ---
+		// We require that the transform satisfies: r1 = R * v1 + t. Therefore:
+		translation = r1 - Rmat * v1
 	}
 
-	func localToRobot(localPoint: SIMD3<Float>) -> SIMD3<Float>? {
-		guard let R = rotationMatrix, let T = translationVector else { return nil }
-		return R * localPoint + T
+	/// Converts a point from the local (Vision Pro) coordinate system to the robot coordinate system.
+	/// - Parameter local: A simd_float3 representing a point in local coordinates.
+	/// - Returns: The corresponding point in robot coordinates.
+	func convertLocalToRobot(local: simd_float3) -> simd_float3 {
+		return rotation * local + translation
 	}
 
-	func robotToLocal(robotPoint: SIMD3<Float>) -> SIMD3<Float>? {
-		guard let R = rotationMatrix, let T = translationVector else { return nil }
-		let invR = R.transpose
-		return invR * (robotPoint - T)
-	}
-}
-
-// MARK: - SVD for 3x3 Matrix
-extension matrix_float3x3 {
-	var determinant: Float {
-		let col0 = self.columns.0
-		let col1 = self.columns.1
-		let col2 = self.columns.2
-		let a = col0.x, b = col1.x, c = col2.x
-		let d = col0.y, e = col1.y, f = col2.y
-		let g = col0.z, h = col1.z, i = col2.z
-		return a*(e*i - f*h) - b*(d*i - f*g) + c*(d*h - e*g)
+	/// Converts a point from the robot coordinate system to the local (Vision Pro) coordinate system.
+	/// - Parameter robot: A simd_float3 representing a point in robot coordinates.
+	/// - Returns: The corresponding point in local coordinates.
+	func convertRobotToLocal(robot: simd_float3) -> simd_float3 {
+		// Since rotation is orthonormal, the inverse is the transpose.
+		return simd_transpose(rotation) * (robot - translation)
 	}
 
-	func svd() -> (U: matrix_float3x3, S: matrix_float3x3, V: matrix_float3x3)? {
-		// This is a simplified SVD implementation for 3x3 matrices.
-		// For production, consider using a robust numerical library.
-		var matrix = self
-		var u = matrix_float3x3(1)
-		var v = matrix_float3x3(1)
-		var s = matrix_float3x3(0)
+	// Convenience functions to work with the Coordinate class.
 
-		// Iterative method for SVD (example placeholder)
-		// Note: This is a placeholder and not numerically accurate.
-		// In practice, use LAPACK or similar.
-		for _ in 0..<10 {
-			let (q1, r1) = matrix.decomposeQR()
-			let (q2, r2) = r1.transpose.decomposeQR()
-			matrix = r2.transpose
-			u *= q1
-			v = q2.transpose * v
-		}
-
-		s.columns.0.x = matrix.columns.0.x
-		s.columns.1.y = matrix.columns.1.y
-		s.columns.2.z = matrix.columns.2.z
-
-		return (u, s, v)
+	/// Converts a Coordinate’s local values to robot coordinates.
+	/// - Parameter coordinate: The Coordinate instance containing a local position.
+	/// - Returns: A new Coordinate with robot values updated.
+	func convertLocalToRobot(coordinate: Coordinate) -> Coordinate {
+		let local = simd_float3(coordinate.localX, coordinate.localY, coordinate.localZ)
+		let robot = convertLocalToRobot(local: local)
+		return Coordinate(
+			robotX: robot.x,
+			robotY: robot.y,
+			robotZ: robot.z,
+			localX: coordinate.localX,
+			localY: coordinate.localY,
+			localZ: coordinate.localZ
+		)
 	}
 
-	private func decomposeQR() -> (Q: matrix_float3x3, R: matrix_float3x3) {
-		// Placeholder QR decomposition
-		// For real use, implement Householder reflections or Gram-Schmidt
-		return (matrix_float3x3(1), self)
+	/// Converts a Coordinate’s robot values back to local (Vision Pro) coordinates.
+	/// - Parameter coordinate: The Coordinate instance containing a robot position.
+	/// - Returns: A new Coordinate with local values updated.
+	func convertRobotToLocal(coordinate: Coordinate) -> Coordinate {
+		let robot = simd_float3(coordinate.robotX, coordinate.robotY, coordinate.robotZ)
+		let local = convertRobotToLocal(robot: robot)
+		return Coordinate(
+			robotX: coordinate.robotX,
+			robotY: coordinate.robotY,
+			robotZ: coordinate.robotZ,
+			localX: local.x,
+			localY: local.y,
+			localZ: local.z
+		)
+	}
+
+	/// Optionally, retrieve the full 4×4 transformation matrix from local to robot coordinates.
+	/// This can be useful for interfacing with graphics or robotics APIs.
+	func visionToRobotMatrix() -> simd_float4x4 {
+		var transform = simd_float4x4(1)  // Identity matrix.
+		transform.columns.0 = simd_float4(rotation.columns.0, 0)
+		transform.columns.1 = simd_float4(rotation.columns.1, 0)
+		transform.columns.2 = simd_float4(rotation.columns.2, 0)
+		transform.columns.3 = simd_float4(translation, 1)
+		return transform
 	}
 }

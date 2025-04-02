@@ -17,13 +17,11 @@ struct CalibrationStepView<Content: View>: View {
 	@ViewBuilder let content: Content
 
 	private var isNextButtonDisabled: Bool {
-		switch step {
-		case .scanMarker(let number):
+		if case .scanMarker(let number) = step {
 			let markerName = "marker\(number)"
 			return !imageTrackingManager.isMarkerScanned(markerName)
-		default:
-			return false
 		}
+		return false
 	}
 
 	var body: some View {
@@ -47,27 +45,31 @@ struct CalibrationStepView<Content: View>: View {
 			VStack {
 				Button {
 					if let nextStep = step.next {
-						switch step {
-						case .placeMarkers:
+						// If we're in the placeMarkers step, start image tracking.
+						if case .placeMarkers = step {
 							imageTrackingManager.startTracking()
-						default:
-							break
 						}
 						step = nextStep
 					} else {
-						calibrationManager.coordinates1.localX = imageTrackingManager.firstMarkerEntity?.position.x ?? 0
-						calibrationManager.coordinates1.localY = imageTrackingManager.firstMarkerEntity?.position.y ?? 0
-						calibrationManager.coordinates1.localZ = imageTrackingManager.firstMarkerEntity?.position.z ?? 0
+						// When done, update each marker's local coordinates from the imageTrackingManager.
+						if let firstPos = imageTrackingManager.firstMarkerEntity?.position {
+							calibrationManager.marker1.localX = firstPos.x
+							calibrationManager.marker1.localY = firstPos.y
+							calibrationManager.marker1.localZ = firstPos.z
+						}
+						if let secondPos = imageTrackingManager.secondMarkerEntity?.position {
+							calibrationManager.marker2.localX = secondPos.x
+							calibrationManager.marker2.localY = secondPos.y
+							calibrationManager.marker2.localZ = secondPos.z
+						}
+						if let thirdPos = imageTrackingManager.thirdMarkerEntity?.position {
+							calibrationManager.marker3.localX = thirdPos.x
+							calibrationManager.marker3.localY = thirdPos.y
+							calibrationManager.marker3.localZ = thirdPos.z
+						}
 
-						calibrationManager.coordinates2.localX = imageTrackingManager.secondMarkerEntity?.position.x ?? 0
-						calibrationManager.coordinates2.localY = imageTrackingManager.secondMarkerEntity?.position.y ?? 0
-						calibrationManager.coordinates2.localZ = imageTrackingManager.secondMarkerEntity?.position.z ?? 0
-
-						calibrationManager.coordinates3.localX = imageTrackingManager.thirdMarkerEntity?.position.x ?? 0
-						calibrationManager.coordinates3.localY = imageTrackingManager.thirdMarkerEntity?.position.y ?? 0
-						calibrationManager.coordinates3.localZ = imageTrackingManager.thirdMarkerEntity?.position.z ?? 0
-
-						calibrationManager.computeTransformation()
+						// Compute the rigid transformation using the new calibration system.
+						calibrationManager.calibrate()
 						dismissWindow()
 					}
 				} label: {
