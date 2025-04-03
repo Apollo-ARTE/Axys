@@ -98,6 +98,6 @@ struct ImmersiveView: View {
 #Preview(immersionStyle: .mixed) {
     ImmersiveView()
         .environment(AppModel())
-        .environment(ImageTracking())
+        .environment(ImageTrackingManager())
         .environment(RhinoConnectionManager())
 }
