@@ -22,14 +22,20 @@ struct ImmersiveView: View {
 //					attachment.position = [0, 0.05, 0]
 //					imageTracking.movableEntity.addChild(attachment)
 //				}
-
-				let mesh = MeshResource.generateSphere(radius: 0.01)
-				let sphere = ModelEntity(mesh: mesh)
-				sphere.generateCollisionShapes(recursive: false)
-				sphere.components.set(InputTargetComponent())
-				sphere.position = [0, 1.3, -1]
-				rhinoConnectionManager.sphereEntity = sphere
-				content.add(sphere)
+            if let model = try? await ModelEntity(named: "OriginModel") {
+                model.generateCollisionShapes(recursive: false)
+                model.components.set(InputTargetComponent())
+                model.position = [0, 1.3, -1]
+                rhinoConnectionManager.sphereEntity = model
+                content.add(model)
+            }
+//            let mesh = MeshResource.generateSphere(radius: 0.03)
+//            let sphere = ModelEntity(mesh: mesh, materials: [SimpleMaterial(color: .red, isMetallic: false)])
+//				sphere.generateCollisionShapes(recursive: false)
+//				sphere.components.set(InputTargetComponent())
+//				sphere.position = [0, 1.3, -1]
+//				rhinoConnectionManager.sphereEntity = sphere
+//				content.add(sphere)
 //			}
 		} update: { content, attachments in
 //			if appModel.showModels {
@@ -81,4 +87,6 @@ struct ImmersiveView: View {
 #Preview(immersionStyle: .mixed) {
     ImmersiveView()
         .environment(AppModel())
+        .environment(ImageTracking())
+        .environment(RhinoConnectionManager())
 }

@@ -15,7 +15,7 @@ class RhinoConnectionManager {
 	var entityID: String?
 
 	func connectToWebSocket() {
-		guard let url = URL(string: "ws://10.20.48.161:8765") else { return }
+		guard let url = URL(string: "ws://10.20.58.109:8765") else { return }
 		webSocketTask = URLSession.shared.webSocketTask(with: url)
 		webSocketTask?.resume()
 		receiveMessages()
