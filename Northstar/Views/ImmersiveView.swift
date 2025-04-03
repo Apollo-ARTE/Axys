@@ -20,32 +20,30 @@ struct ImmersiveView: View {
 	@State private var robotCoordinates: SIMD3<Float> = .zero
 
 	var body: some View {
-		RealityView { content, attachments in
-//			if appModel.showModels {
-//				content.add(imageTracking.centerEntity)
-//				if let attachment = attachments.entity(for: "coordinates") {
-//					attachment.position = [0, 0.05, 0]
-//					imageTracking.movableEntity.addChild(attachment)
-//				}
-            if let model = try? await ModelEntity(named: "OriginModel") {
-                model.generateCollisionShapes(recursive: false)
-                model.components.set(InputTargetComponent())
-                model.position = [0, 1.3, -1]
-                rhinoConnectionManager.sphereEntity = model
-                content.add(model)
+        RealityView { content, attachments in
+            guard let sphere = try? await ModelEntity(named: "MIRACLE") else {
+                return
             }
-//            let mesh = MeshResource.generateSphere(radius: 0.03)
-//            let sphere = ModelEntity(mesh: mesh, materials: [SimpleMaterial(color: .red, isMetallic: false)])
-//				sphere.generateCollisionShapes(recursive: false)
-//				sphere.components.set(InputTargetComponent())
-//				sphere.position = [0, 1.3, -1]
-//				rhinoConnectionManager.sphereEntity = sphere
-//				content.add(sphere)
-//			}
-		} update: { content, attachments in
-			// Optionally update content if needed.
-		} attachments: {
-			Attachment(id: "movableSphere") {
+            sphere.components.set(InputTargetComponent())
+            sphere.components.set(HoverEffectComponent())
+            sphere.generateCollisionShapes(recursive: true)
+            sphere.name = "movableSphere"
+            sphere.position = [0, 0, 0]
+
+            movableSphere = sphere
+            rhinoConnectionManager.sphereEntity = sphere
+
+            // Optionally add an attachment to display coordinates.
+            if let coordinatesAttachment = attachments.entity(for: "movableSphereID") {
+                coordinatesAttachment.position = [0, 0.4, 0]
+                movableSphere.addChild(coordinatesAttachment)
+            }
+
+            content.add(sphere)
+            content.add(imageTracking.rootEntity)
+		}
+        attachments: {
+			Attachment(id: "movableSphereID") {
 				VStack {
 					HStack {
 						Text("Local:")
@@ -100,4 +98,5 @@ struct ImmersiveView: View {
         .environment(AppModel())
         .environment(ImageTrackingManager())
         .environment(RhinoConnectionManager())
+        .environment(CalibrationManager())
 }
