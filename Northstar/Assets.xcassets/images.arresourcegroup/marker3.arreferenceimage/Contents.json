@@ -1,7 +1,7 @@
 {
   "images" : [
     {
-      "filename" : "marker3.png",
+      "filename" : "image3.png",
       "idiom" : "universal"
     }
   ],
@@ -11,6 +11,6 @@
   },
   "properties" : {
     "unit" : "centimeters",
-    "width" : 16
+    "width" : 6
   }
 }
