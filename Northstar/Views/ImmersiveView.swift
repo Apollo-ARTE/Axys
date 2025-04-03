@@ -11,74 +11,84 @@ import RealityKitContent
 
 struct ImmersiveView: View {
 	@Environment(AppModel.self) private var appModel
-	@Environment(ImageTracking.self) private var imageTracking
-	@Environment(RhinoConnectionManager.self) var rhinoConnectionManager
+	@Environment(ImageTrackingManager.self) private var imageTracking
+	@Environment(RhinoConnectionManager.self) private var rhinoConnectionManager
+	@Environment(CalibrationManager.self) private var calibrationManager
 
-    var body: some View {
+	@State private var movableSphere = Entity()
+	@State private var localCoordinates: SIMD3<Float> = .zero
+	@State private var robotCoordinates: SIMD3<Float> = .zero
+
+	var body: some View {
 		RealityView { content, attachments in
-//			if appModel.showModels {
-//				content.add(imageTracking.centerEntity)
-//				if let attachment = attachments.entity(for: "coordinates") {
-//					attachment.position = [0, 0.05, 0]
-//					imageTracking.movableEntity.addChild(attachment)
-//				}
+			// Create a movable sphere entity.
+			let sphere = ModelEntity.movableSphere(color: .white)
+			sphere.position = [0, 0, 0]
+			movableSphere = sphere
+			rhinoConnectionManager.sphereEntity = sphere
 
-				let mesh = MeshResource.generateSphere(radius: 0.01)
-				let sphere = ModelEntity(mesh: mesh)
-				sphere.generateCollisionShapes(recursive: false)
-				sphere.components.set(InputTargetComponent())
-				sphere.position = [0, 1.3, -1]
-				rhinoConnectionManager.sphereEntity = sphere
-				content.add(sphere)
-//			}
+			// Optionally add an attachment to display coordinates.
+			if let coordinatesAttachment = attachments.entity(for: "movableSphere") {
+				coordinatesAttachment.position = [0, -0.1, 0]
+				movableSphere.addChild(coordinatesAttachment)
+			}
+
+			content.add(sphere)
+			content.add(imageTracking.rootEntity)
 		} update: { content, attachments in
-//			if appModel.showModels {
-//				if content.entities.first(where: { $0.name == "centerSphere" }) == nil {
-//					content.add(imageTracking.centerEntity)
-//				}
-//			} else {
-//				content.entities.removeAll(where: { $0.name == "centerSphere" })
-//			}
+			// Optionally update content if needed.
 		} attachments: {
-			Attachment(id: "coordinates") {
-				HStack {
-					Text("X: \(convertToMeters(meters: imageTracking.modelPosition.x))")
-					Text("Y: \(convertToMeters(meters: imageTracking.modelPosition.y))")
-					Text("Z: \(convertToMeters(meters: imageTracking.modelPosition.z))")
+			Attachment(id: "movableSphere") {
+				VStack {
+					HStack {
+						Text("Local:")
+						Text("X: \(convertToCentimeters(meters: localCoordinates.x))")
+						Text("Y: \(convertToCentimeters(meters: localCoordinates.y))")
+						Text("Z: \(convertToCentimeters(meters: localCoordinates.z))")
+					}
+					HStack {
+						Text("Robot:")
+						Text("X: \(convertToCentimeters(meters: robotCoordinates.x))")
+						Text("Y: \(convertToCentimeters(meters: robotCoordinates.y))")
+						Text("Z: \(convertToCentimeters(meters: robotCoordinates.z))")
+					}
 				}
 				.padding()
 				.glassBackgroundEffect()
 			}
 		}
-		.onAppear(perform: {
-			rhinoConnectionManager.connectToWebSocket()
-		})
 		.gesture(
 			DragGesture()
-//				.targetedToEntity(imageTracking.movableEntity)
 				.targetedToAnyEntity()
 				.onChanged { value in
-					value.entity.position = value.convert(value.location3D, from: .local, to: value.entity.parent!)
+					// Convert the gesture's location into the coordinate space of the entity's parent.
+					if let parent = value.entity.parent {
+						value.entity.position = value.convert(value.location3D, from: .local, to: parent)
+					}
+
+					// Send a position update.
 					rhinoConnectionManager.sendPositionUpdate(for: value.entity)
-//					imageTracking.modelPosition = imageTracking.movableEntity.position(relativeTo: imageTracking.centerEntity)
+
+					// Update the local coordinate state.
+					localCoordinates = value.entity.position
+
+					// Convert the local coordinate to robot coordinate using the new calibration method.
+					robotCoordinates = calibrationManager.convertLocalToRobot(local: value.entity.position)
 				}
 		)
-    }
+	}
 
-	func convertToMeters(meters: Float)-> String {
-
+	/// Converts a measurement in meters to a formatted string in centimeters.
+	func convertToCentimeters(meters: Float) -> String {
+		let measurement = Measurement(value: Double(meters), unit: UnitLength.meters)
+		let centimeters = measurement.converted(to: .centimeters)
 		let formatter = MeasurementFormatter()
-
-		var distanceInMeters = Measurement(value: Double(meters), unit: UnitLength.meters)
-
-		distanceInMeters.convert(to: UnitLength.centimeters)
 		formatter.unitOptions = .providedUnit
-
-		return formatter.string(from: distanceInMeters)
+		return formatter.string(from: centimeters)
 	}
 }
 
 #Preview(immersionStyle: .mixed) {
-    ImmersiveView()
-        .environment(AppModel())
+	ImmersiveView()
+		.environment(AppModel())
 }
