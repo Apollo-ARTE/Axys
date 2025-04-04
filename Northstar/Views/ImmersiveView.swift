@@ -8,6 +8,7 @@
 import SwiftUI
 import RealityKit
 import RealityKitContent
+import OSLog
 
 struct ImmersiveView: View {
 	@Environment(AppModel.self) private var appModel
@@ -21,13 +22,12 @@ struct ImmersiveView: View {
 
 	var body: some View {
         RealityView { content, attachments in
-            guard let sphere = try? await ModelEntity(named: "MIRACLE") else {
+            guard let sphere = try? await ModelEntity(named: "print") else {
                 return
             }
             sphere.components.set(InputTargetComponent())
             sphere.components.set(HoverEffectComponent())
             sphere.generateCollisionShapes(recursive: true)
-            sphere.name = "movableSphere"
             sphere.position = [0, 0, 0]
 
             movableSphere = sphere
@@ -41,8 +41,18 @@ struct ImmersiveView: View {
 
             content.add(sphere)
             content.add(imageTracking.rootEntity)
-		}
-        attachments: {
+		} update: { content, attachments in
+			if calibrationManager.isCalibrationCompleted && !calibrationManager.didSetZeroPosition {
+				Logger.calibration.log("Setting zero position")
+				Logger.calibration.log("\(calibrationManager.convertRobotToLocal(robot: [0, 0, 0]))")
+				if let model = content.entities.first {
+					Logger.calibration.log("Entered here")
+					model.position = calibrationManager.convertRobotToLocal(robot: [0, 0, 0])
+				}
+
+				calibrationManager.didSetZeroPosition = true
+			}
+		} attachments: {
 			Attachment(id: "movableSphereID") {
 				VStack {
 					HStack {
@@ -62,6 +72,9 @@ struct ImmersiveView: View {
 				.glassBackgroundEffect()
 			}
 		}
+		.onAppear {
+			rhinoConnectionManager.connectToWebSocket()
+		}
 		.gesture(
 			DragGesture()
 				.targetedToAnyEntity()
@@ -71,14 +84,16 @@ struct ImmersiveView: View {
 						value.entity.position = value.convert(value.location3D, from: .local, to: parent)
 					}
 
-					// Send a position update.
-					rhinoConnectionManager.sendPositionUpdate(for: value.entity)
-
 					// Update the local coordinate state.
 					localCoordinates = value.entity.position
 
 					// Convert the local coordinate to robot coordinate using the new calibration method.
 					robotCoordinates = calibrationManager.convertLocalToRobot(local: value.entity.position)
+				}
+				.onEnded { value in
+					let newPosition = calibrationManager.convertLocalToRobot(local: value.entity.position)
+					// Send a position update.
+					rhinoConnectionManager.sendPositionUpdate(for: value.entity, newPosition: newPosition)
 				}
 		)
 	}

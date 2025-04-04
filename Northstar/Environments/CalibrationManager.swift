@@ -15,10 +15,12 @@ import OSLog
 @Observable
 class CalibrationManager {
 	// Markers with known coordinates in both systems.
-	var marker1 = Coordinate()
-	var marker2 = Coordinate()
-	var marker3 = Coordinate()
+	var marker1 = Coordinate(robotX: -1, robotY: 0, robotZ: 0, localX: 0, localY: 0, localZ: 0)
+	var marker2 = Coordinate(robotX: 0, robotY: 1, robotZ: 0, localX: 0, localY: 0, localZ: 0)
+	var marker3 = Coordinate(robotX: 1, robotY: 0, robotZ: 0, localX: 0, localY: 0, localZ: 0)
 
+	var isCalibrationCompleted = false
+	var didSetZeroPosition = false
 	// Transformation from local (Vision Pro) to robot coordinates.
 	// 'rotation' is a 3x3 rotation matrix and 'translation' is a 3D translation vector.
 	private var rotation = simd_float3x3(1) // Identity matrix as default.
@@ -71,6 +73,8 @@ class CalibrationManager {
 		// --- Compute the translation ---
 		// We require that the transform satisfies: r1 = R * v1 + t. Therefore:
 		translation = r1 - Rmat * v1
+
+		isCalibrationCompleted = true
 	}
 
 	/// Converts a point from the local (Vision Pro) coordinate system to the robot coordinate system.
