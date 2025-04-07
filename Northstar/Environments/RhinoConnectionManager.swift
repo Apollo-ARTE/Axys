@@ -63,7 +63,7 @@ class RhinoConnectionManager {
 		}
 	}
 
-	func sendPositionUpdate(for sphere: Entity) {
+	func sendPositionUpdate(for sphere: Entity, newPosition: SIMD3<Float>) {
 		guard let webSocketTask = webSocketTask else { return }
 
 		// Use the stored object ID or the sphere's name.
@@ -73,11 +73,11 @@ class RhinoConnectionManager {
 			return
 		}
 
-		let pos = sphere.position
+		let pos = newPosition
 		let convertedCenter = Position(
-			x: Double(pos.x),
-			y: Double(pos.z), // RealityKit z becomes Rhino y
-			z: Double(pos.y)  // RealityKit y becomes Rhino z
+			x: Double(pos.y),
+			y: Double(pos.x),
+			z: Double(-pos.z)
 		)
 
 		let updateMessage = RhinoMessage(

@@ -8,6 +8,7 @@
 import SwiftUI
 import RealityKit
 import RealityKitContent
+import OSLog
 
 struct ImmersiveView: View {
 	@Environment(AppModel.self) private var appModel
@@ -20,25 +21,39 @@ struct ImmersiveView: View {
 	@State private var robotCoordinates: SIMD3<Float> = .zero
 
 	var body: some View {
-		RealityView { content, attachments in
-			// Create a movable sphere entity.
-			let sphere = ModelEntity.movableSphere(color: .white)
-			sphere.position = [0, 0, 0]
-			movableSphere = sphere
-			rhinoConnectionManager.sphereEntity = sphere
+        RealityView { content, attachments in
+            guard let sphere = try? await ModelEntity(named: "print") else {
+                return
+            }
+            sphere.components.set(InputTargetComponent())
+            sphere.components.set(HoverEffectComponent())
+            sphere.generateCollisionShapes(recursive: true)
+            sphere.position = [0, 0, 0]
 
-			// Optionally add an attachment to display coordinates.
-			if let coordinatesAttachment = attachments.entity(for: "movableSphere") {
-				coordinatesAttachment.position = [0, -0.1, 0]
-				movableSphere.addChild(coordinatesAttachment)
-			}
+            movableSphere = sphere
+            rhinoConnectionManager.sphereEntity = sphere
 
-			content.add(sphere)
-			content.add(imageTracking.rootEntity)
+            // Optionally add an attachment to display coordinates.
+            if let coordinatesAttachment = attachments.entity(for: "movableSphereID") {
+                coordinatesAttachment.position = [0, 0.4, 0]
+                movableSphere.addChild(coordinatesAttachment)
+            }
+
+            content.add(sphere)
+            content.add(imageTracking.rootEntity)
 		} update: { content, attachments in
-			// Optionally update content if needed.
+			if calibrationManager.isCalibrationCompleted && !calibrationManager.didSetZeroPosition {
+				Logger.calibration.log("Setting zero position")
+				Logger.calibration.log("\(calibrationManager.convertRobotToLocal(robot: [0, 0, 0]))")
+				if let model = content.entities.first {
+					Logger.calibration.log("Entered here")
+					model.position = calibrationManager.convertRobotToLocal(robot: [0, 0, 0])
+				}
+
+				calibrationManager.didSetZeroPosition = true
+			}
 		} attachments: {
-			Attachment(id: "movableSphere") {
+			Attachment(id: "movableSphereID") {
 				VStack {
 					HStack {
 						Text("Local:")
@@ -57,6 +72,9 @@ struct ImmersiveView: View {
 				.glassBackgroundEffect()
 			}
 		}
+		.onAppear {
+			rhinoConnectionManager.connectToWebSocket()
+		}
 		.gesture(
 			DragGesture()
 				.targetedToAnyEntity()
@@ -66,14 +84,16 @@ struct ImmersiveView: View {
 						value.entity.position = value.convert(value.location3D, from: .local, to: parent)
 					}
 
-					// Send a position update.
-					rhinoConnectionManager.sendPositionUpdate(for: value.entity)
-
 					// Update the local coordinate state.
 					localCoordinates = value.entity.position
 
 					// Convert the local coordinate to robot coordinate using the new calibration method.
 					robotCoordinates = calibrationManager.convertLocalToRobot(local: value.entity.position)
+				}
+				.onEnded { value in
+					let newPosition = calibrationManager.convertLocalToRobot(local: value.entity.position)
+					// Send a position update.
+					rhinoConnectionManager.sendPositionUpdate(for: value.entity, newPosition: newPosition)
 				}
 		)
 	}
@@ -89,6 +109,9 @@ struct ImmersiveView: View {
 }
 
 #Preview(immersionStyle: .mixed) {
-	ImmersiveView()
-		.environment(AppModel())
+    ImmersiveView()
+        .environment(AppModel())
+        .environment(ImageTrackingManager())
+        .environment(RhinoConnectionManager())
+        .environment(CalibrationManager())
 }
