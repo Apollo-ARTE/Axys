@@ -33,9 +33,6 @@ struct ToolbarView: View {
 					} else {
 						dismissCalibrationWindow()
 					}
-					Task {
-						await toggleImmersiveSpace()
-					}
 				}
 				.disabled(appModel.immersiveSpaceState == .inTransition)
 
@@ -48,6 +45,9 @@ struct ToolbarView: View {
 		.toggleStyle(.button)
 		.padding()
 		.glassBackgroundEffect()
+		.task {
+			await toggleImmersiveSpace()
+		}
 	}
 
 	private func openCalibrationWindow() {
