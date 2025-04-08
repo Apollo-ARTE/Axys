@@ -15,9 +15,9 @@ import OSLog
 @Observable
 class CalibrationManager {
 	// Markers with known coordinates in both systems.
-	var marker1 = Coordinate(robotX: -1, robotY: 0, robotZ: 0, localX: 0, localY: 0, localZ: 0)
-	var marker2 = Coordinate(robotX: 0, robotY: 1, robotZ: 0, localX: 0, localY: 0, localZ: 0)
-	var marker3 = Coordinate(robotX: 1, robotY: 0, robotZ: 0, localX: 0, localY: 0, localZ: 0)
+	var marker1 = Coordinate(robotX: 0, robotY: -1, robotZ: 0, localX: 0, localY: 0, localZ: 0)
+	var marker2 = Coordinate(robotX: 1, robotY: 0, robotZ: 0, localX: 0, localY: 0, localZ: 0)
+	var marker3 = Coordinate(robotX: 0, robotY: 1, robotZ: 0, localX: 0, localY: 0, localZ: 0)
 
 	var isCalibrationCompleted = false
 	var didSetZeroPosition = false

@@ -36,7 +36,7 @@ struct ImmersiveView: View {
 
             content.add(printedObject)
             content.add(imageTracking.rootEntity)
-		} update: { content, _ in
+		} update: { _, _ in
 //			if calibrationManager.isCalibrationCompleted && !calibrationManager.didSetZeroPosition {
 //				Logger.calibration.log("Setting zero position")
 //				Logger.calibration.log("\(calibrationManager.convertRobotToLocal(robot: [0, 0, 0]))")
@@ -89,6 +89,7 @@ struct ImmersiveView: View {
 					let newPosition = calibrationManager.convertLocalToRobot(local: value.entity.position)
 					// Send a position update.
 					rhinoConnectionManager.sendPositionUpdate(for: value.entity, newPosition: newPosition)
+					Logger.connection.info("Sending position update for local coordinates \(value.entity.position), and robot coordinates \(newPosition)")
 				}
 		)
 	}
