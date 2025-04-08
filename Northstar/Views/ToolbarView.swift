@@ -91,4 +91,5 @@ struct ToolbarView: View {
 
 #Preview {
 	ToolbarView()
+		.environment(AppModel.shared)
 }

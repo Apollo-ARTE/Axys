@@ -11,6 +11,7 @@ import RealityKitContent
 import OSLog
 
 struct ImmersiveView: View {
+	@Environment(\.openWindow) private var openWindow
 	@Environment(AppModel.self) private var appModel
 	@Environment(ImageTrackingManager.self) private var imageTracking
 	@Environment(RhinoConnectionManager.self) private var rhinoConnectionManager
@@ -59,6 +60,14 @@ struct ImmersiveView: View {
 		.onAppear {
 			rhinoConnectionManager.connectToWebSocket()
 		}
+		.gesture(
+			TapGesture()
+				.targetedToAnyEntity()
+				.onEnded { value in
+					appModel.selectedEntity = value.entity
+					openWindow(id: "inspector")
+				}
+		)
 		.gesture(
 			DragGesture()
 				.targetedToAnyEntity()

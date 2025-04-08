@@ -45,12 +45,12 @@ struct NorthstarApp: App {
 		.windowStyle(.plain)
 
 		WindowGroup("Inspector", id: "inspector") {
-			CalibrationProcessView()
+			InspectorView()
 				.environment(appModel)
-				.environment(imageTrackingManager)
-				.environment(calibrationManager)
-				.frame(width: 320)
+				.environment(rhinoConnectionManager)
+				.frame(width: 280, height: 320)
 		}
+		.windowResizability(.contentSize)
 
 		ImmersiveSpace(id: appModel.immersiveSpaceID) {
 			ImmersiveView()
