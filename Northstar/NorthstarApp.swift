@@ -9,10 +9,18 @@ import SwiftUI
 
 @main
 struct NorthstarApp: App {
-	@State private var appModel = AppModel()
-	@State private var imageTrackingManager = ImageTrackingManager()
-	@State private var rhinoConnectionManager = RhinoConnectionManager()
-	@State private var calibrationManager = CalibrationManager()
+	@State private var appModel: AppModel
+	@State private var imageTrackingManager: ImageTrackingManager
+	@State private var rhinoConnectionManager: RhinoConnectionManager
+	@State private var calibrationManager: CalibrationManager
+
+	init() {
+		let calibrationManager = CalibrationManager()
+		self.appModel = .init()
+		self.imageTrackingManager = .init()
+		self.calibrationManager = calibrationManager
+		self.rhinoConnectionManager = .init(calibrationManager: calibrationManager)
+	}
 
 	var body: some Scene {
 		WindowGroup("Northstar", id: "toolbar") {
@@ -33,6 +41,14 @@ struct NorthstarApp: App {
 				.frame(width: 320)
 		}
 		.windowStyle(.plain)
+
+		WindowGroup("Inspector", id: "inspector") {
+			CalibrationProcessView()
+				.environment(appModel)
+				.environment(imageTrackingManager)
+				.environment(calibrationManager)
+				.frame(width: 320)
+		}
 
 		ImmersiveSpace(id: appModel.immersiveSpaceID) {
 			ImmersiveView()

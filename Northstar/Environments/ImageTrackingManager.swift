@@ -59,15 +59,15 @@ class ImageTrackingManager {
 		if entityMap[anchor.id] == nil {
 			switch imageName {
 			case "marker1":
-				firstMarkerEntity = ModelEntity.movableSphere(color: .red)
+				firstMarkerEntity = ModelEntity.movableSphere()
 				rootEntity.addChild(firstMarkerEntity!)
 				entityMap[anchor.id] = firstMarkerEntity
 			case "marker2":
-				secondMarkerEntity = ModelEntity.movableSphere(color: .green)
+				secondMarkerEntity = ModelEntity.movableSphere()
 				rootEntity.addChild(secondMarkerEntity!)
 				entityMap[anchor.id] = secondMarkerEntity
 			case "marker3":
-				thirdMarkerEntity = ModelEntity.movableSphere(color: .blue)
+				thirdMarkerEntity = ModelEntity.movableSphere()
 				rootEntity.addChild(thirdMarkerEntity!)
 				entityMap[anchor.id] = thirdMarkerEntity
 			default:

@@ -11,4 +11,5 @@ extension Logger {
 	private static let subsystem = Bundle.main.bundleIdentifier ?? "Northstar"
 
 	static let calibration = Logger(subsystem: subsystem, category: "Calibration")
+	static let connection = Logger(subsystem: subsystem, category: "Connection")
 }

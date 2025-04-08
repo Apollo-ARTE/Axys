@@ -8,5 +8,5 @@
 import Foundation
 
 enum Constants {
-	static let ipAddress: String = "10.20.62.154"
+	static let ipAddress: String = "10.20.48.161"
 }
