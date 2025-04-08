@@ -95,8 +95,8 @@ struct ImmersiveView: View {
 
 #Preview(immersionStyle: .mixed) {
 	ImmersiveView()
-		.environment(AppModel())
-		.environment(ImageTrackingManager())
-		.environment(RhinoConnectionManager(calibrationManager: .init()))
-		.environment(CalibrationManager())
+		.environment(AppModel.shared)
+		.environment(ImageTrackingManager.shared)
+		.environment(CalibrationManager.shared)
+		.environment(RhinoConnectionManager(calibrationManager: .shared))
 }

@@ -15,10 +15,12 @@ struct NorthstarApp: App {
 	@State private var calibrationManager: CalibrationManager
 
 	init() {
-		let calibrationManager = CalibrationManager()
-		self.appModel = .init()
-		self.imageTrackingManager = .init()
+		self.appModel = .shared
+		self.imageTrackingManager = .shared
+
+		let calibrationManager: CalibrationManager = .shared
 		self.calibrationManager = calibrationManager
+
 		self.rhinoConnectionManager = .init(calibrationManager: calibrationManager)
 	}
 

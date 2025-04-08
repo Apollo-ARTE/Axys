@@ -11,6 +11,9 @@ import RealityKit
 @MainActor
 @Observable
 class ImageTrackingManager {
+	static let shared: ImageTrackingManager = .init()
+	private init() {}
+
 	let session = ARKitSession()
 
 	var rootEntity = Entity()

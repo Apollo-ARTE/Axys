@@ -10,6 +10,9 @@ import SwiftUI
 @MainActor
 @Observable
 class AppModel {
+	static let shared: AppModel = .init()
+	private init() {}
+
     let immersiveSpaceID = "ImmersiveSpace"
     enum ImmersiveSpaceState {
         case closed
