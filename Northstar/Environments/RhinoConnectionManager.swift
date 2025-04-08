@@ -16,7 +16,6 @@ class RhinoConnectionManager {
 	var webSocketTask: URLSessionWebSocketTask?
 	var entityID: String?
 
-
 	init(calibrationManager: CalibrationManager) {
 		self.calibrationManager = calibrationManager
 	}

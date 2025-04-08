@@ -14,6 +14,7 @@ struct CalibrationStepView<Content: View>: View {
 
 	@Binding var step: CalibrationStep
 
+	// swiftlint:disable:next attributes
 	@ViewBuilder let content: Content
 
 	private var isNextButtonDisabled: Bool {

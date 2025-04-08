@@ -57,6 +57,7 @@ class ImageTrackingManager {
 
 		// Assign entity based on the reference image name
 		if entityMap[anchor.id] == nil {
+			// swiftlint:disable force_unwrapping
 			switch imageName {
 			case "marker1":
 				firstMarkerEntity = ModelEntity.movableSphere()
@@ -73,6 +74,7 @@ class ImageTrackingManager {
 			default:
 				break // Ignore unrecognized markers
 			}
+			// swiftlint:enable force_unwrapping
 			imageAnchors[anchor.id] = anchor
 		}
 
