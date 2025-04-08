@@ -16,44 +16,39 @@ struct ImmersiveView: View {
 	@Environment(RhinoConnectionManager.self) private var rhinoConnectionManager
 	@Environment(CalibrationManager.self) private var calibrationManager
 
-	@State private var movableSphere = Entity()
+	@State private var printedObject = Entity()
 	@State private var localCoordinates: SIMD3<Float> = .zero
 	@State private var robotCoordinates: SIMD3<Float> = .zero
 
 	var body: some View {
         RealityView { content, attachments in
-            guard let sphere = try? await ModelEntity(named: "print") else {
-                return
+			if let printedObject = try? await ModelEntity.printedObject() {
+				self.printedObject = printedObject
             }
-            sphere.components.set(InputTargetComponent())
-            sphere.components.set(HoverEffectComponent())
-            sphere.generateCollisionShapes(recursive: true)
-            sphere.position = [0, 0, 0]
 
-            movableSphere = sphere
-            rhinoConnectionManager.sphereEntity = sphere
+			rhinoConnectionManager.object = printedObject
 
             // Optionally add an attachment to display coordinates.
-            if let coordinatesAttachment = attachments.entity(for: "movableSphereID") {
+            if let coordinatesAttachment = attachments.entity(for: "coordinates") {
                 coordinatesAttachment.position = [0, 0.4, 0]
-                movableSphere.addChild(coordinatesAttachment)
+                printedObject.addChild(coordinatesAttachment)
             }
 
-            content.add(sphere)
+            content.add(printedObject)
             content.add(imageTracking.rootEntity)
-		} update: { content, attachments in
-			if calibrationManager.isCalibrationCompleted && !calibrationManager.didSetZeroPosition {
-				Logger.calibration.log("Setting zero position")
-				Logger.calibration.log("\(calibrationManager.convertRobotToLocal(robot: [0, 0, 0]))")
-				if let model = content.entities.first {
-					Logger.calibration.log("Entered here")
-					model.position = calibrationManager.convertRobotToLocal(robot: [0, 0, 0])
-				}
-
-				calibrationManager.didSetZeroPosition = true
-			}
+		} update: { content, _ in
+//			if calibrationManager.isCalibrationCompleted && !calibrationManager.didSetZeroPosition {
+//				Logger.calibration.log("Setting zero position")
+//				Logger.calibration.log("\(calibrationManager.convertRobotToLocal(robot: [0, 0, 0]))")
+//				if let model = content.entities.first {
+//					Logger.calibration.log("Entered here")
+//					model.position = calibrationManager.convertRobotToLocal(robot: [0, 0, 0])
+//				}
+//
+//				calibrationManager.didSetZeroPosition = true
+//			}
 		} attachments: {
-			Attachment(id: "movableSphereID") {
+			Attachment(id: "coordinates") {
 				VStack {
 					HStack {
 						Text("Local:")
@@ -112,6 +107,6 @@ struct ImmersiveView: View {
     ImmersiveView()
         .environment(AppModel())
         .environment(ImageTrackingManager())
-        .environment(RhinoConnectionManager())
+		.environment(RhinoConnectionManager(calibrationManager: .init()))
         .environment(CalibrationManager())
 }

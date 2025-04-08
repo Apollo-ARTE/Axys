@@ -11,9 +11,14 @@ import OSLog
 
 @Observable
 class RhinoConnectionManager {
-	var sphereEntity: Entity?
+	let calibrationManager: CalibrationManager
+	var object: Entity?
 	var webSocketTask: URLSessionWebSocketTask?
 	var entityID: String?
+
+	init(calibrationManager: CalibrationManager) {
+		self.calibrationManager = calibrationManager
+	}
 
 	func connectToWebSocket() {
 		guard let url = URL(string: "ws://\(Constants.ipAddress):8765") else { return }
@@ -46,16 +51,20 @@ class RhinoConnectionManager {
 		if let message = try? decoder.decode(RhinoMessage.self, from: data) {
 			DispatchQueue.main.async {
 				let convertedPosition = SIMD3<Float>(
-					Float(message.center.x),
+					Float(message.center.y),
 					Float(message.center.z), // Rhino z becomes RealityKit y
-					Float(message.center.y)  // Rhino y becomes RealityKit z
+					Float(message.center.x)  // Rhino y becomes RealityKit z
 				)
-				if let sphere = self.sphereEntity {
-					sphere.position = convertedPosition
+				if let sphere = self.object {
+					self.withMutation(keyPath: \.object) {
+						let localPosition = self.calibrationManager.convertRobotToLocal(robot: convertedPosition)
+						sphere.position = localPosition
+						Logger.connection.info("Object moved to local coordinates: \(localPosition) (robot coordinates: \(convertedPosition)")
+					}
 				}
 				if !message.objectId.isEmpty {
 					self.entityID = message.objectId
-					self.sphereEntity?.name = message.objectId
+					self.object?.name = message.objectId
 				}
 			}
 		} else {
@@ -75,9 +84,9 @@ class RhinoConnectionManager {
 
 		let pos = newPosition
 		let convertedCenter = Position(
-			x: Double(pos.y),
-			y: Double(pos.x),
-			z: Double(-pos.z)
+			x: Double(pos.x),
+			y: Double(pos.y),
+			z: Double(pos.z)
 		)
 
 		let updateMessage = RhinoMessage(
