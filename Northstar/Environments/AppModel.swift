@@ -21,4 +21,5 @@ class AppModel {
 	var showCalibrationWindow = false
 	var showModels = false
 	var showRobotReach = false
+    var showVirtualLab = false
 }
