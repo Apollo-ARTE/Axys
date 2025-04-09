@@ -25,12 +25,4 @@ class Coordinate {
 		self.localY = localY
 		self.localZ = localZ
 	}
-
-	var robotVector: simd_float4 {
-		return simd_float4(robotX, robotY, robotZ, 1) // The '1' is for homogeneous coordinates
-	}
-
-	var localVector: simd_float4 {
-		return simd_float4(localX, localY, localZ, 1)
-	}
 }

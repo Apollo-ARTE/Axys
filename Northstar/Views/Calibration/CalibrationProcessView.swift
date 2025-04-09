@@ -45,6 +45,6 @@ struct CalibrationProcessView: View {
 
 #Preview(windowStyle: .plain) {
     CalibrationProcessView()
-		.environment(ImageTrackingManager())
-		.environment(CalibrationManager())
+		.environment(ImageTrackingManager.shared)
+		.environment(CalibrationManager.shared)
 }

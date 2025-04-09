@@ -11,11 +11,13 @@ import RealityKitContent
 import OSLog
 
 struct ImmersiveView: View {
+	@Environment(\.openWindow) private var openWindow
 	@Environment(AppModel.self) private var appModel
 	@Environment(ImageTrackingManager.self) private var imageTracking
 	@Environment(RhinoConnectionManager.self) private var rhinoConnectionManager
 	@Environment(CalibrationManager.self) private var calibrationManager
 
+	@State private var rootObject = Entity()
 	@State private var printedObject = Entity()
     @State private var robotReachEntity = Entity()
     @State private var virtualLabEntity = Entity()
@@ -23,18 +25,18 @@ struct ImmersiveView: View {
 	@State private var robotCoordinates: SIMD3<Float> = .zero
 
 	var body: some View {
-        RealityView { content, attachments in
+		RealityView { content, attachments in
 			if let printedObject = try? await ModelEntity.printedObject() {
 				self.printedObject = printedObject
-            }
+			}
 
 			rhinoConnectionManager.object = printedObject
 
-            // Optionally add an attachment to display coordinates.
-            if let coordinatesAttachment = attachments.entity(for: "coordinates") {
-                coordinatesAttachment.position = [0, 0.4, 0]
-                printedObject.addChild(coordinatesAttachment)
-            }
+			// Optionally add an attachment to display coordinates.
+			if let coordinatesAttachment = attachments.entity(for: "coordinates") {
+				coordinatesAttachment.position = [0, 0.4, 0]
+				printedObject.addChild(coordinatesAttachment)
+			}
 
             if let robotReachEntity = try? await ModelEntity(named: "robot_reach") {
                 robotReachEntity.name = "robot_reach_blue"
@@ -105,9 +107,14 @@ struct ImmersiveView: View {
 				.glassBackgroundEffect()
 			}
 		}
-		.onAppear {
-			rhinoConnectionManager.connectToWebSocket()
-		}
+		.gesture(
+			TapGesture()
+				.targetedToAnyEntity()
+				.onEnded { value in
+					appModel.selectedEntity = value.entity
+					openWindow(id: "inspector")
+				}
+		)
 		.gesture(
 			DragGesture()
 				.targetedToAnyEntity()
@@ -143,9 +150,9 @@ struct ImmersiveView: View {
 }
 
 #Preview(immersionStyle: .mixed) {
-    ImmersiveView()
-        .environment(AppModel())
-        .environment(ImageTrackingManager())
-		.environment(RhinoConnectionManager(calibrationManager: .init()))
-        .environment(CalibrationManager())
+	ImmersiveView()
+		.environment(AppModel.shared)
+		.environment(ImageTrackingManager.shared)
+		.environment(CalibrationManager.shared)
+		.environment(RhinoConnectionManager(calibrationManager: .shared))
 }
