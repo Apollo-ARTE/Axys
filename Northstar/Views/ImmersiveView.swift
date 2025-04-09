@@ -11,42 +11,33 @@ import RealityKitContent
 import OSLog
 
 struct ImmersiveView: View {
+	@Environment(\.openWindow) private var openWindow
 	@Environment(AppModel.self) private var appModel
 	@Environment(ImageTrackingManager.self) private var imageTracking
 	@Environment(RhinoConnectionManager.self) private var rhinoConnectionManager
 	@Environment(CalibrationManager.self) private var calibrationManager
 
+	@State private var rootObject = Entity()
 	@State private var printedObject = Entity()
 	@State private var localCoordinates: SIMD3<Float> = .zero
 	@State private var robotCoordinates: SIMD3<Float> = .zero
 
 	var body: some View {
-        RealityView { content, attachments in
+		RealityView { content, attachments in
 			if let printedObject = try? await ModelEntity.printedObject() {
 				self.printedObject = printedObject
-            }
+			}
 
 			rhinoConnectionManager.object = printedObject
 
-            // Optionally add an attachment to display coordinates.
-            if let coordinatesAttachment = attachments.entity(for: "coordinates") {
-                coordinatesAttachment.position = [0, 0.4, 0]
-                printedObject.addChild(coordinatesAttachment)
-            }
+			// Optionally add an attachment to display coordinates.
+			if let coordinatesAttachment = attachments.entity(for: "coordinates") {
+				coordinatesAttachment.position = [0, 0.4, 0]
+				printedObject.addChild(coordinatesAttachment)
+			}
 
-            content.add(printedObject)
-            content.add(imageTracking.rootEntity)
-		} update: { _, _ in
-//			if calibrationManager.isCalibrationCompleted && !calibrationManager.didSetZeroPosition {
-//				Logger.calibration.log("Setting zero position")
-//				Logger.calibration.log("\(calibrationManager.convertRobotToLocal(robot: [0, 0, 0]))")
-//				if let model = content.entities.first {
-//					Logger.calibration.log("Entered here")
-//					model.position = calibrationManager.convertRobotToLocal(robot: [0, 0, 0])
-//				}
-//
-//				calibrationManager.didSetZeroPosition = true
-//			}
+			content.add(printedObject)
+			content.add(imageTracking.rootEntity)
 		} attachments: {
 			Attachment(id: "coordinates") {
 				VStack {
@@ -67,9 +58,14 @@ struct ImmersiveView: View {
 				.glassBackgroundEffect()
 			}
 		}
-		.onAppear {
-			rhinoConnectionManager.connectToWebSocket()
-		}
+		.gesture(
+			TapGesture()
+				.targetedToAnyEntity()
+				.onEnded { value in
+					appModel.selectedEntity = value.entity
+					openWindow(id: "inspector")
+				}
+		)
 		.gesture(
 			DragGesture()
 				.targetedToAnyEntity()
@@ -105,9 +101,9 @@ struct ImmersiveView: View {
 }
 
 #Preview(immersionStyle: .mixed) {
-    ImmersiveView()
-        .environment(AppModel())
-        .environment(ImageTrackingManager())
-		.environment(RhinoConnectionManager(calibrationManager: .init()))
-        .environment(CalibrationManager())
+	ImmersiveView()
+		.environment(AppModel.shared)
+		.environment(ImageTrackingManager.shared)
+		.environment(CalibrationManager.shared)
+		.environment(RhinoConnectionManager(calibrationManager: .shared))
 }

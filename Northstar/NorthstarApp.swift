@@ -15,10 +15,12 @@ struct NorthstarApp: App {
 	@State private var calibrationManager: CalibrationManager
 
 	init() {
-		let calibrationManager = CalibrationManager()
-		self.appModel = .init()
-		self.imageTrackingManager = .init()
+		self.appModel = .shared
+		self.imageTrackingManager = .shared
+
+		let calibrationManager: CalibrationManager = .shared
 		self.calibrationManager = calibrationManager
+
 		self.rhinoConnectionManager = .init(calibrationManager: calibrationManager)
 	}
 
@@ -26,6 +28,7 @@ struct NorthstarApp: App {
 		WindowGroup("Northstar", id: "toolbar") {
 			ToolbarView()
 				.environment(appModel)
+				.environment(rhinoConnectionManager)
 		}
 		.windowStyle(.plain)
 		.windowResizability(.contentSize)
@@ -43,12 +46,13 @@ struct NorthstarApp: App {
 		.windowStyle(.plain)
 
 		WindowGroup("Inspector", id: "inspector") {
-			CalibrationProcessView()
+			InspectorView()
 				.environment(appModel)
-				.environment(imageTrackingManager)
+				.environment(rhinoConnectionManager)
 				.environment(calibrationManager)
-				.frame(width: 320)
+				.frame(width: 280, height: 320)
 		}
+		.windowResizability(.contentSize)
 
 		ImmersiveSpace(id: appModel.immersiveSpaceID) {
 			ImmersiveView()

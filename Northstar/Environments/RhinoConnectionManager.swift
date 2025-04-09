@@ -16,9 +16,13 @@ class RhinoConnectionManager {
 	var webSocketTask: URLSessionWebSocketTask?
 	var entityID: String?
 
-
 	init(calibrationManager: CalibrationManager) {
 		self.calibrationManager = calibrationManager
+	}
+
+	func disconnectFromWebSocket() {
+		webSocketTask?.cancel()
+		Logger.connection.info("Disconnected from WebSocket")
 	}
 
 	func connectToWebSocket() {
@@ -27,53 +31,6 @@ class RhinoConnectionManager {
 		webSocketTask?.resume()
 		Logger.connection.info("Connected to WebSocket")
 		receiveMessages()
-	}
-
-	func receiveMessages() {
-		webSocketTask?.receive { result in
-			switch result {
-			case .success(let message):
-				switch message {
-				case .string(let text):
-					Logger.connection.info("Received message: \(text)")
-					self.handleIncomingJSON(text)
-				default:
-					Logger.connection.info("Unsupported message type")
-				}
-			case .failure(let error):
-				Logger.connection.error("WebSocket error: \(error)")
-			}
-			// Continue listening for messages.
-			self.receiveMessages()
-		}
-	}
-
-	func handleIncomingJSON(_ text: String) {
-		guard let data = text.data(using: .utf8) else { return }
-		let decoder = JSONDecoder()
-		if let message = try? decoder.decode(RhinoMessage.self, from: data) {
-			DispatchQueue.main.async {
-				Logger.connection.info("Message position center: \(message.center.x), \(message.center.y), \(message.center.z)")
-				let convertedPosition = SIMD3<Float>(
-					Float(message.center.x),
-					Float(message.center.y), // Rhino z becomes RealityKit y
-					Float(message.center.z)  // Rhino y becomes RealityKit z
-				)
-				if let sphere = self.object {
-					self.withMutation(keyPath: \.object) {
-						let localPosition = self.calibrationManager.convertRobotToLocal(robot: convertedPosition)
-						sphere.position = localPosition
-						Logger.connection.info("Object moved to local coordinates: \(localPosition) (robot coordinates: \(convertedPosition)")
-					}
-				}
-				if !message.objectId.isEmpty {
-					self.entityID = message.objectId
-					self.object?.name = message.objectId
-				}
-			}
-		} else {
-			Logger.calibration.error("Failed to decode JSON: \(text)")
-		}
 	}
 
 	func sendPositionUpdate(for sphere: Entity, newPosition: SIMD3<Float>) {
@@ -111,6 +68,53 @@ class RhinoConnectionManager {
 					Logger.connection.info("Update sent: \(jsonString)")
 				}
 			}
+		}
+	}
+
+	private func receiveMessages() {
+		webSocketTask?.receive { result in
+			switch result {
+			case .success(let message):
+				switch message {
+				case .string(let text):
+					Logger.connection.info("Received message: \(text)")
+					self.handleIncomingJSON(text)
+				default:
+					Logger.connection.info("Unsupported message type")
+				}
+			case .failure(let error):
+				Logger.connection.error("WebSocket error: \(error)")
+			}
+			// Continue listening for messages.
+			self.receiveMessages()
+		}
+	}
+
+	private func handleIncomingJSON(_ text: String) {
+		guard let data = text.data(using: .utf8) else { return }
+		let decoder = JSONDecoder()
+		if let message = try? decoder.decode(RhinoMessage.self, from: data) {
+			DispatchQueue.main.async {
+				Logger.connection.info("Message position center: \(message.center.x), \(message.center.y), \(message.center.z)")
+				let convertedPosition = SIMD3<Float>(
+					Float(message.center.x),
+					Float(message.center.y), // Rhino z becomes RealityKit y
+					Float(message.center.z)  // Rhino y becomes RealityKit z
+				)
+				if let sphere = self.object {
+					self.withMutation(keyPath: \.object) {
+						let localPosition = self.calibrationManager.convertRobotToLocal(robot: convertedPosition)
+						sphere.position = localPosition
+						Logger.connection.info("Object moved to local coordinates: \(localPosition) (robot coordinates: \(convertedPosition)")
+					}
+				}
+				if !message.objectId.isEmpty {
+					self.entityID = message.objectId
+					self.object?.name = message.objectId
+				}
+			}
+		} else {
+			Logger.calibration.error("Failed to decode JSON: \(text)")
 		}
 	}
 }

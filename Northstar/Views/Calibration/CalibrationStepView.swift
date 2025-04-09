@@ -14,6 +14,7 @@ struct CalibrationStepView<Content: View>: View {
 
 	@Binding var step: CalibrationStep
 
+	// swiftlint:disable:next attributes
 	@ViewBuilder let content: Content
 
 	private var isNextButtonDisabled: Bool {
@@ -105,5 +106,5 @@ struct CalibrationStepView<Content: View>: View {
 #Preview("Place Marker", windowStyle: .plain) {
 	@Previewable @State var step: CalibrationStep = .placeMarkers
 	CalibrationStepView(step: $step) {}
-	.environment(ImageTrackingManager())
+		.environment(ImageTrackingManager.shared)
 }

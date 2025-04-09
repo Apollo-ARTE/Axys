@@ -14,6 +14,9 @@ import OSLog
 /// It uses three markers (non-collinear points) to compute a 3D rigid transformation.
 @Observable
 class CalibrationManager {
+	static let shared: CalibrationManager = .init()
+	private init() {}
+
 	// Markers with known coordinates in both systems.
 	var marker1 = Coordinate(robotX: 0, robotY: -1, robotZ: 0, localX: 0, localY: 0, localZ: 0)
 	var marker2 = Coordinate(robotX: 1, robotY: 0, robotZ: 0, localX: 0, localY: 0, localZ: 0)
