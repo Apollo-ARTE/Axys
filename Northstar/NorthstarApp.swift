@@ -28,6 +28,7 @@ struct NorthstarApp: App {
 		WindowGroup("Northstar", id: "toolbar") {
 			ToolbarView()
 				.environment(appModel)
+				.environment(rhinoConnectionManager)
 		}
 		.windowStyle(.plain)
 		.windowResizability(.contentSize)
@@ -48,6 +49,7 @@ struct NorthstarApp: App {
 			InspectorView()
 				.environment(appModel)
 				.environment(rhinoConnectionManager)
+				.environment(calibrationManager)
 				.frame(width: 280, height: 320)
 		}
 		.windowResizability(.contentSize)

@@ -37,7 +37,7 @@ class ImageTrackingManager {
 
 			for await update in imageInfo.anchorUpdates {
 				switch update.event {
-				case .added:
+				case .added, .updated:
 					updateImage(update.anchor)
 				case .removed:
 					removeImage(update.anchor)

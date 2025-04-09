@@ -17,6 +17,7 @@ struct ImmersiveView: View {
 	@Environment(RhinoConnectionManager.self) private var rhinoConnectionManager
 	@Environment(CalibrationManager.self) private var calibrationManager
 
+	@State private var rootObject = Entity()
 	@State private var printedObject = Entity()
 	@State private var localCoordinates: SIMD3<Float> = .zero
 	@State private var robotCoordinates: SIMD3<Float> = .zero
@@ -56,9 +57,6 @@ struct ImmersiveView: View {
 				.padding()
 				.glassBackgroundEffect()
 			}
-		}
-		.onAppear {
-			rhinoConnectionManager.connectToWebSocket()
 		}
 		.gesture(
 			TapGesture()
