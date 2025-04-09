@@ -8,8 +8,8 @@
 import RealityKit
 
 extension ModelEntity {
-	static func printedObject() async throws -> ModelEntity? {
-		guard let object = try? await ModelEntity(named: "print") else {
+    static func rhinoObject(name: String) async throws -> ModelEntity? {
+		guard let object = try? await ModelEntity(named: name) else {
 			return nil
 		}
 		object.components.set(InputTargetComponent())

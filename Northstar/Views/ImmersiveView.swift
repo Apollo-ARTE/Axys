@@ -16,25 +16,25 @@ struct ImmersiveView: View {
 	@Environment(RhinoConnectionManager.self) private var rhinoConnectionManager
 	@Environment(CalibrationManager.self) private var calibrationManager
 
-	@State private var printedObject = Entity()
+	@State private var rhinoObject = Entity()
 	@State private var localCoordinates: SIMD3<Float> = .zero
 	@State private var robotCoordinates: SIMD3<Float> = .zero
-
+    
 	var body: some View {
         RealityView { content, attachments in
-			if let printedObject = try? await ModelEntity.printedObject() {
-				self.printedObject = printedObject
+			if let printedObject = try? await ModelEntity.rhinoObject(name: "print") {
+				self.rhinoObject = printedObject
             }
 
-			rhinoConnectionManager.object = printedObject
+			rhinoConnectionManager.object = rhinoObject
 
             // Optionally add an attachment to display coordinates.
             if let coordinatesAttachment = attachments.entity(for: "coordinates") {
                 coordinatesAttachment.position = [0, 0.4, 0]
-                printedObject.addChild(coordinatesAttachment)
+                rhinoObject.addChild(coordinatesAttachment)
             }
 
-            content.add(printedObject)
+            content.add(rhinoObject)
             content.add(imageTracking.rootEntity)
 		} update: { _, _ in
 //			if calibrationManager.isCalibrationCompleted && !calibrationManager.didSetZeroPosition {

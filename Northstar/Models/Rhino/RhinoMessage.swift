@@ -9,8 +9,8 @@ import Foundation
 
 struct RhinoMessage: Codable {
     let type: String
+    let objectName: String
     let objectId: String
     let center: Position
-    let radius: Double
     let timestamp: Double
 }

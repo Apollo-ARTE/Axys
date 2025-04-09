@@ -81,6 +81,7 @@ class RhinoConnectionManager {
 
 		// Use the stored object ID or the sphere's name.
 		let objectIDToSend = entityID ?? sphere.name
+        
 		if objectIDToSend.isEmpty {
 			Logger.connection.error("No valid object ID available; update will not be sent.")
 			return
@@ -95,9 +96,9 @@ class RhinoConnectionManager {
 
 		let updateMessage = RhinoMessage(
 			type: "update",
+
 			objectId: objectIDToSend,
 			center: convertedCenter,
-			radius: 0.0,  // Not needed for an update
 			timestamp: Date().timeIntervalSince1970 * 1000
 		)
 
