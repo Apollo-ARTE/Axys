@@ -41,7 +41,7 @@ struct ImmersiveView: View {
                 robotReachEntity.transform.scale = [0, 0, 0]
                 self.robotReachEntity = robotReachEntity
                 }
-            if let virtualLabEntity = try? await ModelEntity(named: "FINALLAB5") {
+            if let virtualLabEntity = try? await ModelEntity(named: "VirtualLab") {
                 virtualLabEntity.name = "virtual_lab"
                 virtualLabEntity.transform.scale = [0, 0, 0]
                 self.virtualLabEntity = virtualLabEntity
@@ -66,8 +66,8 @@ struct ImmersiveView: View {
             if appModel.showVirtualLab && calibrationManager.isCalibrationCompleted {
                 if let model = content.entities.first(where: { $0.name == "virtual_lab" }) {
                     let coordinate = calibrationManager.convertRobotToLocal(robot: [0, 0, 0])
-                    model.transform.scale = [1.0, 1.0, 1.0]
-                    model.look(at: calibrationManager.convertRobotToLocal(robot: [0, -10, 0]), from:  calibrationManager.convertRobotToLocal(robot: [0, 0, 0]), relativeTo: nil)
+                    model.transform.scale = [0.001, 0.001, 0.001]
+                    model.look(at: calibrationManager.convertRobotToLocal(robot: [0, 10, 0]), from:  calibrationManager.convertRobotToLocal(robot: [0, 0, 0]), relativeTo: nil)
 
                 }
             } else {
