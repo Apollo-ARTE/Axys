@@ -14,7 +14,7 @@ struct ImmersiveView: View {
 	@Environment(ImageTracking.self) private var imageTracking
 	@Environment(RhinoConnectionManager.self) var rhinoConnectionManager
 
-    var body: some View {
+	var body: some View {
 		RealityView { content, attachments in
 //			if appModel.showModels {
 //				content.add(imageTracking.centerEntity)
@@ -23,22 +23,27 @@ struct ImmersiveView: View {
 //					imageTracking.movableEntity.addChild(attachment)
 //				}
 
-				let mesh = MeshResource.generateSphere(radius: 0.01)
-				let sphere = ModelEntity(mesh: mesh)
-				sphere.generateCollisionShapes(recursive: false)
-				sphere.components.set(InputTargetComponent())
-				sphere.position = [0, 1.3, -1]
-				rhinoConnectionManager.sphereEntity = sphere
-				content.add(sphere)
+//				let mesh = MeshResource.generateSphere(radius: 0.01)
+//				let sphere = ModelEntity(mesh: mesh)
+//				sphere.generateCollisionShapes(recursive: false)
+//				sphere.components.set(InputTargetComponent())
+//				sphere.position = [0, 1.3, -1]
 //			}
-		} update: { content, attachments in
-//			if appModel.showModels {
-//				if content.entities.first(where: { $0.name == "centerSphere" }) == nil {
-//					content.add(imageTracking.centerEntity)
-//				}
-//			} else {
-//				content.entities.removeAll(where: { $0.name == "centerSphere" })
-//			}
+} update: { content, attachments in
+	print("🔄 [UPDATE] RealityView update triggered")
+	print("🔎 [STATE] importedEntity: \(String(describing: rhinoConnectionManager.importedEntity))")
+	print("📦 [STATE] Entities in content: \(content.entities.count)")
+	if let importedEntity = rhinoConnectionManager.importedEntity,
+	   content.entities.contains(importedEntity) == false {
+		print("📍 [ACTION] Trying to add imported entity to scene")
+		importedEntity.position = SIMD3<Float>(x: 0, y: 1.2, z: -1)
+		print("✅ [UPDATE] Setting position for imported entity: \(importedEntity.position)")
+ 
+				let anchor = AnchorEntity(world: .zero)
+				anchor.addChild(importedEntity)
+				content.add(anchor)
+				print("✅ [UPDATE] Adding imported entity to scene content via anchor.")
+			}
 		} attachments: {
 			Attachment(id: "coordinates") {
 				HStack {
@@ -63,7 +68,7 @@ struct ImmersiveView: View {
 //					imageTracking.modelPosition = imageTracking.movableEntity.position(relativeTo: imageTracking.centerEntity)
 				}
 		)
-    }
+	}
 
 	func convertToMeters(meters: Float)-> String {
 
@@ -79,6 +84,6 @@ struct ImmersiveView: View {
 }
 
 #Preview(immersionStyle: .mixed) {
-    ImmersiveView()
-        .environment(AppModel())
+	ImmersiveView()
+		.environment(AppModel())
 }

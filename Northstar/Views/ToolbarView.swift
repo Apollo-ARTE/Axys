@@ -23,7 +23,11 @@ struct ToolbarView: View {
 
 		HStack {
 			Button("Export", systemImage: "square.and.arrow.up.on.square") {
-				rhinoConnectionManager.sendExportCommand()
+				let rn = rhinoConnectionManager
+				rn.sendExportCommand()
+//				Task {
+//					await rn.getFilePathForRhinoObjects()
+//				}
 			}
 			
 			Toggle("Model", systemImage: "cube.fill", isOn: $appModel.showModels)

@@ -1,4 +1,3 @@
-//
 //  RhinoConnectionManager+InOutPipeline.swift
 //  Northstar
 //
@@ -6,6 +5,7 @@
 //
 
 import Foundation
+import RealityKit
 
 extension RhinoConnectionManager {
 	
@@ -32,4 +32,11 @@ extension RhinoConnectionManager {
 			print("Errore nella serializzazione JSON: \(error.localizedDescription)")
 		}
 	}
+	
+	
+	
+//	func getFilePathForRhinoObjects() {
+//		let url = Bundle.main.url(forResource: "export", withExtension: "usdz")
+//		let entity = try? ModelEntity.load(contentsOf: url!)
+//	}
 }
