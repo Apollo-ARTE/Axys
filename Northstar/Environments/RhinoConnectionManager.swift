@@ -33,11 +33,11 @@ class RhinoConnectionManager {
 		receiveMessages()
 	}
 
-	func sendPositionUpdate(for sphere: Entity, newPosition: SIMD3<Float>) {
+	func sendPositionUpdate(for model: Entity, newPosition: SIMD3<Float>) {
 		guard let webSocketTask = webSocketTask else { return }
 
 		// Use the stored object ID or the sphere's name.
-		let objectIDToSend = entityID ?? sphere.name
+		let objectIDToSend = entityID ?? model.name
 		if objectIDToSend.isEmpty {
 			Logger.connection.error("No valid object ID available; update will not be sent.")
 			return

@@ -19,6 +19,8 @@ struct ImmersiveView: View {
 
 	@State private var rootObject = Entity()
 	@State private var printedObject = Entity()
+    @State private var robotReachEntity = Entity()
+    @State private var virtualLabEntity = Entity()
 	@State private var localCoordinates: SIMD3<Float> = .zero
 	@State private var robotCoordinates: SIMD3<Float> = .zero
 
@@ -36,8 +38,17 @@ struct ImmersiveView: View {
 				printedObject.addChild(coordinatesAttachment)
 			}
 
-			content.add(printedObject)
-			content.add(imageTracking.rootEntity)
+            if let robotReachEntity = try? await ModelEntity.robotReach() {
+                self.robotReachEntity = robotReachEntity
+            }
+            if let virtualLabEntity = try? await ModelEntity.virtualLab() {
+                self.virtualLabEntity = virtualLabEntity
+            }
+
+            content.add(appModel.robotReachRoot)
+            content.add(appModel.virtualLabRoot)
+            content.add(printedObject)
+            content.add(imageTracking.rootEntity)
 		} attachments: {
 			Attachment(id: "coordinates") {
 				VStack {
@@ -88,6 +99,12 @@ struct ImmersiveView: View {
 					Logger.connection.info("Sending position update for local coordinates \(value.entity.position), and robot coordinates \(newPosition)")
 				}
 		)
+        .onChange(of: appModel.showRobotReach) { _, newValue in
+            toggleRobotReachVisibility(isVisible: newValue)
+        }
+        .onChange(of: appModel.showVirtualLab) { _, newValue in
+            toggleVirtualLabVisibility(isVisible: newValue)
+        }
 	}
 
 	/// Converts a measurement in meters to a formatted string in centimeters.
@@ -98,6 +115,26 @@ struct ImmersiveView: View {
 		formatter.unitOptions = .providedUnit
 		return formatter.string(from: centimeters)
 	}
+    private func toggleRobotReachVisibility(isVisible: Bool) {
+        if isVisible && calibrationManager.isCalibrationCompleted {
+            let position = calibrationManager.convertRobotToLocal(robot: [0, 0, 0])
+            appModel.robotReachRoot.position = position
+            appModel.robotReachRoot.addChild(robotReachEntity)
+        } else {
+            robotReachEntity.removeFromParent()
+        }
+    }
+
+    private func toggleVirtualLabVisibility(isVisible: Bool) {
+        if isVisible && calibrationManager.isCalibrationCompleted {
+            let target = calibrationManager.convertRobotToLocal(robot: [0, 10, 0])
+            let from = calibrationManager.convertRobotToLocal(robot: [0, 0, 0])
+            appModel.virtualLabRoot.look(at: target, from: from, relativeTo: nil)
+            appModel.virtualLabRoot.addChild(virtualLabEntity)
+        } else {
+            virtualLabEntity.removeFromParent()
+        }
+    }
 }
 
 #Preview(immersionStyle: .mixed) {

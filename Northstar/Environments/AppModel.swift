@@ -28,4 +28,9 @@ class AppModel {
 	var showRobotReach = false
 
 	var selectedEntity: Entity?
+    var showVirtualLab = false
+
+    let robotReachRoot = Entity()
+    let virtualLabRoot = Entity()
+
 }
