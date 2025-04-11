@@ -29,4 +29,5 @@ class AppModel {
 
 	var selectedEntity: Entity?
     var showVirtualLab = false
+    
 }

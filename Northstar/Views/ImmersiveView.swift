@@ -38,22 +38,18 @@ struct ImmersiveView: View {
 				printedObject.addChild(coordinatesAttachment)
 			}
 
-            if let robotReachEntity = try? await ModelEntity(named: "robot_reach") {
-                robotReachEntity.name = "robot_reach_blue"
-                robotReachEntity.transform.scale = [0, 0, 0]
+            if let robotReachEntity = try? await ModelEntity.robotReach() {
                 self.robotReachEntity = robotReachEntity
-                }
-            if let virtualLabEntity = try? await ModelEntity(named: "VirtualLab") {
-                virtualLabEntity.name = "virtual_lab"
-                virtualLabEntity.transform.scale = [0, 0, 0]
+            }
+            if let virtualLabEntity = try? await ModelEntity.virtualLab() {
                 self.virtualLabEntity = virtualLabEntity
             }
+
             content.add(virtualLabEntity)
             content.add(robotReachEntity)
             content.add(printedObject)
             content.add(imageTracking.rootEntity)
 		} update: { content, _ in
-
             if appModel.showRobotReach && calibrationManager.isCalibrationCompleted {
                 if let model = content.entities.first(where: { $0.name == "robot_reach_blue" }) {
                     model.position = calibrationManager.convertRobotToLocal(robot: [0, 0, 0])
@@ -67,7 +63,6 @@ struct ImmersiveView: View {
 
             if appModel.showVirtualLab && calibrationManager.isCalibrationCompleted {
                 if let model = content.entities.first(where: { $0.name == "virtual_lab" }) {
-                    let coordinate = calibrationManager.convertRobotToLocal(robot: [0, 0, 0])
                     model.transform.scale = [0.001, 0.001, 0.001]
                     model.look(at: calibrationManager.convertRobotToLocal(robot: [0, 10, 0]), from:  calibrationManager.convertRobotToLocal(robot: [0, 0, 0]), relativeTo: nil)
 
@@ -77,16 +72,6 @@ struct ImmersiveView: View {
                     model.transform.scale = [0, 0, 0]
                 }
             }
-//			if calibrationManager.isCalibrationCompleted && !calibrationManager.didSetZeroPosition {
-//				Logger.calibration.log("Setting zero position")
-//				Logger.calibration.log("\(calibrationManager.convertRobotToLocal(robot: [0, 0, 0]))")
-//				if let model = content.entities.first {
-//					Logger.calibration.log("Entered here")
-//					model.position = calibrationManager.convertRobotToLocal(robot: [0, 0, 0])
-//				}
-//
-//				calibrationManager.didSetZeroPosition = true
-//			}
 		} attachments: {
 			Attachment(id: "coordinates") {
 				VStack {
