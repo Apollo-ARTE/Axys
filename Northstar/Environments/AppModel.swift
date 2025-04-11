@@ -6,10 +6,15 @@
 //
 
 import SwiftUI
+import RealityKit
 
 @MainActor
 @Observable
 class AppModel {
+	static let shared: AppModel = .init()
+
+	private init() {}
+
     let immersiveSpaceID = "ImmersiveSpace"
     enum ImmersiveSpaceState {
         case closed
@@ -21,4 +26,8 @@ class AppModel {
 	var showCalibrationWindow = false
 	var showModels = false
 	var showRobotReach = false
+
+	var selectedEntity: Entity?
+    var showVirtualLab = false
+    
 }

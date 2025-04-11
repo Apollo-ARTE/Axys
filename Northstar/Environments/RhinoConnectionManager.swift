@@ -16,9 +16,13 @@ class RhinoConnectionManager {
 	var webSocketTask: URLSessionWebSocketTask?
 	var entityID: String?
 
-
 	init(calibrationManager: CalibrationManager) {
 		self.calibrationManager = calibrationManager
+	}
+
+	func disconnectFromWebSocket() {
+		webSocketTask?.cancel()
+		Logger.connection.info("Disconnected from WebSocket")
 	}
 
 	func connectToWebSocket() {
@@ -29,7 +33,45 @@ class RhinoConnectionManager {
 		receiveMessages()
 	}
 
-	func receiveMessages() {
+	func sendPositionUpdate(for model: Entity, newPosition: SIMD3<Float>) {
+		guard let webSocketTask = webSocketTask else { return }
+
+		// Use the stored object ID or the sphere's name.
+		let objectIDToSend = entityID ?? model.name
+		if objectIDToSend.isEmpty {
+			Logger.connection.error("No valid object ID available; update will not be sent.")
+			return
+		}
+
+		let pos = newPosition
+		let convertedCenter = Position(
+			x: Double(pos.x),
+			y: Double(pos.y),
+			z: Double(pos.z)
+		)
+
+		let updateMessage = RhinoMessage(
+			type: "update",
+			objectId: objectIDToSend,
+			center: convertedCenter,
+			radius: 0.0,  // Not needed for an update
+			timestamp: Date().timeIntervalSince1970 * 1000
+		)
+
+		let encoder = JSONEncoder()
+		if let data = try? encoder.encode(updateMessage), let jsonString = String(data: data, encoding: .utf8) {
+			let message = URLSessionWebSocketTask.Message.string(jsonString)
+			webSocketTask.send(message) { error in
+				if let error = error {
+					Logger.connection.error("Failed to send update: \(error)")
+				} else {
+					Logger.connection.info("Update sent: \(jsonString)")
+				}
+			}
+		}
+	}
+
+	private func receiveMessages() {
 		webSocketTask?.receive { result in
 			switch result {
 			case .success(let message):
@@ -48,7 +90,7 @@ class RhinoConnectionManager {
 		}
 	}
 
-	func handleIncomingJSON(_ text: String) {
+	private func handleIncomingJSON(_ text: String) {
 		guard let data = text.data(using: .utf8) else { return }
 		let decoder = JSONDecoder()
 		if let message = try? decoder.decode(RhinoMessage.self, from: data) {
@@ -73,45 +115,6 @@ class RhinoConnectionManager {
 			}
 		} else {
 			Logger.calibration.error("Failed to decode JSON: \(text)")
-		}
-	}
-
-	func sendPositionUpdate(for sphere: Entity, newPosition: SIMD3<Float>) {
-		guard let webSocketTask = webSocketTask else { return }
-
-		// Use the stored object ID or the sphere's name.
-		let objectIDToSend = entityID ?? sphere.name
-        
-		if objectIDToSend.isEmpty {
-			Logger.connection.error("No valid object ID available; update will not be sent.")
-			return
-		}
-
-		let pos = newPosition
-		let convertedCenter = Position(
-			x: Double(pos.x),
-			y: Double(pos.y),
-			z: Double(pos.z)
-		)
-
-		let updateMessage = RhinoMessage(
-			type: "update",
-
-			objectId: objectIDToSend,
-			center: convertedCenter,
-			timestamp: Date().timeIntervalSince1970 * 1000
-		)
-
-		let encoder = JSONEncoder()
-		if let data = try? encoder.encode(updateMessage), let jsonString = String(data: data, encoding: .utf8) {
-			let message = URLSessionWebSocketTask.Message.string(jsonString)
-			webSocketTask.send(message) { error in
-				if let error = error {
-					Logger.connection.error("Failed to send update: \(error)")
-				} else {
-					Logger.connection.info("Update sent: \(jsonString)")
-				}
-			}
 		}
 	}
 }

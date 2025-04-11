@@ -11,12 +11,16 @@ import RealityKitContent
 import OSLog
 
 struct ImmersiveView: View {
+	@Environment(\.openWindow) private var openWindow
 	@Environment(AppModel.self) private var appModel
 	@Environment(ImageTrackingManager.self) private var imageTracking
 	@Environment(RhinoConnectionManager.self) private var rhinoConnectionManager
 	@Environment(CalibrationManager.self) private var calibrationManager
 
+	@State private var rootObject = Entity()
 	@State private var rhinoObject = Entity()
+    @State private var robotReachEntity = Entity()
+    @State private var virtualLabEntity = Entity()
 	@State private var localCoordinates: SIMD3<Float> = .zero
 	@State private var robotCoordinates: SIMD3<Float> = .zero
     
@@ -34,19 +38,40 @@ struct ImmersiveView: View {
                 rhinoObject.addChild(coordinatesAttachment)
             }
 
+            if let robotReachEntity = try? await ModelEntity.robotReach() {
+                self.robotReachEntity = robotReachEntity
+            }
+            if let virtualLabEntity = try? await ModelEntity.virtualLab() {
+                self.virtualLabEntity = virtualLabEntity
+            }
+
+            content.add(virtualLabEntity)
+            content.add(robotReachEntity)
             content.add(rhinoObject)
             content.add(imageTracking.rootEntity)
-		} update: { _, _ in
-//			if calibrationManager.isCalibrationCompleted && !calibrationManager.didSetZeroPosition {
-//				Logger.calibration.log("Setting zero position")
-//				Logger.calibration.log("\(calibrationManager.convertRobotToLocal(robot: [0, 0, 0]))")
-//				if let model = content.entities.first {
-//					Logger.calibration.log("Entered here")
-//					model.position = calibrationManager.convertRobotToLocal(robot: [0, 0, 0])
-//				}
-//
-//				calibrationManager.didSetZeroPosition = true
-//			}
+		} update: { content, _ in
+            if appModel.showRobotReach && calibrationManager.isCalibrationCompleted {
+                if let model = content.entities.first(where: { $0.name == "robot_reach_blue" }) {
+                    model.position = calibrationManager.convertRobotToLocal(robot: [0, 0, 0])
+                    model.transform.scale = [0.001, 0.001, 0.001]
+                }
+            } else {
+                if let model = content.entities.first(where: { $0.name == "robot_reach_blue" }) {
+                    model.transform.scale = [0, 0, 0]
+                }
+            }
+
+            if appModel.showVirtualLab && calibrationManager.isCalibrationCompleted {
+                if let model = content.entities.first(where: { $0.name == "virtual_lab" }) {
+                    model.transform.scale = [0.001, 0.001, 0.001]
+                    model.look(at: calibrationManager.convertRobotToLocal(robot: [0, 10, 0]), from:  calibrationManager.convertRobotToLocal(robot: [0, 0, 0]), relativeTo: nil)
+
+                }
+            } else {
+                if let model = content.entities.first(where: { $0.name == "virtual_lab" }) {
+                    model.transform.scale = [0, 0, 0]
+                }
+            }
 		} attachments: {
 			Attachment(id: "coordinates") {
 				VStack {
@@ -67,9 +92,14 @@ struct ImmersiveView: View {
 				.glassBackgroundEffect()
 			}
 		}
-		.onAppear {
-			rhinoConnectionManager.connectToWebSocket()
-		}
+		.gesture(
+			TapGesture()
+				.targetedToAnyEntity()
+				.onEnded { value in
+					appModel.selectedEntity = value.entity
+					openWindow(id: "inspector")
+				}
+		)
 		.gesture(
 			DragGesture()
 				.targetedToAnyEntity()
@@ -105,9 +135,9 @@ struct ImmersiveView: View {
 }
 
 #Preview(immersionStyle: .mixed) {
-    ImmersiveView()
-        .environment(AppModel())
-        .environment(ImageTrackingManager())
-		.environment(RhinoConnectionManager(calibrationManager: .init()))
-        .environment(CalibrationManager())
+	ImmersiveView()
+		.environment(AppModel.shared)
+		.environment(ImageTrackingManager.shared)
+		.environment(CalibrationManager.shared)
+		.environment(RhinoConnectionManager(calibrationManager: .shared))
 }

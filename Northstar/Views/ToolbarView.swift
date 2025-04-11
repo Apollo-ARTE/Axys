@@ -13,6 +13,7 @@ struct ToolbarView: View {
 	@Environment(\.openWindow) private var openWindow
 	@Environment(\.dismissWindow) private var dismissWindow
 	@Environment(AppModel.self) private var appModel
+	@Environment(RhinoConnectionManager.self) private var rhinoConnectionManager
 
 	@State private var showInfoPopover = false
 
@@ -21,8 +22,16 @@ struct ToolbarView: View {
 
 		HStack {
 			Toggle("Model", systemImage: "cube.fill", isOn: $appModel.showModels)
-			Toggle("Robot's Reach", systemImage: "skew", isOn: $appModel.showRobotReach)
+				.onChange(of: appModel.showModels) { _, newValue in
+					if newValue {
+						rhinoConnectionManager.connectToWebSocket()
+					} else {
+						rhinoConnectionManager.disconnectFromWebSocket()
+					}
+				}
 
+			Toggle("Robot's Reach", systemImage: "skew", isOn: $appModel.showRobotReach)
+            Toggle("Virtual Lab", systemImage: "baseball.diamond.bases", isOn: $appModel.showVirtualLab)
 			Divider()
 				.frame(height: 40)
 
@@ -91,4 +100,5 @@ struct ToolbarView: View {
 
 #Preview {
 	ToolbarView()
+		.environment(AppModel.shared)
 }

@@ -11,6 +11,9 @@ import RealityKit
 @MainActor
 @Observable
 class ImageTrackingManager {
+	static let shared: ImageTrackingManager = .init()
+	private init() {}
+
 	let session = ARKitSession()
 
 	var rootEntity = Entity()
@@ -38,6 +41,8 @@ class ImageTrackingManager {
 					updateImage(update.anchor)
 				case .removed:
 					removeImage(update.anchor)
+				default:
+					break
 				}
 			}
 		}
@@ -57,6 +62,7 @@ class ImageTrackingManager {
 
 		// Assign entity based on the reference image name
 		if entityMap[anchor.id] == nil {
+			// swiftlint:disable force_unwrapping
 			switch imageName {
 			case "marker1":
 				firstMarkerEntity = ModelEntity.movableSphere()
@@ -73,6 +79,7 @@ class ImageTrackingManager {
 			default:
 				break // Ignore unrecognized markers
 			}
+			// swiftlint:enable force_unwrapping
 			imageAnchors[anchor.id] = anchor
 		}
 
