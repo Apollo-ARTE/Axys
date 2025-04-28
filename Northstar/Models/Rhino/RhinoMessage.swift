@@ -7,6 +7,12 @@
 
 import Foundation
 
+struct BatchRhinoMessage: Codable {
+    let type: String
+    let objects: [RhinoMessage]
+    let timestamp: Double
+}
+
 struct RhinoMessage: Codable {
     let type: String
     let objectName: String

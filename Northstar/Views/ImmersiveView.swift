@@ -18,7 +18,7 @@ struct ImmersiveView: View {
 	@Environment(CalibrationManager.self) private var calibrationManager
 
 	@State private var rootObject = Entity()
-	@State private var rhinoObject = Entity()
+//	@State private var rhinoObject = Entity()
     @State private var robotReachEntity = Entity()
     @State private var virtualLabEntity = Entity()
 	@State private var localCoordinates: SIMD3<Float> = .zero
@@ -26,17 +26,17 @@ struct ImmersiveView: View {
     
 	var body: some View {
         RealityView { content, attachments in
-			if let printedObject = try? await ModelEntity.rhinoObject(name: "print") {
-				self.rhinoObject = printedObject
-            }
+//			if let printedObject = try? await ModelEntity.rhinoObject(name: "ReefModel") {
+//				self.rhinoObject = printedObject
+//            }
+//
+//			rhinoConnectionManager.object = rhinoObject
 
-			rhinoConnectionManager.object = rhinoObject
-
-            // Optionally add an attachment to display coordinates.
-            if let coordinatesAttachment = attachments.entity(for: "coordinates") {
-                coordinatesAttachment.position = [0, 0.4, 0]
-                rhinoObject.addChild(coordinatesAttachment)
-            }
+//            // Optionally add an attachment to display coordinates.
+//            if let coordinatesAttachment = attachments.entity(for: "coordinates") {
+//                coordinatesAttachment.position = [0, 0.4, 0]
+//                rhinoObject.addChild(coordinatesAttachment)
+//            }
 
             if let robotReachEntity = try? await ModelEntity.robotReach() {
                 self.robotReachEntity = robotReachEntity
@@ -47,7 +47,8 @@ struct ImmersiveView: View {
 
             content.add(virtualLabEntity)
             content.add(robotReachEntity)
-            content.add(rhinoObject)
+//            content.add(rhinoObject)
+            content.add(rhinoConnectionManager.rhinoRootEntity)
             content.add(imageTracking.rootEntity)
 		} update: { content, _ in
             if appModel.showRobotReach && calibrationManager.isCalibrationCompleted {
