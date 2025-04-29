@@ -140,7 +140,7 @@ struct ImmersiveView: View {
 #Preview(immersionStyle: .mixed) {
 	ImmersiveView()
 		.environment(AppModel.shared)
-		.environment(ImageTrackingManager.shared)
+		.environment(ImageTrackingManager.init(calibrationManager: .shared))
 		.environment(CalibrationManager.shared)
 		.environment(RhinoConnectionManager(calibrationManager: .shared))
 }

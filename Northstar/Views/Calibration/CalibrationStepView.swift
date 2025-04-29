@@ -106,5 +106,5 @@ struct CalibrationStepView<Content: View>: View {
 #Preview("Place Marker", windowStyle: .plain) {
 	@Previewable @State var step: CalibrationStep = .placeMarkers
 	CalibrationStepView(step: $step) {}
-		.environment(ImageTrackingManager.shared)
+		.environment(ImageTrackingManager(calibrationManager: .shared))
 }

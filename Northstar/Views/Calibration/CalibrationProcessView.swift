@@ -10,13 +10,11 @@ import SwiftUI
 struct CalibrationProcessView: View {
 	@Environment(CalibrationManager.self) private var calibrationManager
 
-	@State private var calibrationStep: CalibrationStep = .placeMarkers
-
     var body: some View {
 		@Bindable var calibrationManager = calibrationManager
 
-		CalibrationStepView(step: $calibrationStep) {
-			switch calibrationStep {
+		CalibrationStepView(step: $calibrationManager.calibrationStep) {
+			switch calibrationManager.calibrationStep {
 			case .insertCoordinates(let number) where number == 1:
 				CoordinatesInputView(
 					x: $calibrationManager.marker1.robotX,
@@ -39,12 +37,12 @@ struct CalibrationProcessView: View {
 				EmptyView()
 			}
 		}
-		.animation(.snappy, value: calibrationStep)
+		.animation(.snappy, value: calibrationManager.calibrationStep)
     }
 }
 
 #Preview(windowStyle: .plain) {
     CalibrationProcessView()
-		.environment(ImageTrackingManager.shared)
+		.environment(ImageTrackingManager(calibrationManager: .shared))
 		.environment(CalibrationManager.shared)
 }
