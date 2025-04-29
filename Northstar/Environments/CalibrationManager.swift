@@ -18,9 +18,9 @@ class CalibrationManager {
 	private init() {}
 
 	// Markers with known coordinates in both systems.
-	var marker1 = Coordinate(robotX: 0.08911, robotY: -1.86522, robotZ: 0.007, localX: 0, localY: 0, localZ: 0)
-	var marker2 = Coordinate(robotX: 1.51409, robotY: -1.71088, robotZ: 0.0174, localX: 0, localY: 0, localZ: 0)
-	var marker3 = Coordinate(robotX: -0.49223, robotY: 1.99454, robotZ: 0.01056, localX: 0, localY: 0, localZ: 0)
+	var marker1 = Coordinate(robotX: 0, robotY: 0, robotZ: 0, localX: 0, localY: 0, localZ: 0)
+	var marker2 = Coordinate(robotX: 0, robotY: 0, robotZ: 0, localX: 0, localY: 0, localZ: 0)
+	var marker3 = Coordinate(robotX: 0, robotY: 0, robotZ: 0, localX: 0, localY: 0, localZ: 0)
 
 	var calibrationStep: CalibrationStep = .placeMarkers
 
