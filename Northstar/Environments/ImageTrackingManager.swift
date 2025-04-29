@@ -56,14 +56,16 @@ class ImageTrackingManager {
 	}
 
 	private func updateImage(_ anchor: ImageAnchor) {
-		guard anchor.isTracked,
-			  let imageName = anchor.referenceImage.name,
-			  let markerNumber = Self.markerNumber(from: imageName)
+		guard
+			anchor.isTracked,
+			let imageName = anchor.referenceImage.name,
+			let markerNumber = Self.markerNumber(from: imageName)
 		else { return }
 
-		//     Only consume anchors that correspond to the *current* scan step.
-		guard case .scanMarker(let expectedNumber) = calibrationManager.calibrationStep,
-			  expectedNumber == markerNumber else {
+		// Only consume anchors that correspond to the *current* scan step.
+		guard
+			case .scanMarker(let expectedNumber) = calibrationManager.calibrationStep,
+			expectedNumber == markerNumber else {
 			return // Either we are past this step or it is not yet this marker's turn.
 		}
 
