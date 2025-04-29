@@ -54,15 +54,15 @@ struct ImmersiveView: View {
 				VStack {
 					HStack {
 						Text("Local:")
-						Text("X: \(convertToCentimeters(meters: localCoordinates.x))")
-						Text("Y: \(convertToCentimeters(meters: localCoordinates.y))")
-						Text("Z: \(convertToCentimeters(meters: localCoordinates.z))")
+						Text("X: \(convertToMillimiters(millimiters: localCoordinates.x))")
+						Text("Y: \(convertToMillimiters(millimiters: localCoordinates.y))")
+						Text("Z: \(convertToMillimiters(millimiters: localCoordinates.z))")
 					}
 					HStack {
 						Text("Robot:")
-						Text("X: \(convertToCentimeters(meters: robotCoordinates.x))")
-						Text("Y: \(convertToCentimeters(meters: robotCoordinates.y))")
-						Text("Z: \(convertToCentimeters(meters: robotCoordinates.z))")
+						Text("X: \(convertToMillimiters(millimiters: robotCoordinates.x))")
+						Text("Y: \(convertToMillimiters(millimiters: robotCoordinates.y))")
+						Text("Z: \(convertToMillimiters(millimiters: robotCoordinates.z))")
 					}
 				}
 				.padding()
@@ -108,13 +108,13 @@ struct ImmersiveView: View {
 	}
 
 	/// Converts a measurement in meters to a formatted string in centimeters.
-	func convertToCentimeters(meters: Float) -> String {
-		let measurement = Measurement(value: Double(meters), unit: UnitLength.meters)
-		let centimeters = measurement.converted(to: .centimeters)
+	func convertToMillimiters(millimiters: Float) -> String {
+		let measurement = Measurement(value: Double(millimiters), unit: UnitLength.millimeters)
 		let formatter = MeasurementFormatter()
 		formatter.unitOptions = .providedUnit
-		return formatter.string(from: centimeters)
+		return formatter.string(from: measurement)
 	}
+
     private func toggleRobotReachVisibility(isVisible: Bool) {
         if isVisible && calibrationManager.isCalibrationCompleted {
             let position = calibrationManager.convertRobotToLocal(robot: [0, 0, 0])
