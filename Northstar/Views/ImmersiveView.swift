@@ -54,15 +54,15 @@ struct ImmersiveView: View {
 				VStack {
 					HStack {
 						Text("Local:")
-						Text("X: \(convertToMillimiters(millimiters: localCoordinates.x))")
-						Text("Y: \(convertToMillimiters(millimiters: localCoordinates.y))")
-						Text("Z: \(convertToMillimiters(millimiters: localCoordinates.z))")
+						Text("X: \(localCoordinates.x.convertToMillimiters())")
+						Text("Y: \(localCoordinates.y.convertToMillimiters())")
+						Text("Z: \(localCoordinates.z.convertToMillimiters())")
 					}
 					HStack {
 						Text("Robot:")
-						Text("X: \(convertToMillimiters(millimiters: robotCoordinates.x))")
-						Text("Y: \(convertToMillimiters(millimiters: robotCoordinates.y))")
-						Text("Z: \(convertToMillimiters(millimiters: robotCoordinates.z))")
+						Text("X: \(robotCoordinates.x.convertToMillimiters())")
+						Text("Y: \(robotCoordinates.y.convertToMillimiters())")
+						Text("Z: \(robotCoordinates.z.convertToMillimiters())")
 					}
 				}
 				.padding()
@@ -105,14 +105,6 @@ struct ImmersiveView: View {
         .onChange(of: appModel.showVirtualLab) { _, newValue in
             toggleVirtualLabVisibility(isVisible: newValue)
         }
-	}
-
-	/// Converts a measurement in meters to a formatted string in centimeters.
-	func convertToMillimiters(millimiters: Float) -> String {
-		let measurement = Measurement(value: Double(millimiters), unit: UnitLength.millimeters)
-		let formatter = MeasurementFormatter()
-		formatter.unitOptions = .providedUnit
-		return formatter.string(from: measurement)
 	}
 
     private func toggleRobotReachVisibility(isVisible: Bool) {

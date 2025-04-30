@@ -39,9 +39,9 @@ class CalibrationManager {
 		let v2 = simd_float3(marker2.localX, marker2.localY, marker2.localZ)
 		let v3 = simd_float3(marker3.localX, marker3.localY, marker3.localZ)
 
-		let r1 = simd_float3(marker1.robotX, marker1.robotY, marker1.robotZ)
-		let r2 = simd_float3(marker2.robotX, marker2.robotY, marker2.robotZ)
-		let r3 = simd_float3(marker3.robotX, marker3.robotY, marker3.robotZ)
+		let r1 = simd_float3(marker1.robotX/1000, marker1.robotY/1000, marker1.robotZ/1000)
+		let r2 = simd_float3(marker2.robotX/1000, marker2.robotY/1000, marker2.robotZ/1000)
+		let r3 = simd_float3(marker3.robotX/1000, marker3.robotY/1000, marker3.robotZ/1000)
 
 		// --- Construct an orthonormal basis for the local (Vision Pro) coordinate system ---
 		let a1 = v2 - v1
