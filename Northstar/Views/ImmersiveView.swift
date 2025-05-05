@@ -36,12 +36,8 @@ struct ImmersiveView: View {
 	if let importedEntity = rhinoConnectionManager.importedEntity,
 	   content.entities.contains(importedEntity) == false {
 		print("📍 [ACTION] Trying to add imported entity to scene")
-		importedEntity.position = SIMD3<Float>(x: 0, y: 1.2, z: -1)
+		content.add(importedEntity)
 		print("✅ [UPDATE] Setting position for imported entity: \(importedEntity.position)")
- 
-				let anchor = AnchorEntity(world: .zero)
-				anchor.addChild(importedEntity)
-				content.add(anchor)
 				print("✅ [UPDATE] Adding imported entity to scene content via anchor.")
 			}
 		} attachments: {

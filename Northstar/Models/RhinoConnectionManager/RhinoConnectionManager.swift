@@ -20,7 +20,7 @@ class RhinoConnectionManager {
 //	var arView: ARView?
 
 	func connectToWebSocket() {
-		guard let url = URL(string: "ws://10.20.63.164:8765") else { return }
+		guard let url = URL(string: "ws://172.20.10.3:8765") else { return }
 		webSocketTask = URLSession.shared.webSocketTask(with: url)
 		webSocketTask?.resume()
 		receiveMessages()
@@ -126,6 +126,7 @@ struct USDZMetadata: Decodable {
 						Logger.calibration.info("✅ Attempting to load USDZ file at: \(fileURL.path)")
 						let entity = try Entity.load(contentsOf: fileURL)
 						entity.generateCollisionShapes(recursive: true)
+						entity.components.set(InputTargetComponent())
 						
 						if let previousEntity = self.importedEntity {
 							previousEntity.removeFromParent()
@@ -162,9 +163,9 @@ struct USDZMetadata: Decodable {
 
 		let pos = sphere.position
 		let convertedCenter = Position(
-			x: Double(pos.x),
-			y: Double(pos.z), // RealityKit z becomes Rhino y
-			z: Double(pos.y)  // RealityKit y becomes Rhino z
+			x: Double(pos.x / 1000),
+			y: Double(pos.z / 1000), // RealityKit z becomes Rhino y
+			z: Double(pos.y / 1000)  // RealityKit y becomes Rhino z
 		)
 
 		let updateMessage = RhinoMessage(
