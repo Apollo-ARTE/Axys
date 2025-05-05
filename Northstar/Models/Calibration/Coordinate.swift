@@ -25,4 +25,43 @@ class Coordinate {
 		self.localY = localY
 		self.localZ = localZ
 	}
+
+	required init(from decoder: Decoder) throws {
+		let container = try? decoder.container(keyedBy: CodingKeys.self)
+		robotX = try container?.decodeIfPresent(Float.self, forKey: .robotX) ?? 0
+		robotY = try container?.decodeIfPresent(Float.self, forKey: .robotY) ?? 0
+		robotZ = try container?.decodeIfPresent(Float.self, forKey: .robotZ) ?? 0
+
+		// Always reset local coords
+		localX = 0
+		localY = 0
+		localZ = 0
+	}
+}
+
+extension Coordinate: Codable {
+	enum CodingKeys: String, CodingKey {
+		case robotX, robotY, robotZ
+	}
+
+	func encode(to encoder: Encoder) throws {
+		var container = encoder.container(keyedBy: CodingKeys.self)
+		try container.encode(robotX, forKey: .robotX)
+		try container.encode(robotY, forKey: .robotY)
+		try container.encode(robotZ, forKey: .robotZ)
+	}
+
+	func save(key: String) {
+		if let encoded = try? JSONEncoder().encode(self) {
+			UserDefaults.standard.set(encoded, forKey: key)
+		}
+	}
+
+	static func load(key: String) -> Coordinate? {
+		if let data = UserDefaults.standard.data(forKey: key),
+		   let coordinate = try? JSONDecoder().decode(Coordinate.self, from: data) {
+			return coordinate
+		}
+		return nil
+	}
 }

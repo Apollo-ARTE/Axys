@@ -24,9 +24,9 @@ class CalibrationManager {
 	var zOffset: Double = 900
 
 	// Markers with known coordinates in both systems.
-	var marker1 = Coordinate(robotX: 0, robotY: 0, robotZ: 0, localX: 0, localY: 0, localZ: 0)
-	var marker2 = Coordinate(robotX: 0, robotY: 0, robotZ: 0, localX: 0, localY: 0, localZ: 0)
-	var marker3 = Coordinate(robotX: 0, robotY: 0, robotZ: 0, localX: 0, localY: 0, localZ: 0)
+	var marker1 = Coordinate.load(key: "marker1") ?? .init()
+	var marker2 = Coordinate.load(key: "marker2") ?? .init()
+	var marker3 = Coordinate.load(key: "marker3") ?? .init()
 
 	var calibrationStep: CalibrationStep = .placeMarkers
 
