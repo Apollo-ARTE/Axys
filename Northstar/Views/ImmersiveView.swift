@@ -82,10 +82,16 @@ struct ImmersiveView: View {
 				.targetedToAnyEntity()
 				.onChanged { value in
 					// Convert the gesture's location into the coordinate space of the entity's parent.
-					if let parent = value.entity.parent {
-						value.entity.position = value.convert(value.location3D, from: .local, to: parent)
-					}
+                    guard let parent = value.entity.parent else { return }
 
+                    let newPosition = value.convert(value.location3D, from: .local, to: parent)
+                    var currentPosition = value.entity.position
+
+                    if appModel.allowedAxes.contains(.x) { currentPosition.x = newPosition.x }
+                    if appModel.allowedAxes.contains(.y) { currentPosition.y = newPosition.y }
+                    if appModel.allowedAxes.contains(.z) { currentPosition.z = newPosition.z }
+
+                    value.entity.position = currentPosition
 					// Update the local coordinate state.
 					localCoordinates = value.entity.position
 

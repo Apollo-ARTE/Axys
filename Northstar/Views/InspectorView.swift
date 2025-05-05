@@ -7,22 +7,35 @@
 
 import SwiftUI
 
-struct InspectorView: View {
-	enum Axes {
-		case x, y, z
-	}
 
+struct InspectorView: View {
 	@Environment(AppModel.self) private var appModel
 	@Environment(RhinoConnectionManager.self) private var connectionManager
 	@Environment(CalibrationManager.self) private var calibrationManager
+    @State private var selectedMode: Mode = .position
 
 	var body: some View {
 		@Bindable var connectionManager = connectionManager
 		VStack {
-			Text("Inspector")
-			TextField("X", value: objectPosition(axes: .x), format: .number)
-			TextField("Y", value: objectPosition(axes: .y), format: .number)
-			TextField("Z", value: objectPosition(axes: .z), format: .number)
+			Text("Robot’s Coordinates")
+                .font(.title2)
+            Picker("", selection: $selectedMode) {
+                Label("Position", systemImage: "move.3d").tag(Mode.position)
+                Label("Rotation", systemImage: "rotate.3d.fill").tag(Mode.rotation)
+            }
+            .pickerStyle(.segmented)
+            .labelStyle(.iconOnly)
+
+            ForEach(Axes.allCases) { axis in
+                AxisControl(
+                    axis: axis,
+                    allowedAxes: Binding<AxisOptions>(
+                        get: {    appModel.allowedAxes },
+                        set: {    appModel.allowedAxes = $0 }
+                    ),
+                    position:  objectPosition(axes: axis)
+                )
+            }
 		}
 		.textFieldStyle(.roundedBorder)
 		.keyboardType(.numbersAndPunctuation)
@@ -78,4 +91,5 @@ struct InspectorView: View {
 	InspectorView()
 		.environment(AppModel.shared)
 		.environment(RhinoConnectionManager.init(calibrationManager: .shared))
+        .environment(CalibrationManager.shared)
 }

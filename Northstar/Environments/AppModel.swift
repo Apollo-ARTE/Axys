@@ -33,4 +33,6 @@ class AppModel {
     let robotReachRoot = Entity()
     let virtualLabRoot = Entity()
 
+    var allowedAxes: AxisOptions = .all
+
 }
