@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftUI
 import simd
 import RealityFoundation
 import OSLog
@@ -16,6 +17,11 @@ import OSLog
 class CalibrationManager {
 	static let shared: CalibrationManager = .init()
 	private init() {}
+
+	// The z axes difference between Rhino's origin and the robot's origin
+	@ObservationIgnored
+	@AppStorage("zOffset")
+	var zOffset: Double = 900
 
 	// Markers with known coordinates in both systems.
 	var marker1 = Coordinate(robotX: 0, robotY: 0, robotZ: 0, localX: 0, localY: 0, localZ: 0)
@@ -39,9 +45,9 @@ class CalibrationManager {
 		let v2 = simd_float3(marker2.localX, marker2.localY, marker2.localZ)
 		let v3 = simd_float3(marker3.localX, marker3.localY, marker3.localZ)
 
-		let r1 = simd_float3(marker1.robotX/1000, marker1.robotY/1000, marker1.robotZ/1000)
-		let r2 = simd_float3(marker2.robotX/1000, marker2.robotY/1000, marker2.robotZ/1000)
-		let r3 = simd_float3(marker3.robotX/1000, marker3.robotY/1000, marker3.robotZ/1000)
+		let r1 = convertToSimdFloat3(from: marker1, zOffset: zOffset)
+		let r2 = convertToSimdFloat3(from: marker2, zOffset: zOffset)
+		let r3 = convertToSimdFloat3(from: marker3, zOffset: zOffset)
 
 		// --- Construct an orthonormal basis for the local (Vision Pro) coordinate system ---
 		let a1 = v2 - v1
@@ -140,5 +146,13 @@ class CalibrationManager {
 		transform.columns.2 = simd_float4(rotation.columns.2, 0)
 		transform.columns.3 = simd_float4(translation, 1)
 		return transform
+	}
+
+	func convertToSimdFloat3(from coordinate: Coordinate, zOffset: Double) -> simd_float3 {
+		return simd_float3(
+			Float(coordinate.robotX) / 1000,
+			Float(coordinate.robotY) / 1000,
+			Float(coordinate.robotZ) / 1000 - Float(zOffset)
+		)
 	}
 }
