@@ -14,9 +14,9 @@ struct CoordinatesInputView: View {
 
     var body: some View {
 		VStack {
-			TextField("X", value: $x, format: .number)
-			TextField("Y", value: $y, format: .number)
-			TextField("Z", value: $z, format: .number)
+			TextField("X (mm)", value: $x, format: .number)
+			TextField("Y (mm)", value: $y, format: .number)
+			TextField("Z (mm)", value: $z, format: .number)
 		}
 		.textFieldStyle(.roundedBorder)
 		.keyboardType(.numbersAndPunctuation)

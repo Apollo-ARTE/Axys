@@ -20,9 +20,9 @@ struct InspectorView: View {
 		@Bindable var connectionManager = connectionManager
 		VStack {
 			Text("Inspector")
-			TextField("X", value: objectPosition(axes: .x), format: .number)
-			TextField("Y", value: objectPosition(axes: .y), format: .number)
-			TextField("Z", value: objectPosition(axes: .z), format: .number)
+			TextField("X", value: objectPosition(axes: .x), format: .number.precision(.fractionLength(0)))
+			TextField("Y", value: objectPosition(axes: .y), format: .number.precision(.fractionLength(0)))
+			TextField("Z", value: objectPosition(axes: .z), format: .number.precision(.fractionLength(0)))
 		}
 		.textFieldStyle(.roundedBorder)
 		.keyboardType(.numbersAndPunctuation)
@@ -42,11 +42,11 @@ struct InspectorView: View {
 			let robot = calibrationManager.convertLocalToRobot(local: local)
 			switch axes {
 			case .x:
-				return robot.x
+				return robot.x * 1000
 			case .y:
-				return robot.y
+				return robot.y * 1000
 			case .z:
-				return robot.z
+				return robot.z * 1000
 			}
 		} set: { newRobotValue in
 			guard let entity = appModel.selectedEntity else { return }
@@ -57,11 +57,11 @@ struct InspectorView: View {
 			// Replace the specific axis with the new value.
 			switch axes {
 			case .x:
-				currentRobot.x = newRobotValue
+				currentRobot.x = newRobotValue / 1000
 			case .y:
-				currentRobot.y = newRobotValue
+				currentRobot.y = newRobotValue / 1000
 			case .z:
-				currentRobot.z = newRobotValue
+				currentRobot.z = newRobotValue / 1000
 			}
 
 			// Convert the updated robot coordinate back to local space.

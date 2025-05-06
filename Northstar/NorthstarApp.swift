@@ -16,12 +16,12 @@ struct NorthstarApp: App {
 
 	init() {
 		self.appModel = .shared
-		self.imageTrackingManager = .shared
 
 		let calibrationManager: CalibrationManager = .shared
 		self.calibrationManager = calibrationManager
 
 		self.rhinoConnectionManager = .init(calibrationManager: calibrationManager)
+		self.imageTrackingManager = .init(calibrationManager: calibrationManager)
 	}
 
 	var body: some Scene {
