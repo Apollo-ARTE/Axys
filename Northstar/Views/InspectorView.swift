@@ -9,23 +9,23 @@ import SwiftUI
 
 
 struct InspectorView: View {
-	@Environment(AppModel.self) private var appModel
-	@Environment(RhinoConnectionManager.self) private var connectionManager
-	@Environment(CalibrationManager.self) private var calibrationManager
+    @Environment(AppModel.self) private var appModel
+    @Environment(RhinoConnectionManager.self) private var connectionManager
+    @Environment(CalibrationManager.self) private var calibrationManager
 
-	var body: some View {
-		@Bindable var connectionManager = connectionManager
-		VStack {
-			Text("Robot’s Coordinates")
+    var body: some View {
+        @Bindable var connectionManager = connectionManager
+        VStack {
+            Text("Robot’s Coordinates")
                 .font(.title2)
-            Picker("", selection: Binding<Mode>(
+            Picker("", selection: Binding<SegmentedMode>(
                 get: { appModel.selectedMode },
                 set: { appModel.selectedMode = $0 }
             )) {
                 Label("Position", systemImage: "move.3d")
-                    .tag(Mode.position)
+                    .tag(SegmentedMode.position)
                 Label("Rotation", systemImage: "rotate.3d.fill")
-                    .tag(Mode.rotation)
+                    .tag(SegmentedMode.rotation)
             }
             .pickerStyle(.segmented)
             .labelStyle(.iconOnly)
@@ -33,62 +33,125 @@ struct InspectorView: View {
             ForEach(Axes.allCases) { axis in
                 AxisControl(
                     axis: axis,
-                    allowedAxes: Binding<AxisOptions>(
-                        get: {    appModel.allowedAxes },
-                        set: {    appModel.allowedAxes = $0 }
-                    ),
-                    position:  objectPosition(axes: axis)
+                    allowedAxes: allowedAxesBinding(),
+                    position: valueBinding(for: axis)
                 )
             }
-		}
-		.textFieldStyle(.roundedBorder)
-		.keyboardType(.numbersAndPunctuation)
-		.padding(32)
-	}
+        }
+        .textFieldStyle(.roundedBorder)
+        .keyboardType(.numbersAndPunctuation)
+        .padding(32)
+    }
 
-	/// Returns a binding to a robot-space coordinate for a given axis.
-	/// When the binding is modified, it:
-	/// 1. Gets the current robot position by converting the local position.
-	/// 2. Replaces the corresponding axis value with the new value.
-	/// 3. Converts the updated robot position back to local space.
-	/// 4. Updates the entity's local position.
-	private func objectPosition(axes: Axes) -> Binding<Float> {
-		Binding {
-			guard let entity = appModel.selectedEntity else { return 0 }
-			let local = entity.position
-			let robot = calibrationManager.convertLocalToRobot(local: local)
-			switch axes {
-			case .x:
-				return robot.x
-			case .y:
-				return robot.y
-			case .z:
-				return robot.z
-			}
-		} set: { newRobotValue in
-			guard let entity = appModel.selectedEntity else { return }
+    /// Returns a binding to a robot-space coordinate for a given axis.
+    /// When the binding is modified, it:
+    /// 1. Gets the current robot position by converting the local position.
+    /// 2. Replaces the corresponding axis value with the new value.
+    /// 3. Converts the updated robot position back to local space.
+    /// 4. Updates the entity's local position.
+    private func objectPosition(axes: Axes) -> Binding<Float> {
+        Binding {
+            guard let entity = appModel.selectedEntity else { return 0 }
+            let local = entity.position
+            let robot = calibrationManager.convertLocalToRobot(local: local)
+            switch axes {
+            case .x:
+                return robot.x
+            case .y:
+                return robot.y
+            case .z:
+                return robot.z
+            }
+        } set: { newRobotValue in
+            guard let entity = appModel.selectedEntity else { return }
 
-			// Convert current local position to robot space.
-			var currentRobot = calibrationManager.convertLocalToRobot(local: entity.position)
+            // Convert current local position to robot space.
+            var currentRobot = calibrationManager.convertLocalToRobot(local: entity.position)
 
-			// Replace the specific axis with the new value.
-			switch axes {
-			case .x:
-				currentRobot.x = newRobotValue
-			case .y:
-				currentRobot.y = newRobotValue
-			case .z:
-				currentRobot.z = newRobotValue
-			}
+            // Replace the specific axis with the new value.
+            switch axes {
+            case .x:
+                currentRobot.x = newRobotValue
+            case .y:
+                currentRobot.y = newRobotValue
+            case .z:
+                currentRobot.z = newRobotValue
+            }
 
-			// Convert the updated robot coordinate back to local space.
-			let newLocal = calibrationManager.convertRobotToLocal(robot: currentRobot)
-			entity.position = newLocal
+            // Convert the updated robot coordinate back to local space.
+            let newLocal = calibrationManager.convertRobotToLocal(robot: currentRobot)
+            entity.position = newLocal
 
-			// Optionally, send a position update.
-			connectionManager.sendPositionUpdate(for: entity, newPosition: currentRobot)
-		}
-	}
+            // Optionally, send a position update.
+            connectionManager.sendPositionUpdate(for: entity, newPosition: currentRobot)
+        }
+    }
+
+    private func objectRotation(axes: Axes) -> Binding<Float> {
+        Binding {
+            guard let entity = appModel.selectedEntity,
+                  let parent = entity.parent else {
+                return 0
+            }
+            // Decompose to Euler, convert to degrees
+            let quat   = entity.orientation(relativeTo: parent)
+            let angles = quat.eulerAngles * (180 / .pi)
+            switch axes {
+            case .x: return angles.x
+            case .y: return angles.y
+            case .z: return angles.z
+            }
+        } set: { newDegrees in
+            guard let entity = appModel.selectedEntity,
+                  let parent = entity.parent else {
+                return
+            }
+            // Read current quaternion → Euler (radians)
+            var e = entity.orientation(relativeTo: parent).eulerAngles
+            // Replace just the one component
+            let newRad = newDegrees * (.pi / 180)
+            switch axes {
+            case .x: e.x = newRad
+            case .y: e.y = newRad
+            case .z: e.z = newRad
+            }
+            // Rebuild intrinsic XYZ quaternion
+            let qx = simd_quatf(angle: e.x, axis: SIMD3(1,0,0))
+            let qy = simd_quatf(angle: e.y, axis: SIMD3(0,1,0))
+            let qz = simd_quatf(angle: e.z, axis: SIMD3(0,0,1))
+            let newQuat = qz * qy * qx
+
+            // Apply & notify
+            entity.setOrientation(newQuat, relativeTo: parent)
+
+            // MARK: TO DO
+            //             connectionManager.sendRotationUpdate(for: entity, newOrientation: newQuat)
+        }
+    }
+
+    private func valueBinding(for axis: Axes) -> Binding<Float> {
+        switch appModel.selectedMode {
+        case .position:
+            return objectPosition(axes: axis)
+        case .rotation:
+            return objectRotation(axes: axis)
+        }
+    }
+
+    private func allowedAxesBinding() -> Binding<AxisOptions> {
+        Binding(get: {
+            appModel.selectedMode == .position
+            ? appModel.allowedPositionAxes
+            : appModel.allowedRotationAxes
+        }, set: { newValue in
+            if appModel.selectedMode == .position {
+                appModel.allowedPositionAxes = newValue
+            } else {
+                appModel.allowedRotationAxes = newValue
+            }
+        })
+    }
+
 }
 
 #Preview(windowStyle: .automatic, traits: .fixedLayout(width: 280, height: 320)) {

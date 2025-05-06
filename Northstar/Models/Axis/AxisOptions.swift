@@ -28,7 +28,7 @@ enum Axes: CaseIterable, Identifiable {
     }
 }
 
-enum Mode {
+enum SegmentedMode {
     case position, rotation
 }
 

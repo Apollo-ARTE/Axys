@@ -33,9 +33,10 @@ class AppModel {
     let robotReachRoot = Entity()
     let virtualLabRoot = Entity()
 
-    var allowedAxes: AxisOptions = .all
+    var selectedMode: SegmentedMode = .position
 
-    var selectedMode: Mode = .position
+    var allowedPositionAxes: AxisOptions = .all
+    var allowedRotationAxes: AxisOptions = .all
 
     var rotationStore: [Entity: simd_quatf] = [:]
 

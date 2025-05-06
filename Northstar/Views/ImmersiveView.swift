@@ -82,37 +82,67 @@ struct ImmersiveView: View {
             RotateGesture3D()
                 .targetedToAnyEntity()
                 .onChanged { value in
-                    guard let parent = value.entity.parent else { return }
-
-                    // First time: save the entity's base orientation
-                    if appModel.rotationStore[value.entity] == nil {
-                        appModel.rotationStore[value.entity] = value.entity.orientation(relativeTo: parent)
+                    guard
+                        let parent = value.entity.parent,
+                        let baseQuat = appModel.rotationStore[value.entity] ?? nil
+                    else {
+                        // on first change, capture base
+                        if let parent = value.entity.parent {
+                            appModel.rotationStore[value.entity] =
+                            value.entity.orientation(relativeTo: parent)
+                        }
+                        return
                     }
 
-                    // Then apply the delta to that base transform
-                    if let base = appModel.rotationStore[value.entity] {
-                        let deltaQuat = value.convert(value.rotation, from: .local, to: parent)
-                        let newQuat   = deltaQuat * base
-                        value.entity.setOrientation(newQuat, relativeTo: parent)
-                    }
+                    // 1) Get the raw delta
+                    let rawDelta = value.convert(value.rotation, from: .local, to: parent)
+
+                    // 2) Decompose to Euler angles (in radians)
+                    let e = rawDelta.eulerAngles
+
+                    // 3) Zero out any disallowed axes
+                    let ex = appModel.allowedRotationAxes.contains(.x) ? e.x : 0
+                    let ey = appModel.allowedRotationAxes.contains(.y) ? e.y : 0
+                    let ez = appModel.allowedRotationAxes.contains(.z) ? e.z : 0
+
+                    // 4) Rebuild a filtered quaternion (XYZ intrinsic Tait–Bryan)
+                    let qx = simd_quatf(angle: ex, axis: SIMD3(1,0,0))
+                    let qy = simd_quatf(angle: ey, axis: SIMD3(0,1,0))
+                    let qz = simd_quatf(angle: ez, axis: SIMD3(0,0,1))
+                    let filteredDelta = qz * qy * qx
+
+                    // 5) Apply filtered delta onto base
+                    let newQuat = filteredDelta * baseQuat
+                    value.entity.setOrientation(newQuat, relativeTo: parent)
+
                 }
                 .onEnded { value in
-                    guard let parent = value.entity.parent,
-                          let base   = appModel.rotationStore[value.entity] else { return }
+                    guard
+                        let parent = value.entity.parent,
+                        let baseQuat = appModel.rotationStore[value.entity]
+                    else { return }
 
-                    let finalDelta = value.convert(value.rotation, from: .local, to: parent)
-                    let finalQuat  = finalDelta * base
+                    let rawDelta = value.convert(value.rotation, from: .local, to: parent)
+                    let e = rawDelta.eulerAngles
 
+                    let ex = appModel.allowedRotationAxes.contains(.x) ? e.x : 0
+                    let ey = appModel.allowedRotationAxes.contains(.y) ? e.y : 0
+                    let ez = appModel.allowedRotationAxes.contains(.z) ? e.z : 0
+
+                    let filteredDelta =
+                    simd_quatf(angle: ez, axis: [0,0,1]) *
+                    simd_quatf(angle: ey, axis: [0,1,0]) *
+                    simd_quatf(angle: ex, axis: [1,0,0])
+
+                    let finalQuat = filteredDelta * baseQuat
                     value.entity.setOrientation(finalQuat, relativeTo: parent)
 
-                    // MARK: TO DO ALSO SEND NEW ROTATION TO RHINO
-                    // 3) Notify your Rhino/robot backend
+                    // send to Rhino
 //                    rhinoConnectionManager.sendRotationUpdate(
 //                        for: value.entity,
 //                        newOrientation: finalQuat
 //                    )
 
-                    // 4) Clean up so next gesture re‐captures
                     appModel.rotationStore.removeValue(forKey: value.entity)
                 }
         )
@@ -127,9 +157,9 @@ struct ImmersiveView: View {
                                                from: .local,
                                                to: parent)
                     var current = entity.position
-                    if appModel.allowedAxes.contains(.x) { current.x = newPos.x }
-                    if appModel.allowedAxes.contains(.y) { current.y = newPos.y }
-                    if appModel.allowedAxes.contains(.z) { current.z = newPos.z }
+                    if appModel.allowedPositionAxes.contains(.x) { current.x = newPos.x }
+                    if appModel.allowedPositionAxes.contains(.y) { current.y = newPos.y }
+                    if appModel.allowedPositionAxes.contains(.z) { current.z = newPos.z }
                     entity.position = current
 
                     localCoordinates = current
