@@ -70,116 +70,9 @@ struct ImmersiveView: View {
                 .glassBackgroundEffect()
             }
         }
-        .gesture(
-            TapGesture()
-                .targetedToAnyEntity()
-                .onEnded { value in
-                    appModel.selectedEntity = value.entity
-                    openWindow(id: "inspector")
-                }
-        )
-        .simultaneousGesture(
-            RotateGesture3D()
-                .targetedToAnyEntity()
-                .onChanged { value in
-                    guard
-                        let parent = value.entity.parent,
-                        let baseQuat = appModel.rotationStore[value.entity] ?? nil
-                    else {
-                        // on first change, capture base
-                        if let parent = value.entity.parent {
-                            appModel.rotationStore[value.entity] =
-                            value.entity.orientation(relativeTo: parent)
-                        }
-                        return
-                    }
-
-                    // 1) Get the raw delta
-                    let rawDelta = value.convert(value.rotation, from: .local, to: parent)
-
-                    // 2) Decompose to Euler angles (in radians)
-                    let e = rawDelta.eulerAngles
-
-                    // 3) Zero out any disallowed axes
-                    let ex = appModel.allowedRotationAxes.contains(.x) ? e.x : 0
-                    let ey = appModel.allowedRotationAxes.contains(.y) ? e.y : 0
-                    let ez = appModel.allowedRotationAxes.contains(.z) ? e.z : 0
-
-                    // 4) Rebuild a filtered quaternion (XYZ intrinsic Tait–Bryan)
-                    let qx = simd_quatf(angle: ex, axis: SIMD3(1,0,0))
-                    let qy = simd_quatf(angle: ey, axis: SIMD3(0,1,0))
-                    let qz = simd_quatf(angle: ez, axis: SIMD3(0,0,1))
-                    let filteredDelta = qz * qy * qx
-
-                    // 5) Apply filtered delta onto base
-                    let newQuat = filteredDelta * baseQuat
-                    value.entity.setOrientation(newQuat, relativeTo: parent)
-
-                }
-                .onEnded { value in
-                    guard
-                        let parent = value.entity.parent,
-                        let baseQuat = appModel.rotationStore[value.entity]
-                    else { return }
-
-                    let rawDelta = value.convert(value.rotation, from: .local, to: parent)
-                    let e = rawDelta.eulerAngles
-
-                    let ex = appModel.allowedRotationAxes.contains(.x) ? e.x : 0
-                    let ey = appModel.allowedRotationAxes.contains(.y) ? e.y : 0
-                    let ez = appModel.allowedRotationAxes.contains(.z) ? e.z : 0
-
-                    let filteredDelta =
-                    simd_quatf(angle: ez, axis: [0,0,1]) *
-                    simd_quatf(angle: ey, axis: [0,1,0]) *
-                    simd_quatf(angle: ex, axis: [1,0,0])
-
-                    let finalQuat = filteredDelta * baseQuat
-                    value.entity.setOrientation(finalQuat, relativeTo: parent)
-
-                    // send to Rhino
-//                    rhinoConnectionManager.sendRotationUpdate(
-//                        for: value.entity,
-//                        newOrientation: finalQuat
-//                    )
-
-                    appModel.rotationStore.removeValue(forKey: value.entity)
-                }
-        )
-        .simultaneousGesture(
-            DragGesture()
-                .targetedToAnyEntity()
-                .onChanged { value in
-                    let entity = value.entity
-
-                    guard let parent = entity.parent else { return }
-                    let newPos = value.convert(value.location3D,
-                                               from: .local,
-                                               to: parent)
-                    var current = entity.position
-                    if appModel.allowedPositionAxes.contains(.x) { current.x = newPos.x }
-                    if appModel.allowedPositionAxes.contains(.y) { current.y = newPos.y }
-                    if appModel.allowedPositionAxes.contains(.z) { current.z = newPos.z }
-                    entity.position = current
-
-                    localCoordinates = current
-                    robotCoordinates = calibrationManager.convertLocalToRobot(
-                        local: current
-                    )
-                }
-                .onEnded { value in
-                    let finalRobot = calibrationManager.convertLocalToRobot(
-                        local: value.entity.position
-                    )
-                    rhinoConnectionManager.sendPositionUpdate(
-                        for: value.entity,
-                        newPosition: finalRobot
-                    )
-                    Logger.connection.info(
-                        "Sent pos update: local \(value.entity.position), robot \(finalRobot)"
-                    )
-                }
-        )
+        .gesture(tapGesture())
+        .simultaneousGesture(rotateGesture3D())
+        .simultaneousGesture(dragGesture3D())
         .onChange(of: appModel.showRobotReach) { _, newValue in
             toggleRobotReachVisibility(isVisible: newValue)
         }
@@ -215,6 +108,87 @@ struct ImmersiveView: View {
         } else {
             virtualLabEntity.removeFromParent()
         }
+    }
+
+    private func rotateGesture3D() -> some Gesture {
+        RotateGesture3D()
+            .targetedToAnyEntity()
+            .onChanged { value in
+                guard let parent = value.entity.parent else { return }
+
+                let baseQuat = appModel.rotationStore[value.entity] ?? {
+                    let orientation = value.entity.orientation(relativeTo: parent)
+                    appModel.rotationStore[value.entity] = orientation
+                    return orientation
+                }()
+
+                let rawDelta = value.convert(value.rotation, from: .local, to: parent)
+                let e = rawDelta.eulerAngles
+
+                let ex = appModel.allowedRotationAxes.contains(.x) ? e.x : 0
+                let ey = appModel.allowedRotationAxes.contains(.y) ? e.y : 0
+                let ez = appModel.allowedRotationAxes.contains(.z) ? e.z : 0
+
+                let filteredDelta = simd_quatf(angle: ez, axis: [0,0,1]) *
+                                    simd_quatf(angle: ey, axis: [0,1,0]) *
+                                    simd_quatf(angle: ex, axis: [1,0,0])
+
+                value.entity.setOrientation(filteredDelta * baseQuat, relativeTo: parent)
+            }
+            .onEnded { value in
+                guard let parent = value.entity.parent,
+                      let baseQuat = appModel.rotationStore[value.entity]
+                else { return }
+
+                let rawDelta = value.convert(value.rotation, from: .local, to: parent)
+                let e = rawDelta.eulerAngles
+
+                let ex = appModel.allowedRotationAxes.contains(.x) ? e.x : 0
+                let ey = appModel.allowedRotationAxes.contains(.y) ? e.y : 0
+                let ez = appModel.allowedRotationAxes.contains(.z) ? e.z : 0
+
+                let filteredDelta = simd_quatf(angle: ez, axis: [0,0,1]) *
+                                    simd_quatf(angle: ey, axis: [0,1,0]) *
+                                    simd_quatf(angle: ex, axis: [1,0,0])
+
+                let finalQuat = filteredDelta * baseQuat
+                value.entity.setOrientation(finalQuat, relativeTo: parent)
+                appModel.rotationStore.removeValue(forKey: value.entity)
+            }
+    }
+
+    private func dragGesture3D() -> some Gesture {
+        DragGesture()
+            .targetedToAnyEntity()
+            .onChanged { value in
+                guard let parent = value.entity.parent else { return }
+
+                let newPos = value.convert(value.location3D, from: .local, to: parent)
+                var current = value.entity.position
+
+                if appModel.allowedPositionAxes.contains(.x) { current.x = newPos.x }
+                if appModel.allowedPositionAxes.contains(.y) { current.y = newPos.y }
+                if appModel.allowedPositionAxes.contains(.z) { current.z = newPos.z }
+
+                value.entity.position = current
+
+                localCoordinates = current
+                robotCoordinates = calibrationManager.convertLocalToRobot(local: current)
+            }
+            .onEnded { value in
+                let finalRobot = calibrationManager.convertLocalToRobot(local: value.entity.position)
+                rhinoConnectionManager.sendPositionUpdate(for: value.entity, newPosition: finalRobot)
+                Logger.connection.info("Sent pos update: local \(value.entity.position), robot \(finalRobot)")
+            }
+    }
+
+    private func tapGesture() -> some Gesture {
+        TapGesture()
+            .targetedToAnyEntity()
+            .onEnded { value in
+                appModel.selectedEntity = value.entity
+                openWindow(id: "inspector")
+            }
     }
 }
 
