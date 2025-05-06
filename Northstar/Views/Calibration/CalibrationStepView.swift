@@ -63,13 +63,13 @@ struct CalibrationStepView<Content: View>: View {
 							calibrationManager.marker2.localX = secondPos.x
 							calibrationManager.marker2.localY = secondPos.y
 							calibrationManager.marker2.localZ = secondPos.z
-							calibrationManager.marker1.save(key: "marker2")
+							calibrationManager.marker2.save(key: "marker2")
 						}
 						if let thirdPos = imageTrackingManager.thirdMarkerEntity?.position {
 							calibrationManager.marker3.localX = thirdPos.x
 							calibrationManager.marker3.localY = thirdPos.y
 							calibrationManager.marker3.localZ = thirdPos.z
-							calibrationManager.marker1.save(key: "marker3")
+							calibrationManager.marker3.save(key: "marker3")
 						}
 
 						// Compute the rigid transformation using the new calibration system.
@@ -110,4 +110,5 @@ struct CalibrationStepView<Content: View>: View {
 	@Previewable @State var step: CalibrationStep = .placeMarkers
 	CalibrationStepView(step: $step) {}
 		.environment(ImageTrackingManager(calibrationManager: .shared))
+		.environment(CalibrationManager.shared)
 }
