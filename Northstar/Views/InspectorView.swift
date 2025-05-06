@@ -12,16 +12,20 @@ struct InspectorView: View {
 	@Environment(AppModel.self) private var appModel
 	@Environment(RhinoConnectionManager.self) private var connectionManager
 	@Environment(CalibrationManager.self) private var calibrationManager
-    @State private var selectedMode: Mode = .position
 
 	var body: some View {
 		@Bindable var connectionManager = connectionManager
 		VStack {
 			Text("Robot’s Coordinates")
                 .font(.title2)
-            Picker("", selection: $selectedMode) {
-                Label("Position", systemImage: "move.3d").tag(Mode.position)
-                Label("Rotation", systemImage: "rotate.3d.fill").tag(Mode.rotation)
+            Picker("", selection: Binding<Mode>(
+                get: { appModel.selectedMode },
+                set: { appModel.selectedMode = $0 }
+            )) {
+                Label("Position", systemImage: "move.3d")
+                    .tag(Mode.position)
+                Label("Rotation", systemImage: "rotate.3d.fill")
+                    .tag(Mode.rotation)
             }
             .pickerStyle(.segmented)
             .labelStyle(.iconOnly)

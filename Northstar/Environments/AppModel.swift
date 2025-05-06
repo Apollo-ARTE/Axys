@@ -35,4 +35,8 @@ class AppModel {
 
     var allowedAxes: AxisOptions = .all
 
+    var selectedMode: Mode = .position
+
+    var rotationStore: [Entity: simd_quatf] = [:]
+
 }
