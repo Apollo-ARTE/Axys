@@ -12,13 +12,12 @@ struct ToolbarView: View {
 	@Environment(\.openImmersiveSpace) private var openImmersiveSpace
 	@Environment(\.openWindow) private var openWindow
 	@Environment(\.dismissWindow) private var dismissWindow
-	
 	@Environment(AppModel.self) private var appModel
 	@Environment(RhinoConnectionManager.self) private var rhinoConnectionManager
-	
+
 	@State private var showInfoPopover = false
 
-    var body: some View {
+	var body: some View {
 		@Bindable var appModel = appModel
 
 		HStack {
@@ -31,8 +30,16 @@ struct ToolbarView: View {
 			}
 			
 			Toggle("Model", systemImage: "cube.fill", isOn: $appModel.showModels)
-			Toggle("Robot's Reach", systemImage: "skew", isOn: $appModel.showRobotReach)
+//				.onChange(of: appModel.showModels) { _, newValue in
+//					if newValue {
+//						rhinoConnectionManager.connectToWebSocket()
+//					} else {
+//						rhinoConnectionManager.disconnectFromWebSocket()
+//					}
+//				}
 
+			Toggle("Robot's Reach", systemImage: "skew", isOn: $appModel.showRobotReach)
+            Toggle("Virtual Lab", systemImage: "baseball.diamond.bases", isOn: $appModel.showVirtualLab)
 			Divider()
 				.frame(height: 40)
 
@@ -43,9 +50,6 @@ struct ToolbarView: View {
 					} else {
 						dismissCalibrationWindow()
 					}
-					Task {
-						await toggleImmersiveSpace()
-					}
 				}
 				.disabled(appModel.immersiveSpaceState == .inTransition)
 
@@ -54,12 +58,17 @@ struct ToolbarView: View {
 				.popover(isPresented: $showInfoPopover, arrowEdge: .bottom) {
 					InfoView()
 				}
-
+		}
+		.onAppear {
+			rhinoConnectionManager.connectToWebSocket()
 		}
 		.toggleStyle(.button)
 		.padding()
 		.glassBackgroundEffect()
-    }
+		.task {
+			await toggleImmersiveSpace()
+		}
+	}
 
 	private func openCalibrationWindow() {
 		openWindow(id: "calibration")
@@ -80,28 +89,28 @@ struct ToolbarView: View {
 
 	@MainActor
 	private func toggleImmersiveSpace() async {
-			switch appModel.immersiveSpaceState {
-			case .open:
-				appModel.immersiveSpaceState = .inTransition
-				await dismissImmersiveSpace()
-			case .closed:
-				appModel.immersiveSpaceState = .inTransition
-				switch await openImmersiveSpace(id: appModel.immersiveSpaceID) {
-				case .opened:
-					break
-				case .userCancelled, .error:
-					fallthrough
-				@unknown default:
-					appModel.immersiveSpaceState = .closed
-				}
-			case .inTransition:
+		switch appModel.immersiveSpaceState {
+		case .open:
+			appModel.immersiveSpaceState = .inTransition
+			await dismissImmersiveSpace()
+		case .closed:
+			appModel.immersiveSpaceState = .inTransition
+			switch await openImmersiveSpace(id: appModel.immersiveSpaceID) {
+			case .opened:
 				break
+			case .userCancelled, .error:
+				fallthrough
+			@unknown default:
+				appModel.immersiveSpaceState = .closed
 			}
+		case .inTransition:
+			break
+		}
 	}
 }
 
 #Preview {
-    ToolbarView()
-		.environment(AppModel())
-		.environment(RhinoConnectionManager())
+	ToolbarView()
+		.environment(AppModel.shared)
+		.environment(RhinoConnectionManager.shared)
 }

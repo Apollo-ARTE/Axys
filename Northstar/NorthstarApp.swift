@@ -9,42 +9,64 @@ import SwiftUI
 
 @main
 struct NorthstarApp: App {
+	@State private var appModel: AppModel
+	@State private var imageTrackingManager: ImageTrackingManager
+	@State private var rhinoConnectionManager: RhinoConnectionManager
+	@State private var calibrationManager: CalibrationManager
 
-    @State private var appModel = AppModel()
-	@State private var imageTracking = ImageTracking()
-	@State private var rhinoConnection = RhinoConnectionManager()
+	init() {
+		self.appModel = .shared
 
-    var body: some Scene {
+		let calibrationManager: CalibrationManager = .shared
+		self.calibrationManager = calibrationManager
+
+		self.rhinoConnectionManager = .init(calibrationManager: calibrationManager)
+		self.imageTrackingManager = .init(calibrationManager: calibrationManager)
+	}
+
+	var body: some Scene {
 		WindowGroup("Northstar", id: "toolbar") {
 			ToolbarView()
 				.environment(appModel)
-				.environment(rhinoConnection)
-        }
+				.environment(rhinoConnectionManager)
+		}
 		.windowStyle(.plain)
 		.windowResizability(.contentSize)
-		.defaultWindowPlacement { content, context in
-				.init(.utilityPanel)
+		.defaultWindowPlacement { _, _ in
+			.init(.utilityPanel)
 		}
 
 		WindowGroup("Calibration", id: "calibration") {
 			CalibrationProcessView()
-				.environment(imageTracking)
+				.environment(appModel)
+				.environment(imageTrackingManager)
+				.environment(calibrationManager)
 				.frame(width: 320)
 		}
 		.windowStyle(.plain)
 
-        ImmersiveSpace(id: appModel.immersiveSpaceID) {
-            ImmersiveView()
-                .environment(appModel)
-				.environment(imageTracking)
-				.environment(rhinoConnection)
-                .onAppear {
-                    appModel.immersiveSpaceState = .open
-                }
-                .onDisappear {
-                    appModel.immersiveSpaceState = .closed
-                }
-        }
+		WindowGroup("Inspector", id: "inspector") {
+			InspectorView()
+				.environment(appModel)
+				.environment(rhinoConnectionManager)
+				.environment(calibrationManager)
+				.frame(width: 280, height: 320)
+		}
+		.windowResizability(.contentSize)
+
+		ImmersiveSpace(id: appModel.immersiveSpaceID) {
+			ImmersiveView()
+				.environment(appModel)
+				.environment(imageTrackingManager)
+				.environment(rhinoConnectionManager)
+				.environment(calibrationManager)
+				.onAppear {
+					appModel.immersiveSpaceState = .open
+				}
+				.onDisappear {
+					appModel.immersiveSpaceState = .closed
+				}
+		}
 		.immersionStyle(selection: .constant(.mixed), in: .mixed)
-    }
+	}
 }

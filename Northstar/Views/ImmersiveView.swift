@@ -8,29 +8,50 @@
 import SwiftUI
 import RealityKit
 import RealityKitContent
+import OSLog
+import simd
 
 struct ImmersiveView: View {
-	@Environment(AppModel.self) private var appModel
-	@Environment(ImageTracking.self) private var imageTracking
-	@Environment(RhinoConnectionManager.self) var rhinoConnectionManager
+    @Environment(\.openWindow) private var openWindow
+    @Environment(AppModel.self) private var appModel
+    @Environment(ImageTrackingManager.self) private var imageTracking
+    @Environment(RhinoConnectionManager.self) private var rhinoConnectionManager
+    @Environment(CalibrationManager.self) private var calibrationManager
 
-	var body: some View {
-		RealityView { content, attachments in
-//			if appModel.showModels {
-//				content.add(imageTracking.centerEntity)
-//				if let attachment = attachments.entity(for: "coordinates") {
-//					attachment.position = [0, 0.05, 0]
-//					imageTracking.movableEntity.addChild(attachment)
-//				}
+    @State private var rootObject = Entity()
+    @State private var printedObject = Entity()
+    @State private var robotReachEntity = Entity()
+    @State private var virtualLabEntity = Entity()
+    @State private var localCoordinates: SIMD3<Float> = .zero
+    @State private var robotCoordinates: SIMD3<Float> = .zero
 
-//				let mesh = MeshResource.generateSphere(radius: 0.01)
-//				let sphere = ModelEntity(mesh: mesh)
-//				sphere.generateCollisionShapes(recursive: false)
-//				sphere.components.set(InputTargetComponent())
-//				sphere.position = [0, 1.3, -1]
-//			}
-} update: { content, attachments in
-	print("🔄 [UPDATE] RealityView update triggered")
+    var body: some View {
+        RealityView { content, attachments in
+            if let printedObject = try? await ModelEntity.printedObject() {
+                self.printedObject = printedObject
+            }
+
+            rhinoConnectionManager.object = printedObject
+
+            // Optionally add an attachment to display coordinates.
+            if let coordinatesAttachment = attachments.entity(for: "coordinates") {
+                coordinatesAttachment.position = [0, 0.4, 0]
+                printedObject.addChild(coordinatesAttachment)
+            }
+
+            if let robotReachEntity = try? await ModelEntity.robotReach() {
+                self.robotReachEntity = robotReachEntity
+            }
+            if let virtualLabEntity = try? await ModelEntity.virtualLab() {
+                self.virtualLabEntity = virtualLabEntity
+            }
+
+            content.add(appModel.robotReachRoot)
+            content.add(appModel.virtualLabRoot)
+            content.add(printedObject)
+            content.add(imageTracking.rootEntity)
+        } update: { content, attachments in 
+            	print("🔄 [UPDATE] RealityView update triggered")
 	print("🔎 [STATE] importedEntity: \(String(describing: rhinoConnectionManager.importedEntity))")
 	print("📦 [STATE] Entities in content: \(content.entities.count)")
 	if let importedEntity = rhinoConnectionManager.importedEntity,
@@ -40,46 +61,144 @@ struct ImmersiveView: View {
 		print("✅ [UPDATE] Setting position for imported entity: \(importedEntity.position)")
 				print("✅ [UPDATE] Adding imported entity to scene content via anchor.")
 			}
-		} attachments: {
-			Attachment(id: "coordinates") {
-				HStack {
-					Text("X: \(convertToMeters(meters: imageTracking.modelPosition.x))")
-					Text("Y: \(convertToMeters(meters: imageTracking.modelPosition.y))")
-					Text("Z: \(convertToMeters(meters: imageTracking.modelPosition.z))")
-				}
-				.padding()
-				.glassBackgroundEffect()
-			}
-		}
-		.onAppear(perform: {
-			rhinoConnectionManager.connectToWebSocket()
-		})
-		.gesture(
-			DragGesture()
-//				.targetedToEntity(imageTracking.movableEntity)
-				.targetedToAnyEntity()
-				.onChanged { value in
-					value.entity.position = value.convert(value.location3D, from: .local, to: value.entity.parent!)
-					rhinoConnectionManager.sendPositionUpdate(for: value.entity)
-//					imageTracking.modelPosition = imageTracking.movableEntity.position(relativeTo: imageTracking.centerEntity)
-				}
-		)
-	}
+        } attachments: {
+            Attachment(id: "coordinates") {
+                VStack {
+                    HStack {
+                        Text("Local:")
+                        Text("X: \(localCoordinates.x.convertToMillimiters())")
+                        Text("Y: \(localCoordinates.y.convertToMillimiters())")
+                        Text("Z: \(localCoordinates.z.convertToMillimiters())")
+                    }
+                    HStack {
+                        Text("Robot:")
+                        Text("X: \(robotCoordinates.x.convertToMillimiters())")
+                        Text("Y: \(robotCoordinates.y.convertToMillimiters())")
+                        Text("Z: \(robotCoordinates.z.convertToMillimiters())")
+                    }
+                }
+                .padding()
+                .glassBackgroundEffect()
+            }
+        }
+        .gesture(tapGesture())
+        .simultaneousGesture(rotateGesture3D())
+        .simultaneousGesture(dragGesture3D())
+        .onChange(of: appModel.showRobotReach) { _, newValue in
+            toggleRobotReachVisibility(isVisible: newValue)
+        }
+        .onChange(of: appModel.showVirtualLab) { _, newValue in
+            toggleVirtualLabVisibility(isVisible: newValue)
+        }
+    }
 
-	func convertToMeters(meters: Float)-> String {
+    private func toggleRobotReachVisibility(isVisible: Bool) {
+        if isVisible && calibrationManager.isCalibrationCompleted {
+            let position = calibrationManager.convertRobotToLocal(robot: [0, 0, 0])
+            appModel.robotReachRoot.position = position
+            appModel.robotReachRoot.addChild(robotReachEntity)
+        } else {
+            robotReachEntity.removeFromParent()
+        }
+    }
 
-		let formatter = MeasurementFormatter()
+    private func toggleVirtualLabVisibility(isVisible: Bool) {
+        if isVisible && calibrationManager.isCalibrationCompleted {
+            let target = calibrationManager.convertRobotToLocal(robot: [0, 10, 0])
+            let from = calibrationManager.convertRobotToLocal(robot: [0, 0, 0])
+            appModel.virtualLabRoot.look(at: target, from: from, relativeTo: nil)
+            appModel.virtualLabRoot.addChild(virtualLabEntity)
+        } else {
+            virtualLabEntity.removeFromParent()
+        }
+    }
 
-		var distanceInMeters = Measurement(value: Double(meters), unit: UnitLength.meters)
+    private func rotateGesture3D() -> some Gesture {
+        RotateGesture3D()
+            .targetedToAnyEntity()
+            .onChanged { value in
+                guard let parent = value.entity.parent else { return }
 
-		distanceInMeters.convert(to: UnitLength.centimeters)
-		formatter.unitOptions = .providedUnit
+                let baseQuat = appModel.rotationStore[value.entity] ?? {
+                    let orientation = value.entity.orientation(relativeTo: parent)
+                    appModel.rotationStore[value.entity] = orientation
+                    return orientation
+                }()
 
-		return formatter.string(from: distanceInMeters)
-	}
+                let rawDelta = value.convert(value.rotation, from: .local, to: parent)
+                let e = rawDelta.eulerAngles
+
+                let ex = appModel.allowedRotationAxes.contains(.x) ? e.x : 0
+                let ey = appModel.allowedRotationAxes.contains(.y) ? e.y : 0
+                let ez = appModel.allowedRotationAxes.contains(.z) ? e.z : 0
+
+                let filteredDelta = simd_quatf(angle: ez, axis: [0,0,1]) *
+                                    simd_quatf(angle: ey, axis: [0,1,0]) *
+                                    simd_quatf(angle: ex, axis: [1,0,0])
+
+                value.entity.setOrientation(filteredDelta * baseQuat, relativeTo: parent)
+            }
+            .onEnded { value in
+                guard let parent = value.entity.parent,
+                      let baseQuat = appModel.rotationStore[value.entity]
+                else { return }
+
+                let rawDelta = value.convert(value.rotation, from: .local, to: parent)
+                let e = rawDelta.eulerAngles
+
+                let ex = appModel.allowedRotationAxes.contains(.x) ? e.x : 0
+                let ey = appModel.allowedRotationAxes.contains(.y) ? e.y : 0
+                let ez = appModel.allowedRotationAxes.contains(.z) ? e.z : 0
+
+                let filteredDelta = simd_quatf(angle: ez, axis: [0,0,1]) *
+                                    simd_quatf(angle: ey, axis: [0,1,0]) *
+                                    simd_quatf(angle: ex, axis: [1,0,0])
+
+                let finalQuat = filteredDelta * baseQuat
+                value.entity.setOrientation(finalQuat, relativeTo: parent)
+                appModel.rotationStore.removeValue(forKey: value.entity)
+            }
+    }
+
+    private func dragGesture3D() -> some Gesture {
+        DragGesture()
+            .targetedToAnyEntity()
+            .onChanged { value in
+                guard let parent = value.entity.parent else { return }
+
+                let newPos = value.convert(value.location3D, from: .local, to: parent)
+                var current = value.entity.position
+
+                if appModel.allowedPositionAxes.contains(.x) { current.x = newPos.x }
+                if appModel.allowedPositionAxes.contains(.y) { current.y = newPos.y }
+                if appModel.allowedPositionAxes.contains(.z) { current.z = newPos.z }
+
+                value.entity.position = current
+
+                localCoordinates = current
+                robotCoordinates = calibrationManager.convertLocalToRobot(local: current)
+            }
+            .onEnded { value in
+                let finalRobot = calibrationManager.convertLocalToRobot(local: value.entity.position)
+                rhinoConnectionManager.sendPositionUpdate(for: value.entity, newPosition: finalRobot)
+                Logger.connection.info("Sent pos update: local \(value.entity.position), robot \(finalRobot)")
+            }
+    }
+
+    private func tapGesture() -> some Gesture {
+        TapGesture()
+            .targetedToAnyEntity()
+            .onEnded { value in
+                appModel.selectedEntity = value.entity
+                openWindow(id: "inspector")
+            }
+    }
 }
 
 #Preview(immersionStyle: .mixed) {
 	ImmersiveView()
-		.environment(AppModel())
+		.environment(AppModel.shared)
+		.environment(ImageTrackingManager.init(calibrationManager: .shared))
+		.environment(CalibrationManager.shared)
+		.environment(RhinoConnectionManager(calibrationManager: .shared))
 }

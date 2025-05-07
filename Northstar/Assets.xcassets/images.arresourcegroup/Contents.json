@@ -5,7 +5,13 @@
   },
   "resources" : [
     {
-      "filename" : "square_marker_asymetrical_marked_2.arreferenceimage"
+      "filename" : "marker1.arreferenceimage"
+    },
+    {
+      "filename" : "marker2.arreferenceimage"
+    },
+    {
+      "filename" : "marker3.arreferenceimage"
     }
   ]
 }

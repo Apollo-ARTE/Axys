@@ -8,45 +8,41 @@
 import SwiftUI
 
 struct CalibrationProcessView: View {
-	@State private var calibrationStep: CalibrationStep = .placeMarkers
-
-	@State private var coordinates1 = (robot: Coordinate.init(), local: Coordinate.init())
-	@State private var coordinates2 = (robot: Coordinate.init(), local: Coordinate.init())
-	@State private var coordinates3 = (robot: Coordinate.init(), local: Coordinate.init())
+	@Environment(CalibrationManager.self) private var calibrationManager
 
     var body: some View {
-		CalibrationStepView(step: $calibrationStep) {
-			switch calibrationStep {
+		@Bindable var calibrationManager = calibrationManager
+
+		CalibrationStepView(step: $calibrationManager.calibrationStep) {
+			switch calibrationManager.calibrationStep {
 			case .insertCoordinates(let number) where number == 1:
-				VStack {
-					TextField("X", text: $coordinates1.robot.x)
-					TextField("Y", text: $coordinates1.robot.y)
-					TextField("Z", text: $coordinates1.robot.z)
-				}
-				.textFieldStyle(.roundedBorder)
+				CoordinatesInputView(
+					x: $calibrationManager.marker1.robotX,
+					y: $calibrationManager.marker1.robotY,
+					z: $calibrationManager.marker1.robotZ
+				)
 			case .insertCoordinates(let number) where number == 2:
-				VStack {
-					TextField("X", text: $coordinates2.robot.x)
-					TextField("Y", text: $coordinates2.robot.y)
-					TextField("Z", text: $coordinates2.robot.z)
-				}
-				.textFieldStyle(.roundedBorder)
+				CoordinatesInputView(
+					x: $calibrationManager.marker2.robotX,
+					y: $calibrationManager.marker2.robotY,
+					z: $calibrationManager.marker2.robotZ
+				)
 			case .insertCoordinates(let number) where number == 3:
-				VStack {
-					TextField("X", text: $coordinates3.robot.x)
-					TextField("Y", text: $coordinates3.robot.y)
-					TextField("Z", text: $coordinates3.robot.z)
-				}
-				.textFieldStyle(.roundedBorder)
+				CoordinatesInputView(
+					x: $calibrationManager.marker3.robotX,
+					y: $calibrationManager.marker3.robotY,
+					z: $calibrationManager.marker3.robotZ
+				)
 			default:
 				EmptyView()
 			}
 		}
-		.animation(.snappy, value: calibrationStep)
+		.animation(.snappy, value: calibrationManager.calibrationStep)
     }
 }
 
 #Preview(windowStyle: .plain) {
     CalibrationProcessView()
-		.environment(ImageTracking())
+		.environment(ImageTrackingManager(calibrationManager: .shared))
+		.environment(CalibrationManager.shared)
 }
