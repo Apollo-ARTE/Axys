@@ -40,6 +40,7 @@ class CalibrationManager {
     /// Computes the rigid (rotation + translation) transform that maps local (Vision Pro) coordinates to robot coordinates.
     /// It uses the three markers stored in the class.
     func calibrate() {
+
         // Convert marker coordinates to simd_float3 for math operations.
         let v1 = simd_float3(marker1.localX, marker1.localY, marker1.localZ)
         let v2 = simd_float3(marker2.localX, marker2.localY, marker2.localZ)
@@ -152,7 +153,7 @@ class CalibrationManager {
 		return simd_float3(
 			Float(coordinate.robotX) / 1000,
 			Float(coordinate.robotY) / 1000,
-			Float(coordinate.robotZ) / 1000 - Float(zOffset)
+			Float(coordinate.robotZ) / 1000
 		)
 	}
 }

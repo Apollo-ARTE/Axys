@@ -22,14 +22,6 @@ struct ToolbarView: View {
 
 		HStack {
 			Toggle("Model", systemImage: "cube.fill", isOn: $appModel.showModels)
-				.onChange(of: appModel.showModels) { _, newValue in
-					if newValue {
-						rhinoConnectionManager.connectToWebSocket()
-					} else {
-						rhinoConnectionManager.disconnectFromWebSocket()
-					}
-				}
-
 			Toggle("Robot's Reach", systemImage: "skew", isOn: $appModel.showRobotReach)
             Toggle("Virtual Lab", systemImage: "baseball.diamond.bases", isOn: $appModel.showVirtualLab)
 			Divider()
@@ -59,9 +51,6 @@ struct ToolbarView: View {
                         rhinoConnectionManager.disconnectFromWebSocket()
                     }
                 }
-		}
-		.onAppear {
-			rhinoConnectionManager.connectToWebSocket()
 		}
 		// .onAppear {
 		// 	rhinoConnectionManager.connectToWebSocket()
