@@ -11,8 +11,11 @@ import RealityKit
 @MainActor
 @Observable
 class ImageTrackingManager {
-	static let shared: ImageTrackingManager = .init()
-	private init() {}
+	init(calibrationManager: CalibrationManager) {
+		self.calibrationManager = calibrationManager
+	}
+
+	var calibrationManager: CalibrationManager
 
 	let session = ARKitSession()
 
@@ -37,12 +40,12 @@ class ImageTrackingManager {
 
 			for await update in imageInfo.anchorUpdates {
 				switch update.event {
-				case .added, .updated:
+				case .added:
+					updateImage(update.anchor)
+				case .updated:
 					updateImage(update.anchor)
 				case .removed:
 					removeImage(update.anchor)
-				default:
-					break
 				}
 			}
 		}
@@ -53,42 +56,45 @@ class ImageTrackingManager {
 	}
 
 	private func updateImage(_ anchor: ImageAnchor) {
-		guard anchor.isTracked, let imageName = anchor.referenceImage.name else {
-			return
+		guard
+			anchor.isTracked,
+			let imageName = anchor.referenceImage.name,
+			let markerNumber = Self.markerNumber(from: imageName)
+		else { return }
+
+		// Only consume anchors that correspond to the *current* scan step.
+		guard
+			case .scanMarker(let expectedNumber) = calibrationManager.calibrationStep,
+			expectedNumber == markerNumber else {
+			return // Either we are past this step or it is not yet this marker's turn.
 		}
 
-		// Mark the marker as scanned
-		scannedMarkers.insert(imageName)
-
-		// Assign entity based on the reference image name
 		if entityMap[anchor.id] == nil {
-			// swiftlint:disable force_unwrapping
-			switch imageName {
-			case "marker1":
-				firstMarkerEntity = ModelEntity.movableSphere()
-				rootEntity.addChild(firstMarkerEntity!)
-				entityMap[anchor.id] = firstMarkerEntity
-			case "marker2":
-				secondMarkerEntity = ModelEntity.movableSphere()
-				rootEntity.addChild(secondMarkerEntity!)
-				entityMap[anchor.id] = secondMarkerEntity
-			case "marker3":
-				thirdMarkerEntity = ModelEntity.movableSphere()
-				rootEntity.addChild(thirdMarkerEntity!)
-				entityMap[anchor.id] = thirdMarkerEntity
-			default:
-				break // Ignore unrecognized markers
-			}
-			// swiftlint:enable force_unwrapping
+			let entity = ModelEntity.movableSphere()
+			entityMap[anchor.id] = entity
 			imageAnchors[anchor.id] = anchor
+			rootEntity.addChild(entity)
+
+			switch markerNumber {
+			case 1: firstMarkerEntity = entity
+			case 2: secondMarkerEntity = entity
+			case 3: thirdMarkerEntity = entity
+			default: break
+			}
+
+			scannedMarkers.insert(imageName)
 		}
 
-		// Update the corresponding entity's transform
 		entityMap[anchor.id]?.transform = Transform(matrix: anchor.originFromAnchorTransform)
 	}
 
 	private func removeImage(_ anchor: ImageAnchor) {
 		entityMap.removeValue(forKey: anchor.id)
 		imageAnchors.removeValue(forKey: anchor.id)
+	}
+
+	private static func markerNumber(from imageName: String) -> Int? {
+		guard imageName.hasPrefix("marker") else { return nil }
+		return Int(imageName.dropFirst("marker".count))
 	}
 }

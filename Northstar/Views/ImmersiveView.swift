@@ -55,15 +55,15 @@ struct ImmersiveView: View {
                 VStack {
                     HStack {
                         Text("Local:")
-                        Text("X: \(convertToCentimeters(meters: localCoordinates.x))")
-                        Text("Y: \(convertToCentimeters(meters: localCoordinates.y))")
-                        Text("Z: \(convertToCentimeters(meters: localCoordinates.z))")
+                        Text("X: \(localCoordinates.x.convertToMillimiters())")
+                        Text("Y: \(localCoordinates.y.convertToMillimiters())")
+                        Text("Z: \(localCoordinates.z.convertToMillimiters())")
                     }
                     HStack {
                         Text("Robot:")
-                        Text("X: \(convertToCentimeters(meters: robotCoordinates.x))")
-                        Text("Y: \(convertToCentimeters(meters: robotCoordinates.y))")
-                        Text("Z: \(convertToCentimeters(meters: robotCoordinates.z))")
+                        Text("X: \(robotCoordinates.x.convertToMillimiters())")
+                        Text("Y: \(robotCoordinates.y.convertToMillimiters())")
+                        Text("Z: \(robotCoordinates.z.convertToMillimiters())")
                     }
                 }
                 .padding()
@@ -81,14 +81,6 @@ struct ImmersiveView: View {
         }
     }
 
-    /// Converts a measurement in meters to a formatted string in centimeters.
-    func convertToCentimeters(meters: Float) -> String {
-        let measurement = Measurement(value: Double(meters), unit: UnitLength.meters)
-        let centimeters = measurement.converted(to: .centimeters)
-        let formatter = MeasurementFormatter()
-        formatter.unitOptions = .providedUnit
-        return formatter.string(from: centimeters)
-    }
     private func toggleRobotReachVisibility(isVisible: Bool) {
         if isVisible && calibrationManager.isCalibrationCompleted {
             let position = calibrationManager.convertRobotToLocal(robot: [0, 0, 0])
@@ -193,9 +185,9 @@ struct ImmersiveView: View {
 }
 
 #Preview(immersionStyle: .mixed) {
-    ImmersiveView()
-        .environment(AppModel.shared)
-        .environment(ImageTrackingManager.shared)
-        .environment(CalibrationManager.shared)
-        .environment(RhinoConnectionManager(calibrationManager: .shared))
+	ImmersiveView()
+		.environment(AppModel.shared)
+		.environment(ImageTrackingManager.init(calibrationManager: .shared))
+		.environment(CalibrationManager.shared)
+		.environment(RhinoConnectionManager(calibrationManager: .shared))
 }

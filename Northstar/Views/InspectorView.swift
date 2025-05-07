@@ -43,40 +43,40 @@ struct InspectorView: View {
         .padding(32)
     }
 
-    /// Returns a binding to a robot-space coordinate for a given axis.
-    /// When the binding is modified, it:
-    /// 1. Gets the current robot position by converting the local position.
-    /// 2. Replaces the corresponding axis value with the new value.
-    /// 3. Converts the updated robot position back to local space.
-    /// 4. Updates the entity's local position.
-    private func objectPosition(axes: Axes) -> Binding<Float> {
-        Binding {
-            guard let entity = appModel.selectedEntity else { return 0 }
-            let local = entity.position
-            let robot = calibrationManager.convertLocalToRobot(local: local)
-            switch axes {
-            case .x:
-                return robot.x
-            case .y:
-                return robot.y
-            case .z:
-                return robot.z
-            }
-        } set: { newRobotValue in
-            guard let entity = appModel.selectedEntity else { return }
+	/// Returns a binding to a robot-space coordinate for a given axis.
+	/// When the binding is modified, it:
+	/// 1. Gets the current robot position by converting the local position.
+	/// 2. Replaces the corresponding axis value with the new value.
+	/// 3. Converts the updated robot position back to local space.
+	/// 4. Updates the entity's local position.
+	private func objectPosition(axes: Axes) -> Binding<Float> {
+		Binding {
+			guard let entity = appModel.selectedEntity else { return 0 }
+			let local = entity.position
+			let robot = calibrationManager.convertLocalToRobot(local: local)
+			switch axes {
+			case .x:
+				return robot.x * 1000
+			case .y:
+				return robot.y * 1000
+			case .z:
+				return robot.z * 1000
+			}
+		} set: { newRobotValue in
+			guard let entity = appModel.selectedEntity else { return }
 
             // Convert current local position to robot space.
             var currentRobot = calibrationManager.convertLocalToRobot(local: entity.position)
 
-            // Replace the specific axis with the new value.
-            switch axes {
-            case .x:
-                currentRobot.x = newRobotValue
-            case .y:
-                currentRobot.y = newRobotValue
-            case .z:
-                currentRobot.z = newRobotValue
-            }
+			// Replace the specific axis with the new value.
+			switch axes {
+			case .x:
+				currentRobot.x = newRobotValue / 1000
+			case .y:
+				currentRobot.y = newRobotValue / 1000
+			case .z:
+				currentRobot.z = newRobotValue / 1000
+			}
 
             // Convert the updated robot coordinate back to local space.
             let newLocal = calibrationManager.convertRobotToLocal(robot: currentRobot)
