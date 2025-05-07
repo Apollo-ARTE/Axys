@@ -112,5 +112,5 @@ struct ToolbarView: View {
 #Preview {
 	ToolbarView()
 		.environment(AppModel.shared)
-		.environment(RhinoConnectionManager.shared)
+        .environment(RhinoConnectionManager.init(calibrationManager: .shared))
 }

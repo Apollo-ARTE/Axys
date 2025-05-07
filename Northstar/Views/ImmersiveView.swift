@@ -19,7 +19,6 @@ struct ImmersiveView: View {
     @Environment(CalibrationManager.self) private var calibrationManager
 
     @State private var rootObject = Entity()
-    @State private var printedObject = Entity()
     @State private var robotReachEntity = Entity()
     @State private var virtualLabEntity = Entity()
     @State private var localCoordinates: SIMD3<Float> = .zero
@@ -27,17 +26,12 @@ struct ImmersiveView: View {
 
     var body: some View {
         RealityView { content, attachments in
-            if let printedObject = try? await ModelEntity.printedObject() {
-                self.printedObject = printedObject
-            }
 
-            rhinoConnectionManager.object = printedObject
-
-            // Optionally add an attachment to display coordinates.
-            if let coordinatesAttachment = attachments.entity(for: "coordinates") {
-                coordinatesAttachment.position = [0, 0.4, 0]
-                printedObject.addChild(coordinatesAttachment)
-            }
+            // MARK: ATTACHMENT TO DO
+//            if let coordinatesAttachment = attachments.entity(for: "coordinates") {
+//                coordinatesAttachment.position = [0, 0.4, 0]
+//                rhinoConnectionManager.importedEntity.addChild(coordinatesAttachment)
+//            }
 
             if let robotReachEntity = try? await ModelEntity.robotReach() {
                 self.robotReachEntity = robotReachEntity
@@ -48,19 +42,17 @@ struct ImmersiveView: View {
 
             content.add(appModel.robotReachRoot)
             content.add(appModel.virtualLabRoot)
-            content.add(printedObject)
             content.add(imageTracking.rootEntity)
-        } update: { content, attachments in 
-            	print("🔄 [UPDATE] RealityView update triggered")
-	print("🔎 [STATE] importedEntity: \(String(describing: rhinoConnectionManager.importedEntity))")
-	print("📦 [STATE] Entities in content: \(content.entities.count)")
-	if let importedEntity = rhinoConnectionManager.importedEntity,
-	   content.entities.contains(importedEntity) == false {
-		print("📍 [ACTION] Trying to add imported entity to scene")
-		content.add(importedEntity)
-		print("✅ [UPDATE] Setting position for imported entity: \(importedEntity.position)")
-				print("✅ [UPDATE] Adding imported entity to scene content via anchor.")
-			}
+        } update: { content, attachments in
+            Logger.views.info("🔄 [UPDATE] RealityView update triggered")
+            Logger.views.info("🔎 [STATE] importedEntity: \(String(describing: rhinoConnectionManager.importedEntity))")
+            if let importedEntity = rhinoConnectionManager.importedEntity,
+               content.entities.contains(importedEntity) == false {
+                Logger.views.info("📍 [ACTION] Trying to add imported entity to scene")
+                content.add(importedEntity)
+                Logger.views.info("✅ [UPDATE] Setting position for imported entity: \(importedEntity.position)")
+                Logger.views.info("✅ [UPDATE] Adding imported entity to scene content via anchor.")
+            }
         } attachments: {
             Attachment(id: "coordinates") {
                 VStack {
