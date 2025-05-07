@@ -25,4 +25,16 @@ class Coordinate {
 		self.localY = localY
 		self.localZ = localZ
 	}
+
+	required init(from decoder: Decoder) throws {
+		let container = try? decoder.container(keyedBy: CodingKeys.self)
+		robotX = try container?.decodeIfPresent(Float.self, forKey: .robotX) ?? 0
+		robotY = try container?.decodeIfPresent(Float.self, forKey: .robotY) ?? 0
+		robotZ = try container?.decodeIfPresent(Float.self, forKey: .robotZ) ?? 0
+
+		// Always reset local coords
+		localX = 0
+		localY = 0
+		localZ = 0
+	}
 }

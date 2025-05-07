@@ -25,7 +25,7 @@ extension ModelEntity {
             return nil
         }
         object.name = "robot_reach_blue"
-        object.transform.scale = [0, 0, 0]
+        object.transform.scale = [0.001, 0.001, 0.001]
         return object
     }
 
@@ -34,7 +34,7 @@ extension ModelEntity {
             return nil
         }
         object.name = "virtual_lab"
-        object.transform.scale = [0, 0, 0]
+        object.transform.scale = [0.001, 0.001, 0.001]
 
         return object
     }

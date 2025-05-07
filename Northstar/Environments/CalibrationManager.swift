@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftUI
 import simd
 import RealityFoundation
 import OSLog
@@ -14,13 +15,20 @@ import OSLog
 /// It uses three markers (non-collinear points) to compute a 3D rigid transformation.
 @Observable
 class CalibrationManager {
-    static let shared: CalibrationManager = .init()
-    private init() {}
+	static let shared: CalibrationManager = .init()
+	private init() {}
 
-    // Markers with known coordinates in both systems.
-    var marker1 = Coordinate(robotX: 0, robotY: -1, robotZ: 0, localX: 0, localY: 0, localZ: 0)
-    var marker2 = Coordinate(robotX: 1, robotY: 0, robotZ: 0, localX: 0, localY: 0, localZ: 0)
-    var marker3 = Coordinate(robotX: 0, robotY: 1, robotZ: 0, localX: 0, localY: 0, localZ: 0)
+	// The z axes difference between Rhino's origin and the robot's origin
+	@ObservationIgnored
+	@AppStorage("zOffset")
+	var zOffset: Double = 900
+
+	// Markers with known coordinates in both systems.
+	var marker1 = Coordinate.load(key: "marker1") ?? .init()
+	var marker2 = Coordinate.load(key: "marker2") ?? .init()
+	var marker3 = Coordinate.load(key: "marker3") ?? .init()
+
+	var calibrationStep: CalibrationStep = .placeMarkers
 
     var isCalibrationCompleted = false
     var didSetZeroPosition = false
@@ -37,9 +45,9 @@ class CalibrationManager {
         let v2 = simd_float3(marker2.localX, marker2.localY, marker2.localZ)
         let v3 = simd_float3(marker3.localX, marker3.localY, marker3.localZ)
 
-        let r1 = simd_float3(marker1.robotX, marker1.robotY, marker1.robotZ)
-        let r2 = simd_float3(marker2.robotX, marker2.robotY, marker2.robotZ)
-        let r3 = simd_float3(marker3.robotX, marker3.robotY, marker3.robotZ)
+		let r1 = convertToSimdFloat3(from: marker1, zOffset: zOffset)
+		let r2 = convertToSimdFloat3(from: marker2, zOffset: zOffset)
+		let r3 = convertToSimdFloat3(from: marker3, zOffset: zOffset)
 
         // --- Construct an orthonormal basis for the local (Vision Pro) coordinate system ---
         let a1 = v2 - v1
@@ -129,14 +137,22 @@ class CalibrationManager {
         )
     }
 
-    /// Optionally, retrieve the full 4×4 transformation matrix from local to robot coordinates.
-    /// This can be useful for interfacing with graphics or robotics APIs.
-    func visionToRobotMatrix() -> simd_float4x4 {
-        var transform = simd_float4x4(1)  // Identity matrix.
-        transform.columns.0 = simd_float4(rotation.columns.0, 0)
-        transform.columns.1 = simd_float4(rotation.columns.1, 0)
-        transform.columns.2 = simd_float4(rotation.columns.2, 0)
-        transform.columns.3 = simd_float4(translation, 1)
-        return transform
-    }
+	/// Optionally, retrieve the full 4×4 transformation matrix from local to robot coordinates.
+	/// This can be useful for interfacing with graphics or robotics APIs.
+	func visionToRobotMatrix() -> simd_float4x4 {
+		var transform = simd_float4x4(1)  // Identity matrix.
+		transform.columns.0 = simd_float4(rotation.columns.0, 0)
+		transform.columns.1 = simd_float4(rotation.columns.1, 0)
+		transform.columns.2 = simd_float4(rotation.columns.2, 0)
+		transform.columns.3 = simd_float4(translation, 1)
+		return transform
+	}
+
+	func convertToSimdFloat3(from coordinate: Coordinate, zOffset: Double) -> simd_float3 {
+		return simd_float3(
+			Float(coordinate.robotX) / 1000,
+			Float(coordinate.robotY) / 1000,
+			Float(coordinate.robotZ) / 1000 - Float(zOffset)
+		)
+	}
 }
