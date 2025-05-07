@@ -26,8 +26,8 @@ class AppModel {
 	var showCalibrationWindow = false
 	var showModels = false
 	var showRobotReach = false
+    var isConnected = false
 
 	var selectedEntity: Entity?
     var showVirtualLab = false
-    
 }

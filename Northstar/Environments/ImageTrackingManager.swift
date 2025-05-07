@@ -41,8 +41,6 @@ class ImageTrackingManager {
 					updateImage(update.anchor)
 				case .removed:
 					removeImage(update.anchor)
-				default:
-					break
 				}
 			}
 		}

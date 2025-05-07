@@ -1,8 +1,8 @@
 //
-//  ModelEntity+PritedObject.swift
+//  ModelEntity+RhinoObject.swift
 //  Northstar
 //
-//  Created by Alessandro Bortoluzzi on 08/04/25.
+//  Created by Ilia Sedelkin on 15/04/25.
 //
 
 import RealityKit

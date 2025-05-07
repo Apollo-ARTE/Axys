@@ -12,4 +12,5 @@ extension Logger {
 
 	static let calibration = Logger(subsystem: subsystem, category: "Calibration")
 	static let connection = Logger(subsystem: subsystem, category: "Connection")
+    static let views = Logger(subsystem: subsystem, category: "Views")
 }

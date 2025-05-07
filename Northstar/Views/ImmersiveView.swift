@@ -9,6 +9,7 @@ import SwiftUI
 import RealityKit
 import RealityKitContent
 import OSLog
+import simd
 
 struct ImmersiveView: View {
 	@Environment(\.openWindow) private var openWindow
@@ -18,36 +19,21 @@ struct ImmersiveView: View {
 	@Environment(CalibrationManager.self) private var calibrationManager
 
 	@State private var rootObject = Entity()
-//	@State private var rhinoObject = Entity()
     @State private var robotReachEntity = Entity()
     @State private var virtualLabEntity = Entity()
 	@State private var localCoordinates: SIMD3<Float> = .zero
 	@State private var robotCoordinates: SIMD3<Float> = .zero
-    
+
 	var body: some View {
-        RealityView { content, attachments in
-//			if let printedObject = try? await ModelEntity.rhinoObject(name: "ReefModel") {
-//				self.rhinoObject = printedObject
-//            }
-//
-//			rhinoConnectionManager.object = rhinoObject
-
-//            // Optionally add an attachment to display coordinates.
-//            if let coordinatesAttachment = attachments.entity(for: "coordinates") {
-//                coordinatesAttachment.position = [0, 0.4, 0]
-//                rhinoObject.addChild(coordinatesAttachment)
-//            }
-
+        RealityView { content, _ in
             if let robotReachEntity = try? await ModelEntity.robotReach() {
                 self.robotReachEntity = robotReachEntity
             }
             if let virtualLabEntity = try? await ModelEntity.virtualLab() {
                 self.virtualLabEntity = virtualLabEntity
             }
-
             content.add(virtualLabEntity)
             content.add(robotReachEntity)
-//            content.add(rhinoObject)
             content.add(rhinoConnectionManager.rhinoRootEntity)
             content.add(imageTracking.rootEntity)
 		} update: { content, _ in
@@ -55,44 +41,63 @@ struct ImmersiveView: View {
                 if let model = content.entities.first(where: { $0.name == "robot_reach_blue" }) {
                     model.position = calibrationManager.convertRobotToLocal(robot: [0, 0, 0])
                     model.transform.scale = [0.001, 0.001, 0.001]
-                }
+                    }
             } else {
                 if let model = content.entities.first(where: { $0.name == "robot_reach_blue" }) {
                     model.transform.scale = [0, 0, 0]
                 }
             }
 
+            if appModel.showModels && calibrationManager.isCalibrationCompleted {
+                //            if appModel.showModels { // Uncomment line for testing without calibration
+                if let model = content.entities.first(where: { $0.name == "rhino_root" }) {
+                    model.children.forEach { rhinoObject in
+                        rhinoObject.transform.scale = [0.001, 0.001, 0.001]
+                        Logger.views.debug("Showing object: \(rhinoObject.name)")
+                    }
+                }
+            } else {
+                if let model = content.entities.first(where: { $0.name == "rhino_root" }) {
+                    model.children.forEach { rhinoObject in
+                        Logger.views.debug("Hiding object: \(rhinoObject.name)")
+                        rhinoObject.transform.scale = [0, 0, 0]
+                    }
+                }
+            }
+
             if appModel.showVirtualLab && calibrationManager.isCalibrationCompleted {
                 if let model = content.entities.first(where: { $0.name == "virtual_lab" }) {
                     model.transform.scale = [0.001, 0.001, 0.001]
-                    model.look(at: calibrationManager.convertRobotToLocal(robot: [0, 10, 0]), from:  calibrationManager.convertRobotToLocal(robot: [0, 0, 0]), relativeTo: nil)
-
+                    model.look(
+                        at: calibrationManager.convertRobotToLocal(robot: [0, 10, 0]),
+                        from: calibrationManager.convertRobotToLocal(robot: [0, 0, 0]),
+                        relativeTo: nil)
                 }
             } else {
                 if let model = content.entities.first(where: { $0.name == "virtual_lab" }) {
                     model.transform.scale = [0, 0, 0]
                 }
             }
-		} attachments: {
-			Attachment(id: "coordinates") {
-				VStack {
-					HStack {
-						Text("Local:")
-						Text("X: \(convertToCentimeters(meters: localCoordinates.x))")
-						Text("Y: \(convertToCentimeters(meters: localCoordinates.y))")
-						Text("Z: \(convertToCentimeters(meters: localCoordinates.z))")
-					}
-					HStack {
-						Text("Robot:")
-						Text("X: \(convertToCentimeters(meters: robotCoordinates.x))")
-						Text("Y: \(convertToCentimeters(meters: robotCoordinates.y))")
-						Text("Z: \(convertToCentimeters(meters: robotCoordinates.z))")
-					}
-				}
-				.padding()
-				.glassBackgroundEffect()
-			}
-		}
+        } attachments: {
+            Attachment(id: "coordinates") {
+                VStack {
+                    HStack {
+                        Text("Local:")
+                        Text("X: \(convertToCentimeters(meters: localCoordinates.x))")
+                        Text("Y: \(convertToCentimeters(meters: localCoordinates.y))")
+                        Text("Z: \(convertToCentimeters(meters: localCoordinates.z))")
+                    }
+                    HStack {
+                        Text("Robot:")
+                        Text("X: \(convertToCentimeters(meters: robotCoordinates.x))")
+                        Text("Y: \(convertToCentimeters(meters: robotCoordinates.y))")
+                        Text("Z: \(convertToCentimeters(meters: robotCoordinates.z))")
+                    }
+                }
+                .padding()
+                .glassBackgroundEffect()
+            }
+        }
 		.gesture(
 			TapGesture()
 				.targetedToAnyEntity()
@@ -124,6 +129,14 @@ struct ImmersiveView: View {
 				}
 		)
 	}
+
+    func showObjects(content: RealityViewContent) {
+        if let model = content.entities.first(where: { $0.name == "rhino_root" }) {
+            model.children.forEach { rhinoObject in
+                rhinoObject.transform.scale = [1, 1, 1]
+            }
+        }
+    }
 
 	/// Converts a measurement in meters to a formatted string in centimeters.
 	func convertToCentimeters(meters: Float) -> String {
