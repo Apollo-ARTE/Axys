@@ -46,17 +46,15 @@ struct ImmersiveView: View {
             content.add(rhinoConnectionManager.rhinoRootEntity)
             content.add(imageTracking.rootEntity)
         } update: { content, attachments in
-            Logger.views.info("🔄 [UPDATE] RealityView update triggered")
-            Logger.views.info("🔎 [STATE] importedEntity: \(String(describing: rhinoConnectionManager.importedEntity))")
             if let importedEntity = rhinoConnectionManager.importedEntity,
                content.entities.contains(importedEntity) == false {
                 Logger.views.info("📍 [ACTION] Trying to add imported entity to scene")
-                content.add(importedEntity)
+                if let model = content.entities.first(where: { $0.name == "rhino_root" }) {
+                    model.addChild(importedEntity)
+                }
                 Logger.views.info("✅ [UPDATE] Setting position for imported entity: \(importedEntity.position)")
-                Logger.views.info("✅ [UPDATE] Adding imported entity to scene content via anchor.")
             }
-		} update: { content, attachments in
-//            if appModel.showModels && calibrationManager.isCalibrationCompleted {
+
             if appModel.showModels { // Uncomment line for testing without calibration
                 if let model = content.entities.first(where: { $0.name == "rhino_root" }) {
                     model.children.forEach { rhinoObject in
@@ -72,7 +70,7 @@ struct ImmersiveView: View {
                     }
                 }
             }
-        } attachments: {
+		} attachments: {
             Attachment(id: "coordinates") {
                 VStack {
                     HStack {
