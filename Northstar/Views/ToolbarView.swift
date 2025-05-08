@@ -30,14 +30,6 @@ struct ToolbarView: View {
 			}
 			
 			Toggle("Model", systemImage: "cube.fill", isOn: $appModel.showModels)
-//				.onChange(of: appModel.showModels) { _, newValue in
-//					if newValue {
-//						rhinoConnectionManager.connectToWebSocket()
-//					} else {
-//						rhinoConnectionManager.disconnectFromWebSocket()
-//					}
-//				}
-
 			Toggle("Robot's Reach", systemImage: "skew", isOn: $appModel.showRobotReach)
             Toggle("Virtual Lab", systemImage: "baseball.diamond.bases", isOn: $appModel.showVirtualLab)
 			Divider()
@@ -58,10 +50,19 @@ struct ToolbarView: View {
 				.popover(isPresented: $showInfoPopover, arrowEdge: .bottom) {
 					InfoView()
 				}
+            Toggle("Connect", systemImage: "tv.badge.wifi", isOn: $appModel.isConnected)
+                .labelStyle(.iconOnly)
+                .onChange(of: appModel.isConnected) { _, newValue in
+                    if newValue {
+                        rhinoConnectionManager.connectToWebSocket()
+                    } else {
+                        rhinoConnectionManager.disconnectFromWebSocket()
+                    }
+                }
 		}
-		.onAppear {
-			rhinoConnectionManager.connectToWebSocket()
-		}
+		// .onAppear {
+		// 	rhinoConnectionManager.connectToWebSocket()
+		// }
 		.toggleStyle(.button)
 		.padding()
 		.glassBackgroundEffect()
