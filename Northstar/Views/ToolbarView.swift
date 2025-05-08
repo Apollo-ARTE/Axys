@@ -21,6 +21,14 @@ struct ToolbarView: View {
 		@Bindable var appModel = appModel
 
 		HStack {
+			Button("Export", systemImage: "square.and.arrow.up.on.square") {
+				let rn = rhinoConnectionManager
+				rn.sendExportCommand()
+//				Task {
+//					await rn.getFilePathForRhinoObjects()
+//				}
+			}
+			
 			Toggle("Model", systemImage: "cube.fill", isOn: $appModel.showModels)
 			Toggle("Robot's Reach", systemImage: "skew", isOn: $appModel.showRobotReach)
             Toggle("Virtual Lab", systemImage: "baseball.diamond.bases", isOn: $appModel.showVirtualLab)
@@ -105,4 +113,5 @@ struct ToolbarView: View {
 #Preview {
 	ToolbarView()
 		.environment(AppModel.shared)
+        .environment(RhinoConnectionManager.init(calibrationManager: .shared))
 }

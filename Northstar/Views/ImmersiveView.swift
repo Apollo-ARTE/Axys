@@ -27,18 +27,12 @@ struct ImmersiveView: View {
 
 	var body: some View {
         RealityView { content, attachments in
-            if let robotReachEntity = try? await ModelEntity.robotReach() {
-                self.robotReachEntity = robotReachEntity
-            }
-            if let virtualLabEntity = try? await ModelEntity.virtualLab() {
-                self.virtualLabEntity = virtualLabEntity
-            }
 
-            // // Optionally add an attachment to display coordinates.
-            // if let coordinatesAttachment = attachments.entity(for: "coordinates") {
-            //     coordinatesAttachment.position = [0, 0.4, 0]
-            //     printedObject.addChild(coordinatesAttachment)
-            // }
+            // MARK: ATTACHMENT TO DO
+//            if let coordinatesAttachment = attachments.entity(for: "coordinates") {
+//                coordinatesAttachment.position = [0, 0.4, 0]
+//                rhinoConnectionManager.importedEntity.addChild(coordinatesAttachment)
+//            }
 
             if let robotReachEntity = try? await ModelEntity.robotReach() {
                 self.robotReachEntity = robotReachEntity
@@ -51,8 +45,16 @@ struct ImmersiveView: View {
             content.add(appModel.virtualLabRoot)
             content.add(rhinoConnectionManager.rhinoRootEntity)
             content.add(imageTracking.rootEntity)
-		} update: { content, attachments in
-//            if appModel.showModels && calibrationManager.isCalibrationCompleted {
+        } update: { content, attachments in
+//            if let importedEntity = rhinoConnectionManager.importedEntity,
+//               content.entities.contains(importedEntity) == false {
+//                Logger.views.info("📍 [ACTION] Trying to add imported entity to scene")
+//                if let model = content.entities.first(where: { $0.name == "rhino_root" }) {
+//                    model.addChild(importedEntity)
+//                }
+//                Logger.views.info("✅ [UPDATE] Setting position for imported entity: \(importedEntity.position)")
+//            }
+
             if appModel.showModels { // Uncomment line for testing without calibration
                 if let model = content.entities.first(where: { $0.name == "rhino_root" }) {
                     model.children.forEach { rhinoObject in
@@ -68,7 +70,7 @@ struct ImmersiveView: View {
                     }
                 }
             }
-        } attachments: {
+		} attachments: {
             Attachment(id: "coordinates") {
                 VStack {
                     HStack {
