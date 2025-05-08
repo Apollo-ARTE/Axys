@@ -6,10 +6,17 @@
 //
 
 import RealityKit
+import OSLog
 
 extension ModelEntity {
     static func rhinoObject(name: String) async throws -> ModelEntity? {
-		guard let object = try? await ModelEntity(named: name) else {
+
+        let fileManager = FileManager.default
+        let tempDir = fileManager.temporaryDirectory
+        let fileURL = tempDir.appendingPathComponent("\(name).usdz")
+
+        guard let object = try? await ModelEntity(contentsOf: fileURL) else {
+            Logger().info("Failed to load \(name)")
 			return nil
 		}
 		object.components.set(InputTargetComponent())

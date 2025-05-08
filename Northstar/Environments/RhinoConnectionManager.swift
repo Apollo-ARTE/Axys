@@ -13,7 +13,7 @@ import SwiftUI
 @Observable
 class RhinoConnectionManager {
     let calibrationManager: CalibrationManager
-    var importedEntity: Entity?
+//    var importedEntity: Entity?
     var anchorEntity: AnchorEntity?
     var webSocketTask: URLSessionWebSocketTask?
     var entityID: String?
@@ -186,7 +186,7 @@ class RhinoConnectionManager {
             if let metadata = try? decoder.decode(USDZMetadata.self, from: data), metadata.type == "usdz_metadata" {
                 let fileManager = FileManager.default
                 let tempDir = fileManager.temporaryDirectory
-                let fileURL = tempDir.appendingPathComponent("received.usdz")
+                let fileURL = tempDir.appendingPathComponent("\(metadata.fileName)")
 
                 if fileManager.fileExists(atPath: fileURL.path) {
                     try? fileManager.removeItem(at: fileURL)
@@ -204,7 +204,7 @@ class RhinoConnectionManager {
                 do {
                     let fileManager = FileManager.default
                     let tempDir = fileManager.temporaryDirectory
-                    let fileURL = tempDir.appendingPathComponent("received.usdz")
+                    let fileURL = tempDir.appendingPathComponent("\(metadata.fileName)")
 
                     if fileManager.fileExists(atPath: fileURL.path) {
                         try? fileManager.removeItem(at: fileURL)
@@ -218,23 +218,23 @@ class RhinoConnectionManager {
                     let diskSize = fileAttributes?[.size] as? Int ?? -1
                     Logger.calibration.info("📦 Disk-reported file size: \(diskSize) bytes")
 
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                        do {
-                            Logger.calibration.info("✅ Attempting to load USDZ file at: \(fileURL.path)")
-                            let entity = try Entity.load(contentsOf: fileURL)
-                            entity.generateCollisionShapes(recursive: true)
-                            entity.components.set(InputTargetComponent())
-
-                            if let previousEntity = self.importedEntity {
-                                previousEntity.removeFromParent()
-                            }
-
-                            self.importedEntity = entity
-                            Logger.calibration.info("✅ USDZ entity loaded and stored in RhinoConnectionManager.")
-                        } catch {
-                            Logger.calibration.error("❌ Failed to load USDZ: \(error.localizedDescription)")
-                        }
-                    }
+//                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+//                        do {
+//                            Logger.calibration.info("✅ Attempting to load USDZ file at: \(fileURL.path)")
+//                            let entity = try Entity.load(contentsOf: fileURL)
+//                            entity.generateCollisionShapes(recursive: true)
+//                            entity.components.set(InputTargetComponent())
+//
+//                            if let previousEntity = self.importedEntity {
+//                                previousEntity.removeFromParent()
+//                            }
+//
+//                            self.importedEntity = entity
+//                            Logger.calibration.info("✅ USDZ entity loaded and stored in RhinoConnectionManager.")
+//                        } catch {
+//                            Logger.calibration.error("❌ Failed to load USDZ: \(error.localizedDescription)")
+//                        }
+//                    }
                 } catch {
                     Logger.calibration.error("❌ Failed to save/load USDZ file: \(error.localizedDescription)")
                 }

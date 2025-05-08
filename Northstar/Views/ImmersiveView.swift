@@ -46,14 +46,14 @@ struct ImmersiveView: View {
             content.add(rhinoConnectionManager.rhinoRootEntity)
             content.add(imageTracking.rootEntity)
         } update: { content, attachments in
-            if let importedEntity = rhinoConnectionManager.importedEntity,
-               content.entities.contains(importedEntity) == false {
-                Logger.views.info("📍 [ACTION] Trying to add imported entity to scene")
-                if let model = content.entities.first(where: { $0.name == "rhino_root" }) {
-                    model.addChild(importedEntity)
-                }
-                Logger.views.info("✅ [UPDATE] Setting position for imported entity: \(importedEntity.position)")
-            }
+//            if let importedEntity = rhinoConnectionManager.importedEntity,
+//               content.entities.contains(importedEntity) == false {
+//                Logger.views.info("📍 [ACTION] Trying to add imported entity to scene")
+//                if let model = content.entities.first(where: { $0.name == "rhino_root" }) {
+//                    model.addChild(importedEntity)
+//                }
+//                Logger.views.info("✅ [UPDATE] Setting position for imported entity: \(importedEntity.position)")
+//            }
 
             if appModel.showModels { // Uncomment line for testing without calibration
                 if let model = content.entities.first(where: { $0.name == "rhino_root" }) {
