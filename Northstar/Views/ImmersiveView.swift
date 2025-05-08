@@ -10,6 +10,7 @@ import RealityKit
 import RealityKitContent
 import OSLog
 import simd
+import simd
 
 struct ImmersiveView: View {
     @Environment(\.openWindow) private var openWindow
@@ -18,26 +19,26 @@ struct ImmersiveView: View {
     @Environment(RhinoConnectionManager.self) private var rhinoConnectionManager
     @Environment(CalibrationManager.self) private var calibrationManager
 
-    @State private var rootObject = Entity()
-    @State private var printedObject = Entity()
+	@State private var rootObject = Entity()
     @State private var robotReachEntity = Entity()
     @State private var virtualLabEntity = Entity()
     @State private var localCoordinates: SIMD3<Float> = .zero
     @State private var robotCoordinates: SIMD3<Float> = .zero
 
-    var body: some View {
+	var body: some View {
         RealityView { content, attachments in
-            if let printedObject = try? await ModelEntity.printedObject() {
-                self.printedObject = printedObject
+            if let robotReachEntity = try? await ModelEntity.robotReach() {
+                self.robotReachEntity = robotReachEntity
+            }
+            if let virtualLabEntity = try? await ModelEntity.virtualLab() {
+                self.virtualLabEntity = virtualLabEntity
             }
 
-            rhinoConnectionManager.object = printedObject
-
-            // Optionally add an attachment to display coordinates.
-            if let coordinatesAttachment = attachments.entity(for: "coordinates") {
-                coordinatesAttachment.position = [0, 0.4, 0]
-                printedObject.addChild(coordinatesAttachment)
-            }
+            // // Optionally add an attachment to display coordinates.
+            // if let coordinatesAttachment = attachments.entity(for: "coordinates") {
+            //     coordinatesAttachment.position = [0, 0.4, 0]
+            //     printedObject.addChild(coordinatesAttachment)
+            // }
 
             if let robotReachEntity = try? await ModelEntity.robotReach() {
                 self.robotReachEntity = robotReachEntity
@@ -48,8 +49,25 @@ struct ImmersiveView: View {
 
             content.add(appModel.robotReachRoot)
             content.add(appModel.virtualLabRoot)
-            content.add(printedObject)
+            content.add(rhinoConnectionManager.rhinoRootEntity)
             content.add(imageTracking.rootEntity)
+		} update: { content, attachments in
+//            if appModel.showModels && calibrationManager.isCalibrationCompleted {
+            if appModel.showModels { // Uncomment line for testing without calibration
+                if let model = content.entities.first(where: { $0.name == "rhino_root" }) {
+                    model.children.forEach { rhinoObject in
+                        rhinoObject.transform.scale = [0.001, 0.001, 0.001]
+                        Logger.views.debug("Showing object: \(rhinoObject.name)")
+                    }
+                }
+            } else {
+                if let model = content.entities.first(where: { $0.name == "rhino_root" }) {
+                    model.children.forEach { rhinoObject in
+                        Logger.views.debug("Hiding object: \(rhinoObject.name)")
+                        rhinoObject.transform.scale = [0, 0, 0]
+                    }
+                }
+            }
         } attachments: {
             Attachment(id: "coordinates") {
                 VStack {
@@ -121,9 +139,9 @@ struct ImmersiveView: View {
                 let ey = appModel.allowedRotationAxes.contains(.y) ? e.y : 0
                 let ez = appModel.allowedRotationAxes.contains(.z) ? e.z : 0
 
-                let filteredDelta = simd_quatf(angle: ez, axis: [0,0,1]) *
-                                    simd_quatf(angle: ey, axis: [0,1,0]) *
-                                    simd_quatf(angle: ex, axis: [1,0,0])
+                let filteredDelta = simd_quatf(angle: ez, axis: [0, 0, 1]) *
+                                    simd_quatf(angle: ey, axis: [0, 1, 0]) *
+                                    simd_quatf(angle: ex, axis: [1, 0, 0])
 
                 value.entity.setOrientation(filteredDelta * baseQuat, relativeTo: parent)
             }
@@ -139,9 +157,9 @@ struct ImmersiveView: View {
                 let ey = appModel.allowedRotationAxes.contains(.y) ? e.y : 0
                 let ez = appModel.allowedRotationAxes.contains(.z) ? e.z : 0
 
-                let filteredDelta = simd_quatf(angle: ez, axis: [0,0,1]) *
-                                    simd_quatf(angle: ey, axis: [0,1,0]) *
-                                    simd_quatf(angle: ex, axis: [1,0,0])
+                let filteredDelta = simd_quatf(angle: ez, axis: [0, 0 ,1]) *
+                                    simd_quatf(angle: ey, axis: [0, 1, 0]) *
+                                    simd_quatf(angle: ex, axis: [1, 0, 0])
 
                 let finalQuat = filteredDelta * baseQuat
                 value.entity.setOrientation(finalQuat, relativeTo: parent)

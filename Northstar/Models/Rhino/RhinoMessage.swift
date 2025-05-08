@@ -7,10 +7,16 @@
 
 import Foundation
 
+struct BatchRhinoMessage: Codable {
+    let type: String
+    let objects: [RhinoMessage]
+    let timestamp: Double
+}
+
 struct RhinoMessage: Codable {
     let type: String
+    let objectName: String
     let objectId: String
     let center: Position
-    let radius: Double
     let timestamp: Double
 }
