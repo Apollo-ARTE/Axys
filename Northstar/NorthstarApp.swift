@@ -25,7 +25,13 @@ struct NorthstarApp: App {
 	}
 
 	var body: some Scene {
-		WindowGroup("Northstar", id: "toolbar") {
+		WindowGroup("Northstar", id: "home") {
+			HomeView()
+				.environment(rhinoConnectionManager)
+		}
+		.windowResizability(.contentSize)
+
+		WindowGroup("Toolbar", id: "toolbar") {
 			ToolbarView()
 				.environment(appModel)
 				.environment(rhinoConnectionManager)

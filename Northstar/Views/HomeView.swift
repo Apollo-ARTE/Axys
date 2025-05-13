@@ -8,6 +8,12 @@
 import SwiftUI
 
 struct HomeView: View {
+	@Environment(\.openWindow) private var openWindow
+	@Environment(\.dismissWindow) private var dismissWindow
+	@Environment(RhinoConnectionManager.self) private var connectionManager
+
+	@State private var isConnected = false
+
     var body: some View {
 		VStack {
 			List {
@@ -26,10 +32,17 @@ struct HomeView: View {
 						Text("Run the plugin on Rhino and select your models")
 							.font(.footnote)
 					}
-					Toggle(isOn: .constant(true)) {
+					Toggle(isOn: $isConnected) {
 						Text("Calibration")
 						Text("Calibrate your models with real world coordinates")
 							.font(.footnote)
+					}
+					.onChange(of: isConnected) {
+						if isConnected {
+							connectionManager.connectToWebSocket()
+						} else {
+							connectionManager.disconnectFromWebSocket()
+						}
 					}
 				} header: {
 					header
@@ -42,6 +55,7 @@ struct HomeView: View {
 			.scrollBounceBehavior(.basedOnSize)
 		}
 		.padding(32)
+		.frame(width: 550, height: 550)
     }
 
 	private var header: some View {
@@ -58,7 +72,7 @@ struct HomeView: View {
 
 	private var footer: some View {
 		Button("Visualize") {
-
+			openToolbar()
 		}
 		.tint(.blue)
 		.buttonStyle(.borderedProminent)
@@ -66,8 +80,17 @@ struct HomeView: View {
 		.controlSize(.extraLarge)
 		.frame(maxWidth: .infinity, alignment: .center)
 	}
+
+	private func openToolbar() {
+		Task {
+			openWindow(id: "toolbar")
+			try await Task.sleep(nanoseconds: 100_000_000)
+			dismissWindow()
+		}
+	}
 }
 
 #Preview(windowStyle: .automatic, traits: .fixedLayout(width: 550, height: 550)) {
     HomeView()
+		.environment(RhinoConnectionManager.init(calibrationManager: .shared))
 }
