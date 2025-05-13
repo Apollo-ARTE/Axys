@@ -15,57 +15,26 @@ struct ToolbarView: View {
 	@Environment(AppModel.self) private var appModel
 	@Environment(RhinoConnectionManager.self) private var rhinoConnectionManager
 
-	@State private var showInfoPopover = false
+	@State private var opacity: Double = 0
 
 	var body: some View {
 		@Bindable var appModel = appModel
 
-		HStack {
-			Button("Export", systemImage: "square.and.arrow.up.on.square") {
-				let rn = rhinoConnectionManager
-				rn.sendExportCommand()
-//				Task {
-//					await rn.getFilePathForRhinoObjects()
-//				}
+		VStack(spacing: 32) {
+			Text("Visualize")
+				.font(.headline)
+			HStack(spacing: 32) {
+				Toggle("Model", systemImage: "cube.fill", isOn: $appModel.showModels)
+				Toggle("Robot's Reach", systemImage: "skew", isOn: $appModel.showRobotReach)
+				Toggle("Virtual Lab", systemImage: "baseball.diamond.bases", isOn: $appModel.showVirtualLab)
 			}
-			
-			Toggle("Model", systemImage: "cube.fill", isOn: $appModel.showModels)
-			Toggle("Robot's Reach", systemImage: "skew", isOn: $appModel.showRobotReach)
-            Toggle("Virtual Lab", systemImage: "baseball.diamond.bases", isOn: $appModel.showVirtualLab)
-			Divider()
-				.frame(height: 40)
-
-			Toggle("Calibrate", systemImage: "perspective", isOn: $appModel.showCalibrationWindow)
-				.onChange(of: appModel.showCalibrationWindow) {
-					if appModel.showCalibrationWindow {
-						openCalibrationWindow()
-					} else {
-						dismissCalibrationWindow()
-					}
-				}
-				.disabled(appModel.immersiveSpaceState == .inTransition)
-
-			Toggle("Info", systemImage: "info", isOn: $showInfoPopover)
-				.labelStyle(.iconOnly)
-				.popover(isPresented: $showInfoPopover, arrowEdge: .bottom) {
-					InfoView()
-				}
-            Toggle("Connect", systemImage: "tv.badge.wifi", isOn: $appModel.isConnected)
-                .labelStyle(.iconOnly)
-                .onChange(of: appModel.isConnected) { _, newValue in
-                    if newValue {
-                        rhinoConnectionManager.connectToWebSocket()
-                    } else {
-                        rhinoConnectionManager.disconnectFromWebSocket()
-                    }
-                }
+			Slider(value: $opacity) {
+				Label("Opacity", systemImage: "lightspectrum.horizontal")
+			}
+			.frame(width: 350)
 		}
-		// .onAppear {
-		// 	rhinoConnectionManager.connectToWebSocket()
-		// }
-		.toggleStyle(.button)
-		.padding()
-		.glassBackgroundEffect()
+		.toggleStyle(.circluar)
+		.padding(32)
 		.task {
 			await toggleImmersiveSpace()
 		}
@@ -110,8 +79,27 @@ struct ToolbarView: View {
 	}
 }
 
-#Preview {
+#Preview(windowStyle: .automatic) {
 	ToolbarView()
 		.environment(AppModel.shared)
         .environment(RhinoConnectionManager.init(calibrationManager: .shared))
 }
+
+
+//			Button("Export", systemImage: "square.and.arrow.up.on.square") {
+//				let rn = rhinoConnectionManager
+//				rn.sendExportCommand()
+//				//				Task {
+//				//					await rn.getFilePathForRhinoObjects()
+//				//				}
+//			}
+
+//			Toggle("Calibrate", systemImage: "perspective", isOn: $appModel.showCalibrationWindow)
+//				.onChange(of: appModel.showCalibrationWindow) {
+//					if appModel.showCalibrationWindow {
+//						openCalibrationWindow()
+//					} else {
+//						dismissCalibrationWindow()
+//					}
+//				}
+//				.disabled(appModel.immersiveSpaceState == .inTransition)

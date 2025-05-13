@@ -36,7 +36,6 @@ struct NorthstarApp: App {
 				.environment(appModel)
 				.environment(rhinoConnectionManager)
 		}
-		.windowStyle(.plain)
 		.windowResizability(.contentSize)
 		.defaultWindowPlacement { _, _ in
 			.init(.utilityPanel)
