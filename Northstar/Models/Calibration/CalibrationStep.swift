@@ -11,6 +11,7 @@ enum CalibrationStep: Identifiable, Equatable {
 	case placeMarkers
 	case scanMarker(number: Int)
 	case scanCompleted
+	case zOffset
 	case insertCoordinates(number: Int)
 	case calibrationCompleted
 
@@ -22,6 +23,8 @@ enum CalibrationStep: Identifiable, Equatable {
 			"scanMarker\(number)"
 		case .scanCompleted:
 			"scanCompleted"
+		case .zOffset:
+			"zOffset"
 		case .insertCoordinates(let number):
 			"insertCoordinates\(number)"
 		case .calibrationCompleted:
@@ -34,6 +37,7 @@ enum CalibrationStep: Identifiable, Equatable {
 			.placeMarkers,
 			.scanMarker(number: 1), .scanMarker(number: 2), .scanMarker(number: 3),
 			.scanCompleted,
+			.zOffset,
 			.insertCoordinates(number: 1),
 			.insertCoordinates(number: 2),
 			.insertCoordinates(number: 3),
@@ -49,6 +53,8 @@ enum CalibrationStep: Identifiable, Equatable {
 			"qrcode.viewfinder"
 		case .scanCompleted:
 			"checkmark.circle"
+		case .zOffset:
+			"distribute.vertical.fill"
 		case .insertCoordinates:
 			"rotate.3d"
 		case .calibrationCompleted:
@@ -64,6 +70,8 @@ enum CalibrationStep: Identifiable, Equatable {
 			"Scan the Marker \(number)"
 		case .scanCompleted:
 			"Scan Completed"
+		case .zOffset:
+			"Z-Offset"
 		case .insertCoordinates:
 			"Robot’s Coordinates"
 		case .calibrationCompleted:
@@ -79,6 +87,8 @@ enum CalibrationStep: Identifiable, Equatable {
 			"Use your Vision Pro to scan the marker \(number), ensuring it is clearly visible."
 		case .scanCompleted:
 			"Use your Vision Pro to scan the marker, ensuring it is clearly visible."
+		case .zOffset:
+			"Measure the height difference between the Robot and Rhino origin point."
 		case .insertCoordinates(let number):
 			"Enter the robot's position coordinates for marker \(number)."
 		case .calibrationCompleted:

@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct CalibrationStepView<Content: View>: View {
-	@Environment(\.dismissWindow) private var dismissWindow
+	@Environment(\.dismiss) private var dismiss
 	@Environment(CalibrationManager.self) private var calibrationManager
 	@Environment(ImageTrackingManager.self) private var imageTrackingManager
 
@@ -74,28 +74,35 @@ struct CalibrationStepView<Content: View>: View {
 
 						// Compute the rigid transformation using the new calibration system.
 						calibrationManager.calibrate()
-						dismissWindow()
+						dismiss()
 					}
 				}
 				.buttonBorderShape(.capsule)
 				.buttonStyle(.borderedProminent)
 				.controlSize(.extraLarge)
-				.disabled(isNextButtonDisabled)
+//				.disabled(isNextButtonDisabled)
 				.tint(.blue)
 
 				if let previousStep = step.previous, step != .calibrationCompleted {
-					Button {
+					Button("Go Back") {
 						step = previousStep
-					} label: {
-						Text("Go Back")
-							.foregroundStyle(.secondary)
-							.frame(maxWidth: .infinity)
-							.padding(12)
 					}
+					.buttonBorderShape(.capsule)
+					.buttonStyle(.bordered)
+					.controlSize(.extraLarge)
+					.disabled(isNextButtonDisabled)
+					.tint(.blue)
 					.disabled(step.previous == nil)
-					.buttonBorderShape(.roundedRectangle(radius: 12))
-					.buttonStyle(.plain)
 				}
+			}
+		}
+		.toolbar {
+			ToolbarItem(placement: .topBarTrailing) {
+				Button("Reset", systemImage: "arrow.clockwise") {
+
+				}
+				.labelStyle(.iconOnly)
+				.buttonStyle(.bordered)
 			}
 		}
 		.frame(maxWidth: 300)

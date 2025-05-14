@@ -15,6 +15,10 @@ struct CalibrationProcessView: View {
 
 		CalibrationStepView(step: $calibrationManager.calibrationStep) {
 			switch calibrationManager.calibrationStep {
+			case .zOffset:
+				TextField("Z offset", value: $calibrationManager.zOffset, format: .number)
+					.textFieldStyle(.roundedBorder)
+					.keyboardType(.decimalPad)
 			case .insertCoordinates(let number) where number == 1:
 				CoordinatesInputView(
 					x: $calibrationManager.marker1.robotX,
