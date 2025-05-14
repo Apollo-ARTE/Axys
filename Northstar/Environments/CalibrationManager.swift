@@ -87,6 +87,7 @@ class CalibrationManager {
         translation = r1 - Rmat * v1
 
         isCalibrationCompleted = true
+		calibrationStep = .placeMarkers
     }
 
     /// Converts a point from the local (Vision Pro) coordinate system to the robot coordinate system.

@@ -27,13 +27,13 @@ struct CalibrationStepView<Content: View>: View {
 
 	var body: some View {
 		VStack(spacing: 16) {
-			Image(systemName: step.systemName)
-				.contentTransition(.symbolEffect(.replace))
-				.font(.title2)
-				.symbolVariant(.fill)
-				.padding()
-				.background(.blue, in: .circle)
-				.accessibilityHidden(true)
+//			Image(systemName: step.systemName)
+//				.contentTransition(.symbolEffect(.replace))
+//				.font(.title2)
+//				.symbolVariant(.fill)
+//				.padding()
+//				.background(.blue, in: .circle)
+//				.accessibilityHidden(true)
 
 			Text(step.title)
 				.font(.title)
@@ -43,7 +43,18 @@ struct CalibrationStepView<Content: View>: View {
 
 			content
 
-			VStack {
+			HStack {
+				if let previousStep = step.previous, step != .calibrationCompleted {
+					Button("Go Back") {
+						step = previousStep
+					}
+					.buttonBorderShape(.capsule)
+					.buttonStyle(.bordered)
+					.controlSize(.extraLarge)
+					.disabled(isNextButtonDisabled)
+					.disabled(step.previous == nil)
+				}
+
 				Button("Done") {
 					if let nextStep = step.next {
 						// If we're in the placeMarkers step, start image tracking.
@@ -82,24 +93,12 @@ struct CalibrationStepView<Content: View>: View {
 				.controlSize(.extraLarge)
 //				.disabled(isNextButtonDisabled)
 				.tint(.blue)
-
-				if let previousStep = step.previous, step != .calibrationCompleted {
-					Button("Go Back") {
-						step = previousStep
-					}
-					.buttonBorderShape(.capsule)
-					.buttonStyle(.bordered)
-					.controlSize(.extraLarge)
-					.disabled(isNextButtonDisabled)
-					.tint(.blue)
-					.disabled(step.previous == nil)
-				}
 			}
 		}
 		.toolbar {
 			ToolbarItem(placement: .topBarTrailing) {
 				Button("Reset", systemImage: "arrow.clockwise") {
-
+					calibrationManager.calibrationStep = .placeMarkers
 				}
 				.labelStyle(.iconOnly)
 				.buttonStyle(.bordered)
