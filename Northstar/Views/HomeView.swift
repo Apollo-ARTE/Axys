@@ -10,27 +10,31 @@ import SwiftUI
 struct HomeView: View {
 	@Environment(\.openWindow) private var openWindow
 	@Environment(\.dismissWindow) private var dismissWindow
+	@Environment(AppModel.self) private var appModel
 	@Environment(RhinoConnectionManager.self) private var connectionManager
 
-	@State private var isConnected = false
+	@State private var isCalibrated = false
+	@State private var showConnectionView = false
+	@State private var showCalibrationView = false
 
     var body: some View {
+		@Bindable var appModel = appModel
 		NavigationStack {
 			VStack {
 				List {
 					Section {
 						LabeledContent {
-							Text("Off")
+							Text(connectionManager.isConnected ? "On" : "Off")
 						} label: {
 							Text("Rhino Connection")
 							Text("Connect to your local network and run the Rhino Plugin")
 								.font(.footnote)
 						}
 						NavigationLink {
-							Text("Models view")
+							ImportModelsView()
 						} label: {
 							LabeledContent {
-								Text("0")
+								Text(connectionManager.trackedObjects?.count ?? 0, format: .number)
 							} label: {
 								Text("Imported Models")
 								Text("Run the plugin on Rhino and select your models")
@@ -38,18 +42,19 @@ struct HomeView: View {
 							}
 						}
 
-						Toggle(isOn: $isConnected) {
+						Toggle(isOn: $appModel.showCalibrationWindow) {
 							Text("Calibration")
 							Text("Calibrate your models with real world coordinates")
 								.font(.footnote)
 						}
-						.onChange(of: isConnected) {
-							if isConnected {
-								connectionManager.connectToWebSocket()
+						.onChange(of: appModel.showCalibrationWindow) {
+							if appModel.showCalibrationWindow {
+								showCalibrationView = true
 							} else {
-								connectionManager.disconnectFromWebSocket()
+								showCalibrationView = false
 							}
 						}
+						.disabled(appModel.immersiveSpaceState == .inTransition)
 					} header: {
 						header
 							.padding(.bottom, 32)
@@ -60,9 +65,15 @@ struct HomeView: View {
 				}
 				.scrollBounceBehavior(.basedOnSize)
 			}
+			.navigationDestination(isPresented: $showConnectionView) {
+				ConnectionView()
+			}
+			.navigationDestination(isPresented: $showCalibrationView) {
+				CalibrationProcessView()
+			}
 		}
-		.padding(32)
-		.frame(width: 550, height: 550)
+		.padding(16)
+		.frame(width: 550, height: 500)
     }
 
 	private var header: some View {
@@ -79,7 +90,11 @@ struct HomeView: View {
 
 	private var footer: some View {
 		Button("Visualize") {
-			openToolbar()
+			if connectionManager.isConnected {
+				openToolbar()
+			} else {
+				showConnectionView = true
+			}
 		}
 		.tint(.blue)
 		.buttonStyle(.borderedProminent)
@@ -95,9 +110,17 @@ struct HomeView: View {
 			dismissWindow()
 		}
 	}
+
+	private func openCalibrationWindow() {
+		openWindow(id: "calibration")
+	}
+
+	private func dismissCalibrationWindow() {
+		dismissWindow(id: "calibration")
+	}
 }
 
 #Preview(windowStyle: .automatic, traits: .fixedLayout(width: 550, height: 550)) {
-    HomeView()
+	HomeView()
 		.environment(RhinoConnectionManager.init(calibrationManager: .shared))
 }

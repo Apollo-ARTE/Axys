@@ -13,16 +13,24 @@ import SwiftUI
 @Observable
 class RhinoConnectionManager {
     let calibrationManager: CalibrationManager
-//    var importedEntity: Entity?
     var anchorEntity: AnchorEntity?
     var webSocketTask: URLSessionWebSocketTask?
     var entityID: String?
-    private var receivedUSDZData = Data()
+
+	var ipAddress: String = .load(key: "rhino_ip") ?? "" {
+		didSet {
+			ipAddress.save(key: "rhino_ip")
+		}
+	}
+
+	var isConnected: Bool = false
 
     var trackedObjects: [RhinoObject]? // An array to store the tracked objects upon receival
     var createMessageReceived: Bool = false
 
     var rhinoRootEntity: Entity
+
+	private var receivedUSDZData = Data()
 
     init(calibrationManager: CalibrationManager) {
         self.calibrationManager = calibrationManager
@@ -33,16 +41,25 @@ class RhinoConnectionManager {
     func disconnectFromWebSocket() {
         webSocketTask?.cancel()
         Logger.connection.info("Disconnected from WebSocket")
+		isConnected = false
     }
 
     func connectToWebSocket() {
-        guard let url = URL(string: "ws://\(Constants.ipAddress):8765") else { return }
+        guard let url = URL(string: "ws://\(ipAddress):8765") else { return }
         webSocketTask = URLSession.shared.webSocketTask(with: url)
         webSocketTask?.resume()
         Logger.connection.info("Connected to WebSocket")
         receiveMessages()
         trackedObjects = []
+		isConnected = true
     }
+
+	func isValidIPAddress() -> Bool {
+		let pattern = #"^((25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)\.){3}(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)$"#
+		let regex = try! NSRegularExpression(pattern: pattern)
+		let range = NSRange(location: 0, length: ipAddress.utf16.count)
+		return regex.firstMatch(in: ipAddress, options: [], range: range) != nil
+	}
 
     func sendPositionUpdate(for model: Entity, newPosition: SIMD3<Float>) {
         guard let webSocketTask = webSocketTask else { return }

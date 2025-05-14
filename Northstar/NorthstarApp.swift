@@ -28,6 +28,9 @@ struct NorthstarApp: App {
 		WindowGroup("Northstar", id: "home") {
 			HomeView()
 				.environment(rhinoConnectionManager)
+				.environment(appModel)
+				.environment(imageTrackingManager)
+				.environment(calibrationManager)
 		}
 		.windowResizability(.contentSize)
 
@@ -38,17 +41,8 @@ struct NorthstarApp: App {
 		}
 		.windowResizability(.contentSize)
 		.defaultWindowPlacement { _, _ in
-			.init(.utilityPanel)
+				.init(.utilityPanel)
 		}
-
-		WindowGroup("Calibration", id: "calibration") {
-			CalibrationProcessView()
-				.environment(appModel)
-				.environment(imageTrackingManager)
-				.environment(calibrationManager)
-				.frame(width: 320)
-		}
-		.windowStyle(.plain)
 
 		WindowGroup("Inspector", id: "inspector") {
 			InspectorView()

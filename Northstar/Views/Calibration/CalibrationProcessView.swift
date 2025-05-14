@@ -38,6 +38,7 @@ struct CalibrationProcessView: View {
 			}
 		}
 		.animation(.snappy, value: calibrationManager.calibrationStep)
+		.navigationTitle("Calibration")
     }
 }
 

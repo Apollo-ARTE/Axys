@@ -40,22 +40,14 @@ struct ToolbarView: View {
 		}
 	}
 
-	private func openCalibrationWindow() {
-		openWindow(id: "calibration")
-	}
-
-	private func dismissCalibrationWindow() {
-		dismissWindow(id: "calibration")
-	}
-
-	private func toggleCalibration() async {
-		await toggleImmersiveSpace()
-		if appModel.showCalibrationWindow {
-			openCalibrationWindow()
-		} else {
-			dismissCalibrationWindow()
-		}
-	}
+//	private func toggleCalibration() async {
+//		await toggleImmersiveSpace()
+//		if appModel.showCalibrationWindow {
+//			openCalibrationWindow()
+//		} else {
+//			dismissCalibrationWindow()
+//		}
+//	}
 
 	@MainActor
 	private func toggleImmersiveSpace() async {
@@ -84,22 +76,3 @@ struct ToolbarView: View {
 		.environment(AppModel.shared)
         .environment(RhinoConnectionManager.init(calibrationManager: .shared))
 }
-
-
-//			Button("Export", systemImage: "square.and.arrow.up.on.square") {
-//				let rn = rhinoConnectionManager
-//				rn.sendExportCommand()
-//				//				Task {
-//				//					await rn.getFilePathForRhinoObjects()
-//				//				}
-//			}
-
-//			Toggle("Calibrate", systemImage: "perspective", isOn: $appModel.showCalibrationWindow)
-//				.onChange(of: appModel.showCalibrationWindow) {
-//					if appModel.showCalibrationWindow {
-//						openCalibrationWindow()
-//					} else {
-//						dismissCalibrationWindow()
-//					}
-//				}
-//				.disabled(appModel.immersiveSpaceState == .inTransition)

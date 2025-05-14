@@ -44,7 +44,7 @@ struct CalibrationStepView<Content: View>: View {
 			content
 
 			VStack {
-				Button {
+				Button("Done") {
 					if let nextStep = step.next {
 						// If we're in the placeMarkers step, start image tracking.
 						if case .placeMarkers = step {
@@ -76,14 +76,12 @@ struct CalibrationStepView<Content: View>: View {
 						calibrationManager.calibrate()
 						dismissWindow()
 					}
-				} label: {
-					Text("Done")
-						.frame(maxWidth: .infinity)
-						.padding(12)
 				}
+				.buttonBorderShape(.capsule)
+				.buttonStyle(.borderedProminent)
+				.controlSize(.extraLarge)
 				.disabled(isNextButtonDisabled)
 				.tint(.blue)
-				.buttonBorderShape(.roundedRectangle(radius: 16))
 
 				if let previousStep = step.previous, step != .calibrationCompleted {
 					Button {
@@ -100,9 +98,8 @@ struct CalibrationStepView<Content: View>: View {
 				}
 			}
 		}
-		.frame(maxWidth: 280)
-		.padding(32)
-		.glassBackgroundEffect()
+		.frame(maxWidth: 300)
+		.padding()
 	}
 }
 

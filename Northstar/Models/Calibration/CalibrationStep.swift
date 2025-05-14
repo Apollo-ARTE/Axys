@@ -11,7 +11,6 @@ enum CalibrationStep: Identifiable, Equatable {
 	case placeMarkers
 	case scanMarker(number: Int)
 	case scanCompleted
-	case moveRobot(number: Int)
 	case insertCoordinates(number: Int)
 	case calibrationCompleted
 
@@ -23,8 +22,6 @@ enum CalibrationStep: Identifiable, Equatable {
 			"scanMarker\(number)"
 		case .scanCompleted:
 			"scanCompleted"
-		case .moveRobot(let number):
-			"moveRobot\(number)"
 		case .insertCoordinates(let number):
 			"insertCoordinates\(number)"
 		case .calibrationCompleted:
@@ -37,9 +34,9 @@ enum CalibrationStep: Identifiable, Equatable {
 			.placeMarkers,
 			.scanMarker(number: 1), .scanMarker(number: 2), .scanMarker(number: 3),
 			.scanCompleted,
-			.moveRobot(number: 1), .insertCoordinates(number: 1),
-			.moveRobot(number: 2), .insertCoordinates(number: 2),
-			.moveRobot(number: 3), .insertCoordinates(number: 3),
+			.insertCoordinates(number: 1),
+			.insertCoordinates(number: 2),
+			.insertCoordinates(number: 3),
 			.calibrationCompleted
 		]
 	}
@@ -52,8 +49,6 @@ enum CalibrationStep: Identifiable, Equatable {
 			"qrcode.viewfinder"
 		case .scanCompleted:
 			"checkmark.circle"
-		case .moveRobot:
-			"move.3d"
 		case .insertCoordinates:
 			"rotate.3d"
 		case .calibrationCompleted:
@@ -69,8 +64,6 @@ enum CalibrationStep: Identifiable, Equatable {
 			"Scan the Marker \(number)"
 		case .scanCompleted:
 			"Scan Completed"
-		case .moveRobot:
-			"Move the Robot"
 		case .insertCoordinates:
 			"Robot’s Coordinates"
 		case .calibrationCompleted:
@@ -86,8 +79,6 @@ enum CalibrationStep: Identifiable, Equatable {
 			"Use your Vision Pro to scan the marker \(number), ensuring it is clearly visible."
 		case .scanCompleted:
 			"Use your Vision Pro to scan the marker, ensuring it is clearly visible."
-		case .moveRobot(let number):
-			"Align the robot to the center of the marker \(number) to set new coordinates."
 		case .insertCoordinates(let number):
 			"Enter the robot's position coordinates for marker \(number)."
 		case .calibrationCompleted:
