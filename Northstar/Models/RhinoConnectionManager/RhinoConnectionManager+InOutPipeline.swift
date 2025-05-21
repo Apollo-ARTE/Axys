@@ -6,37 +6,29 @@
 
 import Foundation
 import RealityKit
+import OSLog
 
 extension RhinoConnectionManager {
-	
-	func sendExportCommand() {
+    func sendCommand(value: String) {
 		guard let webSocketTask = webSocketTask else {
-			print("WebSocket non inizializzato.")
+            Logger.connection.error("WebSocket not initialized.")
 			return
 		}
-		
-		let command = ["command": "ExportUSDZ"]
+		let command = ["command": value]
 		do {
 			let jsonData = try JSONSerialization.data(withJSONObject: command)
 			if let jsonString = String(data: jsonData, encoding: .utf8) {
 				let message = URLSessionWebSocketTask.Message.string(jsonString)
 				webSocketTask.send(message) { error in
 					if let error = error {
-						print("Errore nell'invio del messaggio: \(error.localizedDescription)")
+						Logger.connection.error("Error sending message: \(error.localizedDescription)")
 					} else {
-						print("Comando di esportazione inviato.")
+                        Logger.connection.debug("Command sent: \(value)")
 					}
 				}
 			}
 		} catch {
-			print("Errore nella serializzazione JSON: \(error.localizedDescription)")
+            Logger.connection.error("Error serializing JSON: \(error.localizedDescription)")
 		}
 	}
-	
-	
-	
-//	func getFilePathForRhinoObjects() {
-//		let url = Bundle.main.url(forResource: "export", withExtension: "usdz")
-//		let entity = try? ModelEntity.load(contentsOf: url!)
-//	}
 }

@@ -18,11 +18,13 @@ class RhinoConnectionManager {
     var webSocketTask: URLSessionWebSocketTask?
     var entityID: String?
     private var receivedUSDZData = Data()
+    private let processingQueue = DispatchQueue(label: "com.app.websocket.processing", qos: .userInitiated)
 
     var trackedObjects: [RhinoObject]? // An array to store the tracked objects upon receival
     var createMessageReceived: Bool = false
 
     var rhinoRootEntity: Entity
+
 
     init(calibrationManager: CalibrationManager) {
         self.calibrationManager = calibrationManager
@@ -80,24 +82,29 @@ class RhinoConnectionManager {
     }
 
     private func receiveMessages() {
-        webSocketTask?.receive { result in
+        webSocketTask?.receive { [weak self] result in
+            guard let self = self else { return }
+
             switch result {
             case .success(let message):
                 switch message {
                 case .string(let text):
                     Logger.connection.info("Received message: \(text)")
-                    self.handleIncomingJSON(text)
+                    self.processingQueue.async {
+                        self.handleIncomingJSON(text)
+                    }
                 case .data(let data):
-                    self.handleIncomingBinaryData(data)
-                    //				default:
-                    //					Logger.calibration.info("Unsupported message type")
+                    self.processingQueue.async {
+                        self.handleIncomingBinaryData(data)
+                    }
                 @unknown default:
                     fatalError()
                 }
             case .failure(let error):
                 Logger.connection.error("WebSocket error: \(error.localizedDescription)")
             }
-            // Continue listening for messages.
+
+            // Continue listening for messages
             self.receiveMessages()
         }
     }
@@ -193,11 +200,11 @@ class RhinoConnectionManager {
                 }
 
                 // Log received data size and expected metadata size
-                Logger.calibration.info("🧮 Total USDZ bytes received: \(self.receivedUSDZData.count)")
-                Logger.calibration.info("📏 Expected size from metadata: \(metadata.size) bytes")
+                Logger.calibration.info("Total USDZ bytes received: \(self.receivedUSDZData.count)")
+                Logger.calibration.info("Expected size from metadata: \(metadata.size) bytes")
 
                 if self.receivedUSDZData.count != metadata.size {
-                    Logger.calibration.warning("⚠️ Mismatch between received and expected size. Waiting for more data?")
+                    Logger.calibration.warning("Mismatch between received and expected size. Waiting for more data?")
                     return
                 }
 
@@ -211,12 +218,12 @@ class RhinoConnectionManager {
                     }
 
                     try self.receivedUSDZData.write(to: fileURL)
-                    Logger.calibration.info("📂 File written successfully at \(fileURL.path)")
-                    Logger.calibration.info("✅ USDZ file saved to: \(fileURL.path)")
+                    Logger.calibration.info("File written successfully at \(fileURL.path)")
+                    Logger.calibration.info("USDZ file saved to: \(fileURL.path)")
 
                     let fileAttributes = try? FileManager.default.attributesOfItem(atPath: fileURL.path)
                     let diskSize = fileAttributes?[.size] as? Int ?? -1
-                    Logger.calibration.info("📦 Disk-reported file size: \(diskSize) bytes")
+                    Logger.calibration.info("Disk-reported file size: \(diskSize) bytes")
 
 //                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
 //                        do {
@@ -236,7 +243,7 @@ class RhinoConnectionManager {
 //                        }
 //                    }
                 } catch {
-                    Logger.calibration.error("❌ Failed to save/load USDZ file: \(error.localizedDescription)")
+                    Logger.calibration.error("Failed to save/load USDZ file: \(error.localizedDescription)")
                 }
 
                 // Clear the buffer for the next file
