@@ -41,7 +41,7 @@ struct NorthstarApp: App {
 		}
 		.windowResizability(.contentSize)
 		.defaultWindowPlacement { _, _ in
-				.init(.utilityPanel)
+			.init(.utilityPanel)
 		}
 
 		WindowGroup("Inspector", id: "inspector") {

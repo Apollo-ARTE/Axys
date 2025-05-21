@@ -36,9 +36,10 @@ struct ImportModelsView: View {
 	private var contentUnavailable: some View {
 		ContentUnavailableView(
 			"No imported models",
-			image: "document.badge.clock",
+			systemImage: "document.badge.clock",
 			description: Text("Your available models will appear here.")
 		)
+		.frame(maxWidth: .infinity, alignment: .center)
 	}
 
 	private var footer: some View {

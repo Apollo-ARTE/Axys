@@ -14,31 +14,10 @@ struct CalibrationProcessView: View {
 		@Bindable var calibrationManager = calibrationManager
 
 		CalibrationStepView(step: $calibrationManager.calibrationStep) {
-			switch calibrationManager.calibrationStep {
-			case .zOffset:
-				TextField("Z offset", value: $calibrationManager.zOffset, format: .number)
-					.textFieldStyle(.roundedBorder)
-					.keyboardType(.decimalPad)
-			case .insertCoordinates(let number) where number == 1:
-				CoordinatesInputView(
-					x: $calibrationManager.marker1.robotX,
-					y: $calibrationManager.marker1.robotY,
-					z: $calibrationManager.marker1.robotZ
-				)
-			case .insertCoordinates(let number) where number == 2:
-				CoordinatesInputView(
-					x: $calibrationManager.marker2.robotX,
-					y: $calibrationManager.marker2.robotY,
-					z: $calibrationManager.marker2.robotZ
-				)
-			case .insertCoordinates(let number) where number == 3:
-				CoordinatesInputView(
-					x: $calibrationManager.marker3.robotX,
-					y: $calibrationManager.marker3.robotY,
-					z: $calibrationManager.marker3.robotZ
-				)
-			default:
-				EmptyView()
+			if calibrationManager.calibrationStep == .insertCoordinates {
+				RobotCoordinatesView()
+			} else {
+				MarkersScanView(step: calibrationManager.calibrationStep)
 			}
 		}
 		.animation(.snappy, value: calibrationManager.calibrationStep)
@@ -46,7 +25,7 @@ struct CalibrationProcessView: View {
     }
 }
 
-#Preview(windowStyle: .plain) {
+#Preview(windowStyle: .automatic) {
     CalibrationProcessView()
 		.environment(ImageTrackingManager(calibrationManager: .shared))
 		.environment(CalibrationManager.shared)

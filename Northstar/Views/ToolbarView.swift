@@ -8,14 +8,10 @@
 import SwiftUI
 
 struct ToolbarView: View {
-	@Environment(\.dismissImmersiveSpace) private var dismissImmersiveSpace
-	@Environment(\.openImmersiveSpace) private var openImmersiveSpace
 	@Environment(\.openWindow) private var openWindow
 	@Environment(\.dismissWindow) private var dismissWindow
 	@Environment(AppModel.self) private var appModel
 	@Environment(RhinoConnectionManager.self) private var rhinoConnectionManager
-
-	@State private var opacity: Double = 0
 
 	var body: some View {
 		@Bindable var appModel = appModel
@@ -28,16 +24,9 @@ struct ToolbarView: View {
 				Toggle("Robot's Reach", systemImage: "skew", isOn: $appModel.showRobotReach)
 				Toggle("Virtual Lab", systemImage: "baseball.diamond.bases", isOn: $appModel.showVirtualLab)
 			}
-			Slider(value: $opacity) {
-				Label("Opacity", systemImage: "lightspectrum.horizontal")
-			}
-			.frame(width: 350)
 		}
 		.toggleStyle(.circluar)
 		.padding(32)
-		.task {
-			await toggleImmersiveSpace()
-		}
 	}
 
 //	private func toggleCalibration() async {
@@ -48,27 +37,6 @@ struct ToolbarView: View {
 //			dismissCalibrationWindow()
 //		}
 //	}
-
-	@MainActor
-	private func toggleImmersiveSpace() async {
-		switch appModel.immersiveSpaceState {
-		case .open:
-			appModel.immersiveSpaceState = .inTransition
-			await dismissImmersiveSpace()
-		case .closed:
-			appModel.immersiveSpaceState = .inTransition
-			switch await openImmersiveSpace(id: appModel.immersiveSpaceID) {
-			case .opened:
-				break
-			case .userCancelled, .error:
-				fallthrough
-			@unknown default:
-				appModel.immersiveSpaceState = .closed
-			}
-		case .inTransition:
-			break
-		}
-	}
 }
 
 #Preview(windowStyle: .automatic) {

@@ -11,9 +11,7 @@ enum CalibrationStep: Identifiable, Equatable {
 	case placeMarkers
 	case scanMarker(number: Int)
 	case scanCompleted
-	case zOffset
-	case insertCoordinates(number: Int)
-	case calibrationCompleted
+	case insertCoordinates
 
 	var id: String {
 		switch self {
@@ -23,12 +21,8 @@ enum CalibrationStep: Identifiable, Equatable {
 			"scanMarker\(number)"
 		case .scanCompleted:
 			"scanCompleted"
-		case .zOffset:
-			"zOffset"
-		case .insertCoordinates(let number):
-			"insertCoordinates\(number)"
-		case .calibrationCompleted:
-			"calibrationCompleted"
+		case .insertCoordinates:
+			"insertCoordinates"
 		}
 	}
 
@@ -37,11 +31,7 @@ enum CalibrationStep: Identifiable, Equatable {
 			.placeMarkers,
 			.scanMarker(number: 1), .scanMarker(number: 2), .scanMarker(number: 3),
 			.scanCompleted,
-			.zOffset,
-			.insertCoordinates(number: 1),
-			.insertCoordinates(number: 2),
-			.insertCoordinates(number: 3),
-			.calibrationCompleted
+			.insertCoordinates
 		]
 	}
 
@@ -52,47 +42,35 @@ enum CalibrationStep: Identifiable, Equatable {
 		case .scanMarker:
 			"qrcode.viewfinder"
 		case .scanCompleted:
-			"checkmark.circle"
-		case .zOffset:
-			"distribute.vertical.fill"
+			"qrcode.viewfinder"
 		case .insertCoordinates:
 			"rotate.3d"
-		case .calibrationCompleted:
-			"checkmark.circle"
 		}
 	}
 
 	var title: LocalizedStringKey {
 		switch self {
 		case .placeMarkers:
-			"Place the Marker"
+			"Place the Markers"
 		case .scanMarker(let number):
-			"Scan the Marker \(number)"
+			"Scan Marker \(number)"
 		case .scanCompleted:
 			"Scan Completed"
-		case .zOffset:
-			"Z-Offset"
 		case .insertCoordinates:
 			"Robot’s Coordinates"
-		case .calibrationCompleted:
-			"Calibration Completed"
 		}
 	}
 
 	var description: LocalizedStringKey {
 		switch self {
 		case .placeMarkers:
-			"Position the marker where it remains visible and accessible for the robot."
+			"Position the markers where it remains visible and accessible for the robot."
 		case .scanMarker(let number):
-			"Use your Vision Pro to scan the marker \(number), ensuring it is clearly visible."
+			"Use your Vision Pro to scan marker \(number), ensuring it is clearly visible."
 		case .scanCompleted:
-			"Use your Vision Pro to scan the marker, ensuring it is clearly visible."
-		case .zOffset:
-			"Measure the height difference between the Robot and Rhino origin point."
-		case .insertCoordinates(let number):
-			"Enter the robot's position coordinates for marker \(number)."
-		case .calibrationCompleted:
-			"Your models will now appear exactly where they will be printed."
+			"Now move the robot to the center of each marker and get it's coordinates."
+		case .insertCoordinates:
+			"Enter the robot's position coordinates for markers."
 		}
 	}
 

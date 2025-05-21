@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct HomeView: View {
+	@Environment(\.dismissImmersiveSpace) private var dismissImmersiveSpace
+	@Environment(\.openImmersiveSpace) private var openImmersiveSpace
 	@Environment(\.openWindow) private var openWindow
 	@Environment(\.dismissWindow) private var dismissWindow
 	@Environment(AppModel.self) private var appModel
@@ -23,13 +25,17 @@ struct HomeView: View {
 			VStack {
 				List {
 					Section {
-						LabeledContent {
-							Text(connectionManager.isConnected ? "On" : "Off")
+						NavigationLink {
+							ConnectionView()
 						} label: {
-							Text("Rhino Connection")
-							Text("Connect to your local network and run the Rhino Plugin")
-								.font(.footnote)
+							VStack(alignment: .leading) {
+								Text("\(connectionManager.isConnected ? "Connected to Rhino" : "Connect to Rhino")")
+								Text("Connect to your local network and run the Rhino Plugin")
+									.font(.footnote)
+									.foregroundStyle(.secondary)
+							}
 						}
+
 						NavigationLink {
 							ImportModelsView()
 						} label: {
@@ -41,12 +47,14 @@ struct HomeView: View {
 									.font(.footnote)
 							}
 						}
+						.disabled(!connectionManager.isConnected)
 
 						Toggle(isOn: $appModel.showCalibrationWindow) {
 							Text("Calibration")
 							Text("Calibrate your models with real world coordinates")
 								.font(.footnote)
 						}
+						.tint(.blue)
 						.onChange(of: appModel.showCalibrationWindow) {
 							if appModel.showCalibrationWindow {
 								showCalibrationView = true
@@ -55,12 +63,13 @@ struct HomeView: View {
 							}
 						}
 						.disabled(appModel.immersiveSpaceState == .inTransition)
+						.disabled(!connectionManager.isConnected)
 					} header: {
 						header
-							.padding(.bottom, 32)
+							.padding(.vertical, 32)
 					} footer: {
 						footer
-							.padding(.top, 32)
+							.padding(.vertical, 32)
 					}
 				}
 				.scrollBounceBehavior(.basedOnSize)
@@ -73,17 +82,20 @@ struct HomeView: View {
 			}
 		}
 		.padding(16)
-		.frame(width: 550, height: 500)
+		.frame(width: 550, height: 550)
+		.task {
+			await toggleImmersiveSpace()
+		}
     }
 
 	private var header: some View {
 		VStack {
 			Text("axys")
-				.font(.custom("Boldonse-Regular", size: 40, relativeTo: .extraLargeTitle))
+				.font(.custom("Boldonse-Regular", size: 50, relativeTo: .extraLargeTitle))
 				.frame(maxWidth: .infinity, alignment: .center)
-			Text("Bring your 3D Rhino models to life,\naligning them with the real world.")
-				.font(.body)
-				.multilineTextAlignment(.center)
+//			Text("Bring your 3D Rhino models to life,\naligning them with the real world.")
+//				.font(.body)
+//				.multilineTextAlignment(.center)
 		}
 		.foregroundStyle(.white)
 	}
@@ -101,6 +113,8 @@ struct HomeView: View {
 		.buttonBorderShape(.capsule)
 		.controlSize(.extraLarge)
 		.frame(maxWidth: .infinity, alignment: .center)
+		.disabled(!connectionManager.isConnected)
+		.disabled(connectionManager.trackedObjects?.isEmpty ?? true)
 	}
 
 	private func openToolbar() {
@@ -117,6 +131,27 @@ struct HomeView: View {
 
 	private func dismissCalibrationWindow() {
 		dismissWindow(id: "calibration")
+	}
+
+	@MainActor
+	private func toggleImmersiveSpace() async {
+		switch appModel.immersiveSpaceState {
+		case .open:
+			appModel.immersiveSpaceState = .inTransition
+			await dismissImmersiveSpace()
+		case .closed:
+			appModel.immersiveSpaceState = .inTransition
+			switch await openImmersiveSpace(id: appModel.immersiveSpaceID) {
+			case .opened:
+				break
+			case .userCancelled, .error:
+				fallthrough
+			@unknown default:
+				appModel.immersiveSpaceState = .closed
+			}
+		case .inTransition:
+			break
+		}
 	}
 }
 
