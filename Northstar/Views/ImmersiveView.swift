@@ -10,7 +10,6 @@ import RealityKit
 import RealityKitContent
 import OSLog
 import simd
-import simd
 
 struct ImmersiveView: View {
     @Environment(\.openWindow) private var openWindow
@@ -46,20 +45,12 @@ struct ImmersiveView: View {
             content.add(rhinoConnectionManager.rhinoRootEntity)
             content.add(imageTracking.rootEntity)
         } update: { content, attachments in
-//            if let importedEntity = rhinoConnectionManager.importedEntity,
-//               content.entities.contains(importedEntity) == false {
-//                Logger.views.info("📍 [ACTION] Trying to add imported entity to scene")
-//                if let model = content.entities.first(where: { $0.name == "rhino_root" }) {
-//                    model.addChild(importedEntity)
-//                }
-//                Logger.views.info("✅ [UPDATE] Setting position for imported entity: \(importedEntity.position)")
-//            }
 
             if appModel.showModels { // Uncomment line for testing without calibration
                 if let model = content.entities.first(where: { $0.name == "rhino_root" }) {
                     model.children.forEach { rhinoObject in
                         rhinoObject.transform.scale = [0.001, 0.001, 0.001]
-                        Logger.views.debug("Showing object: \(rhinoObject.name)")
+                        Logger.views.debug("Showing object: \(rhinoObject.name) at position \(rhinoObject.position)")
                     }
                 }
             } else {
