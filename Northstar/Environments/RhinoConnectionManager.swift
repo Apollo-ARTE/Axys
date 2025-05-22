@@ -13,16 +13,24 @@ import SwiftUI
 @Observable
 class RhinoConnectionManager {
     let calibrationManager: CalibrationManager
-//    var importedEntity: Entity?
     var anchorEntity: AnchorEntity?
     var webSocketTask: URLSessionWebSocketTask?
     var entityID: String?
-    private var receivedUSDZData = Data()
+
+	var ipAddress: String = .load(key: "rhino_ip") ?? "" {
+		didSet {
+			ipAddress.save(key: "rhino_ip")
+		}
+	}
+
+	var isConnected: Bool = false
     private let processingQueue = DispatchQueue(label: "com.app.websocket.processing", qos: .userInitiated)
 
     var createMessageReceived: Bool = false
 
     var rhinoRootEntity: Entity
+
+	private var receivedUSDZData = Data()
 
     var receivedObjects: [String: RhinoObject] = [:]
     // Computed property to get array of objects when needed to display
@@ -40,16 +48,25 @@ class RhinoConnectionManager {
     func disconnectFromWebSocket() {
         webSocketTask?.cancel()
         Logger.connection.info("Disconnected from WebSocket")
+		isConnected = false
     }
 
     func connectToWebSocket() {
-        guard let url = URL(string: "ws://\(Constants.ipAddress):8765") else { return }
+        guard let url = URL(string: "ws://\(ipAddress):8765") else { return }
         webSocketTask = URLSession.shared.webSocketTask(with: url)
         webSocketTask?.resume()
         Logger.connection.info("Connected to WebSocket")
         receiveMessages()
         receivedObjects = [:]
+		isConnected = true
     }
+
+	func isValidIPAddress() -> Bool {
+		let pattern = #"^((25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)\.){3}(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)$"#
+		let regex = try! NSRegularExpression(pattern: pattern)
+		let range = NSRange(location: 0, length: ipAddress.utf16.count)
+		return regex.firstMatch(in: ipAddress, options: [], range: range) != nil
+	}
 
     func sendPositionUpdate(for model: Entity, newPosition: SIMD3<Float>) {
         guard let webSocketTask = webSocketTask else { return }
@@ -116,7 +133,7 @@ class RhinoConnectionManager {
 
     // TODO: Refactor to add objects on first open of the immersive view after calibration
     @MainActor
-    private func addObjectsToView() async {
+	func addObjectsToView() async {
         self.rhinoRootEntity.children.removeAll()
         Logger.connection.info("Removing all children from rhino root entity")
         for object in trackedObjects {
@@ -199,9 +216,6 @@ class RhinoConnectionManager {
 
                     Logger.connection.info("Object named \(object.objectName) with position: \(rhinoPosition) added/updated")
                 }
-            }
-            Task {
-                await self.addObjectsToView()
             }
         } else {
             if let metadata = try? decoder.decode(USDZMetadata.self, from: data), metadata.type == "usdz_metadata" {

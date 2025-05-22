@@ -13,7 +13,7 @@ struct CoordinatesInputView: View {
 	@Binding var z: Float
 
     var body: some View {
-		VStack {
+		VStack(spacing: 2) {
 			TextField("X (mm)", value: $x, format: .number)
 			TextField("Y (mm)", value: $y, format: .number)
 			TextField("Z (mm)", value: $z, format: .number)
