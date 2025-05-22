@@ -40,7 +40,7 @@ struct HomeView: View {
 							ImportModelsView()
 						} label: {
 							LabeledContent {
-								Text(connectionManager.trackedObjects?.count ?? 0, format: .number)
+								Text(connectionManager.trackedObjects.count, format: .number)
 							} label: {
 								Text("Imported Models")
 								Text("Run the plugin on Rhino and select your models")
@@ -114,7 +114,7 @@ struct HomeView: View {
 		.controlSize(.extraLarge)
 		.frame(maxWidth: .infinity, alignment: .center)
 		.disabled(!connectionManager.isConnected)
-		.disabled(connectionManager.trackedObjects?.isEmpty ?? true)
+		.disabled(connectionManager.trackedObjects.isEmpty)
 	}
 
 	@MainActor

@@ -228,11 +228,11 @@ class RhinoConnectionManager {
                 }
 
                 // Log received data size and expected metadata size
-                Logger.calibration.info("Total USDZ bytes received: \(self.receivedUSDZData.count)")
-                Logger.calibration.info("Expected size from metadata: \(metadata.size) bytes")
+//                Logger.connection.info("Total USDZ bytes received: \(self.receivedUSDZData.count)")
+//                Logger.connection.info("Expected size from metadata: \(metadata.size) bytes")
 
                 if self.receivedUSDZData.count != metadata.size {
-                    Logger.calibration.warning("Mismatch between received and expected size. Waiting for more data?")
+                    Logger.connection.warning("Mismatch between received and expected size. Waiting for more data?")
                     return
                 }
 
@@ -244,14 +244,13 @@ class RhinoConnectionManager {
                     if fileManager.fileExists(atPath: fileURL.path) {
                         try? fileManager.removeItem(at: fileURL)
                     }
-
                     try self.receivedUSDZData.write(to: fileURL)
-                    Logger.calibration.info("File written successfully at \(fileURL.path)")
-                    Logger.calibration.info("USDZ file saved to: \(fileURL.path)")
-
+                    Logger.connection.info("USDZ file saved to: \(fileURL.path)")
                     let fileAttributes = try? FileManager.default.attributesOfItem(atPath: fileURL.path)
                     let diskSize = fileAttributes?[.size] as? Int ?? -1
-                    Logger.calibration.info("Disk-reported file size: \(diskSize) bytes")
+//                    Logger.connection.info("Disk-reported file size: \(diskSize) bytes")
+                    // Send the command to get object tracking information
+                    self.sendCommand(value: "TrackObject")
 
                 } catch {
                     Logger.calibration.error("Failed to save/load USDZ file: \(error.localizedDescription)")

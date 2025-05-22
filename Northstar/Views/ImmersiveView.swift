@@ -50,13 +50,13 @@ struct ImmersiveView: View {
                 if let model = content.entities.first(where: { $0.name == "rhino_root" }) {
                     model.children.forEach { rhinoObject in
                         rhinoObject.transform.scale = [0.001, 0.001, 0.001]
-                        Logger.views.debug("Showing object: \(rhinoObject.name) at position \(rhinoObject.position)")
+//                        Logger.views.debug("Showing object: \(rhinoObject.name) at position \(rhinoObject.position)")
                     }
                 }
             } else {
                 if let model = content.entities.first(where: { $0.name == "rhino_root" }) {
                     model.children.forEach { rhinoObject in
-                        Logger.views.debug("Hiding object: \(rhinoObject.name)")
+//                        Logger.views.debug("Hiding object: \(rhinoObject.name)")
                         rhinoObject.transform.scale = [0, 0, 0]
                     }
                 }
