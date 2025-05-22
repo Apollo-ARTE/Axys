@@ -27,6 +27,12 @@ struct ToolbarView: View {
 		}
 		.toggleStyle(.circluar)
 		.padding(32)
+		.onDisappear {
+			openWindow(id: "home")
+		}
+		.onAppear {
+			dismissWindow(id: "home")
+		}
 	}
 
 //	private func toggleCalibration() async {

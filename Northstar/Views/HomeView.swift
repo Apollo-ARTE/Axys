@@ -103,7 +103,7 @@ struct HomeView: View {
 	private var footer: some View {
 		Button("Visualize") {
 			if connectionManager.isConnected {
-				openToolbar()
+				openWindow(id: "toolbar")
 			} else {
 				showConnectionView = true
 			}
@@ -115,22 +115,6 @@ struct HomeView: View {
 		.frame(maxWidth: .infinity, alignment: .center)
 		.disabled(!connectionManager.isConnected)
 		.disabled(connectionManager.trackedObjects?.isEmpty ?? true)
-	}
-
-	private func openToolbar() {
-		Task {
-			openWindow(id: "toolbar")
-			try await Task.sleep(nanoseconds: 100_000_000)
-			dismissWindow()
-		}
-	}
-
-	private func openCalibrationWindow() {
-		openWindow(id: "calibration")
-	}
-
-	private func dismissCalibrationWindow() {
-		dismissWindow(id: "calibration")
 	}
 
 	@MainActor
