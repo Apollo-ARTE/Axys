@@ -6,12 +6,13 @@
 
 import Foundation
 import RealityKit
+import OSLog
 
 extension RhinoConnectionManager {
 	
 	func sendExportCommand() {
 		guard let webSocketTask = webSocketTask else {
-			print("WebSocket non inizializzato.")
+			Logger.connection.error("WebSocket non inizializzato.")
 			return
 		}
 		
@@ -22,14 +23,14 @@ extension RhinoConnectionManager {
 				let message = URLSessionWebSocketTask.Message.string(jsonString)
 				webSocketTask.send(message) { error in
 					if let error = error {
-						print("Errore nell'invio del messaggio: \(error.localizedDescription)")
+						Logger.connection.error("Errore nell'invio del messaggio: \(error.localizedDescription)")
 					} else {
-						print("Comando di esportazione inviato.")
+						Logger.connection.info("Comando di esportazione inviato.")
 					}
 				}
 			}
 		} catch {
-			print("Errore nella serializzazione JSON: \(error.localizedDescription)")
+			Logger.connection.error("Errore nella serializzazione JSON: \(error.localizedDescription)")
 		}
 	}
 	

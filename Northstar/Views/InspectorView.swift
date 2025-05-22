@@ -13,30 +13,45 @@ struct InspectorView: View {
     @Environment(RhinoConnectionManager.self) private var connectionManager
     @Environment(CalibrationManager.self) private var calibrationManager
 
+	@State private var opacity: Double = 0
+
     var body: some View {
         @Bindable var connectionManager = connectionManager
-        VStack {
-            Text("Robot’s Coordinates")
+		VStack(spacing: 16) {
+            Text("Inspector")
                 .font(.title2)
-            Picker("", selection: Binding<SegmentedMode>(
-                get: { appModel.selectedMode },
-                set: { appModel.selectedMode = $0 }
-            )) {
-                Label("Position", systemImage: "move.3d")
-                    .tag(SegmentedMode.position)
-                Label("Rotation", systemImage: "rotate.3d.fill")
-                    .tag(SegmentedMode.rotation)
-            }
-            .pickerStyle(.segmented)
-            .labelStyle(.iconOnly)
 
-            ForEach(Axes.allCases) { axis in
-                AxisControl(
-                    axis: axis,
-                    allowedAxes: allowedAxesBinding(),
-                    position: valueBinding(for: axis)
-                )
-            }
+			VStack(alignment: .leading) {
+				Text("Opacity")
+					.font(.headline)
+				Slider(value: $opacity) {
+					Label("Opacity", systemImage: "lightspectrum.horizontal")
+				}
+			}
+
+			VStack(alignment: .leading) {
+				Text("Transform")
+					.font(.headline)
+				Picker("", selection: Binding<SegmentedMode>(
+					get: { appModel.selectedMode },
+					set: { appModel.selectedMode = $0 }
+				)) {
+					Label("Position", systemImage: "move.3d")
+						.tag(SegmentedMode.position)
+					Label("Rotation", systemImage: "rotate.3d.fill")
+						.tag(SegmentedMode.rotation)
+				}
+				.pickerStyle(.segmented)
+				.labelStyle(.iconOnly)
+
+				ForEach(Axes.allCases) { axis in
+					AxisControl(
+						axis: axis,
+						allowedAxes: allowedAxesBinding(),
+						position: valueBinding(for: axis)
+					)
+				}
+			}
         }
         .textFieldStyle(.roundedBorder)
         .keyboardType(.numbersAndPunctuation)
@@ -154,7 +169,7 @@ struct InspectorView: View {
 
 }
 
-#Preview(windowStyle: .automatic, traits: .fixedLayout(width: 280, height: 320)) {
+#Preview(windowStyle: .automatic) {
 	InspectorView()
 		.environment(AppModel.shared)
 		.environment(RhinoConnectionManager.init(calibrationManager: .shared))

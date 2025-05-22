@@ -25,32 +25,31 @@ struct NorthstarApp: App {
 	}
 
 	var body: some Scene {
-		WindowGroup("Northstar", id: "toolbar") {
+		WindowGroup("Northstar", id: "home") {
+			HomeView()
+				.environment(rhinoConnectionManager)
+				.environment(appModel)
+				.environment(imageTrackingManager)
+				.environment(calibrationManager)
+		}
+		.windowResizability(.contentSize)
+
+		WindowGroup("Toolbar", id: "toolbar") {
 			ToolbarView()
 				.environment(appModel)
 				.environment(rhinoConnectionManager)
 		}
-		.windowStyle(.plain)
 		.windowResizability(.contentSize)
 		.defaultWindowPlacement { _, _ in
 			.init(.utilityPanel)
 		}
-
-		WindowGroup("Calibration", id: "calibration") {
-			CalibrationProcessView()
-				.environment(appModel)
-				.environment(imageTrackingManager)
-				.environment(calibrationManager)
-				.frame(width: 320)
-		}
-		.windowStyle(.plain)
 
 		WindowGroup("Inspector", id: "inspector") {
 			InspectorView()
 				.environment(appModel)
 				.environment(rhinoConnectionManager)
 				.environment(calibrationManager)
-				.frame(width: 280, height: 320)
+				.frame(width: 300)
 		}
 		.windowResizability(.contentSize)
 

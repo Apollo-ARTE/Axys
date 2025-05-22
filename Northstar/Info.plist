@@ -9,6 +9,10 @@
 	</dict>
 	<key>NSWorldSensingUsageDescription</key>
 	<string>"World recognition"</string>
+	<key>UIAppFonts</key>
+	<array>
+		<string>Boldonse-Regular.ttf</string>
+	</array>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationPreferredDefaultSceneSessionRole</key>

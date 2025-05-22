@@ -21,6 +21,7 @@ class AppModel {
         case inTransition
         case open
     }
+
     var immersiveSpaceState = ImmersiveSpaceState.closed
 
 	var showCalibrationWindow = false
@@ -40,5 +41,4 @@ class AppModel {
     var allowedRotationAxes: AxisOptions = .all
 
     var rotationStore: [Entity: simd_quatf] = [:]
-
 }
