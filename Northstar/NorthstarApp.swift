@@ -49,7 +49,7 @@ struct NorthstarApp: App {
 				.environment(appModel)
 				.environment(rhinoConnectionManager)
 				.environment(calibrationManager)
-				.frame(width: 280, height: 320)
+				.frame(width: 300)
 		}
 		.windowResizability(.contentSize)
 

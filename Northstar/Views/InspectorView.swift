@@ -17,8 +17,8 @@ struct InspectorView: View {
 
     var body: some View {
         @Bindable var connectionManager = connectionManager
-        VStack {
-            Text("Robot’s Coordinates")
+		VStack(spacing: 16) {
+            Text("Inspector")
                 .font(.title2)
 
 			VStack(alignment: .leading) {
@@ -27,7 +27,6 @@ struct InspectorView: View {
 				Slider(value: $opacity) {
 					Label("Opacity", systemImage: "lightspectrum.horizontal")
 				}
-				.frame(width: 350)
 			}
 
 			VStack(alignment: .leading) {
@@ -170,7 +169,7 @@ struct InspectorView: View {
 
 }
 
-#Preview(windowStyle: .automatic, traits: .fixedLayout(width: 280, height: 320)) {
+#Preview(windowStyle: .automatic) {
 	InspectorView()
 		.environment(AppModel.shared)
 		.environment(RhinoConnectionManager.init(calibrationManager: .shared))

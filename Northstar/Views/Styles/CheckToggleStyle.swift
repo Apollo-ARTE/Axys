@@ -34,6 +34,7 @@ struct CircularToggleStyle: ToggleStyle {
 			configuration.label
 				.labelStyle(.titleOnly)
 				.font(.subheadline)
+				.lineLimit(1)
 		}
     }
 }

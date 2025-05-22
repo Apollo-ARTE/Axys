@@ -121,7 +121,7 @@ class RhinoConnectionManager {
 
     // TODO: Refactor to add objects on first open of the immersive view after calibration
     @MainActor
-    private func addObjectsToView() async {
+	func addObjectsToView() async {
         self.rhinoRootEntity.children.removeAll()
         Logger.connection.info("Removing all children from rhino root entity")
         for object in trackedObjects ?? [] {
@@ -195,9 +195,6 @@ class RhinoConnectionManager {
                     ))
                     Logger.connection.info("Object named \(object.objectName) with position: \(rhinoPosition) added to array")
                 }
-            }
-            Task {
-                await self.addObjectsToView()
             }
         } else {
             if let metadata = try? decoder.decode(USDZMetadata.self, from: data), metadata.type == "usdz_metadata" {

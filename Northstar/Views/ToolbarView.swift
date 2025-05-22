@@ -20,13 +20,16 @@ struct ToolbarView: View {
 			Text("Visualize")
 				.font(.headline)
 			HStack(spacing: 32) {
-				Toggle("Model", systemImage: "cube.fill", isOn: $appModel.showModels)
-				Toggle("Robot's Reach", systemImage: "skew", isOn: $appModel.showRobotReach)
+				Toggle("Models", systemImage: "cube.fill", isOn: $appModel.showModels)
+				Toggle("Reach", systemImage: "skew", isOn: $appModel.showRobotReach)
 				Toggle("Virtual Lab", systemImage: "baseball.diamond.bases", isOn: $appModel.showVirtualLab)
 			}
 		}
 		.toggleStyle(.circluar)
 		.padding(32)
+		.task {
+			await rhinoConnectionManager.addObjectsToView()
+		}
 		.onDisappear {
 			openWindow(id: "home")
 		}
