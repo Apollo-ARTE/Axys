@@ -110,7 +110,6 @@ class RhinoConnectionManager {
             case .success(let message):
                 switch message {
                 case .string(let text):
-                    Logger.connection.info("Received message: \(text)")
                     self.processingQueue.async {
                         self.handleIncomingJSON(text)
                     }
@@ -180,27 +179,7 @@ class RhinoConnectionManager {
     func handleIncomingJSON(_ text: String) {
         guard let data = text.data(using: .utf8) else { return }
         let decoder = JSONDecoder()
-        if let message = try? decoder.decode(RhinoMessage.self, from: data) {
-            if message.type == "create" {
-                Logger.connection.debug("Message position center: \(message.center.x), \(message.center.y), \(message.center.z)")
-                let rhinoPosition = SIMD3<Float>(
-                    Float(message.center.x),
-                    Float(message.center.y),
-                    Float(message.center.z)
-                )
-
-                let rhinoObject = RhinoObject(
-                    objectId: message.objectId,
-                    objectName: message.objectName,
-                    rhinoPosition: rhinoPosition
-                )
-
-                // Add or update object using objectId as key
-                self.receivedObjects[String(message.objectId)] = rhinoObject
-
-                Logger.connection.info("Object \(message.objectName) with ID \(message.objectId) added/updated")
-            }
-        } else if let message = try? decoder.decode(BatchRhinoMessage.self, from: data) {
+        if let message = try? decoder.decode(BatchRhinoMessage.self, from: data) {
             if message.type == "batch_create" {
                 for object in message.objects {
                     Logger.connection.debug("Message position center: \(object.center.x), \(object.center.y), \(object.center.z)")
@@ -224,15 +203,9 @@ class RhinoConnectionManager {
             }
         } else if let message = try? decoder.decode(InfoMessage.self, from: data) {
             if message.type == "error" {
-                Logger.connection.error("Rhino error: \(message.description) at \(message.timestamp)")
+                Logger.rhino.error("Rhino error: \(message.description) at \(message.timestamp)")
             } else if message.type == "info" {
-                Logger.connection.info("Rhino info: \(message.description) at \(message.timestamp)")
-            }
-        } else if let message = try? decoder.decode(InfoMessage.self, from: data) {
-            if message.type == "error" {
-                Logger.connection.error("Rhino error: \(message.description) at \(message.timestamp)")
-            } else if message.type == "info" {
-                Logger.connection.info("Rhino info: \(message.description) at \(message.timestamp)")
+                Logger.rhino.info("Rhino info: \(message.description) at \(message.timestamp)")
             }
         } else {
             if let metadata = try? decoder.decode(USDZMetadata.self, from: data), metadata.type == "usdz_metadata" {
