@@ -97,4 +97,15 @@ class ImageTrackingManager {
 		guard imageName.hasPrefix("marker") else { return nil }
 		return Int(imageName.dropFirst("marker".count))
 	}
+
+	func reset() {
+		rootEntity = Entity()
+		firstMarkerEntity = Entity()
+		secondMarkerEntity = Entity()
+		thirdMarkerEntity = Entity()
+
+		scannedMarkers = []
+		imageAnchors = [:]
+		entityMap = [:]
+	}
 }

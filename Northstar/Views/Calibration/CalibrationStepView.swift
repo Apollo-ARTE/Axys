@@ -36,7 +36,8 @@ struct CalibrationStepView<Content: View>: View {
 			if calibrationManager.calibrationStep != .placeMarkers {
 				ToolbarItem(placement: .topBarTrailing) {
 					Button("Reset", systemImage: "arrow.clockwise") {
-						calibrationManager.calibrationStep = .placeMarkers
+						calibrationManager.reset()
+						imageTrackingManager.reset()
 					}
 					.labelStyle(.iconOnly)
 					.buttonStyle(.bordered)

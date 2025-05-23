@@ -128,15 +128,17 @@ struct ImmersiveView: View {
                 let rawDelta = value.convert(value.rotation, from: .local, to: parent)
                 let e = rawDelta.eulerAngles
 
-                let ex = appModel.allowedRotationAxes.contains(.x) ? e.x : 0
-                let ey = appModel.allowedRotationAxes.contains(.y) ? e.y : 0
-                let ez = appModel.allowedRotationAxes.contains(.z) ? e.z : 0
+				if let allowedRotationAxes = value.entity.components[AxesComponent.self]?.allowedRotationAxes {
+					let ex = allowedRotationAxes.contains(.x) ? e.x : 0
+					let ey = allowedRotationAxes.contains(.y) ? e.y : 0
+					let ez = allowedRotationAxes.contains(.z) ? e.z : 0
 
-                let filteredDelta = simd_quatf(angle: ez, axis: [0, 0, 1]) *
-                                    simd_quatf(angle: ey, axis: [0, 1, 0]) *
-                                    simd_quatf(angle: ex, axis: [1, 0, 0])
+					let filteredDelta = simd_quatf(angle: ez, axis: [0, 0, 1]) *
+					simd_quatf(angle: ey, axis: [0, 1, 0]) *
+					simd_quatf(angle: ex, axis: [1, 0, 0])
 
-                value.entity.setOrientation(filteredDelta * baseQuat, relativeTo: parent)
+					value.entity.setOrientation(filteredDelta * baseQuat, relativeTo: parent)
+				}
             }
             .onEnded { value in
                 guard let parent = value.entity.parent,
@@ -146,17 +148,19 @@ struct ImmersiveView: View {
                 let rawDelta = value.convert(value.rotation, from: .local, to: parent)
                 let e = rawDelta.eulerAngles
 
-                let ex = appModel.allowedRotationAxes.contains(.x) ? e.x : 0
-                let ey = appModel.allowedRotationAxes.contains(.y) ? e.y : 0
-                let ez = appModel.allowedRotationAxes.contains(.z) ? e.z : 0
+				if let allowedRotationAxes = value.entity.components[AxesComponent.self]?.allowedRotationAxes {
+					let ex = allowedRotationAxes.contains(.x) ? e.x : 0
+					let ey = allowedRotationAxes.contains(.y) ? e.y : 0
+					let ez = allowedRotationAxes.contains(.z) ? e.z : 0
 
-                let filteredDelta = simd_quatf(angle: ez, axis: [0, 0 ,1]) *
-                                    simd_quatf(angle: ey, axis: [0, 1, 0]) *
-                                    simd_quatf(angle: ex, axis: [1, 0, 0])
+					let filteredDelta = simd_quatf(angle: ez, axis: [0, 0 ,1]) *
+					simd_quatf(angle: ey, axis: [0, 1, 0]) *
+					simd_quatf(angle: ex, axis: [1, 0, 0])
 
-                let finalQuat = filteredDelta * baseQuat
-                value.entity.setOrientation(finalQuat, relativeTo: parent)
-                appModel.rotationStore.removeValue(forKey: value.entity)
+					let finalQuat = filteredDelta * baseQuat
+					value.entity.setOrientation(finalQuat, relativeTo: parent)
+					appModel.rotationStore.removeValue(forKey: value.entity)
+				}
             }
     }
 
@@ -169,11 +173,13 @@ struct ImmersiveView: View {
                 let newPos = value.convert(value.location3D, from: .local, to: parent)
                 var current = value.entity.position
 
-                if appModel.allowedPositionAxes.contains(.x) { current.x = newPos.x }
-                if appModel.allowedPositionAxes.contains(.y) { current.y = newPos.y }
-                if appModel.allowedPositionAxes.contains(.z) { current.z = newPos.z }
+				if let allowedPositionAxes = value.entity.components[AxesComponent.self]?.allowedPositionAxes {
+					if allowedPositionAxes.contains(.x) { current.x = newPos.x }
+					if allowedPositionAxes.contains(.y) { current.y = newPos.y }
+					if allowedPositionAxes.contains(.z) { current.z = newPos.z }
 
-                value.entity.position = current
+					value.entity.position = current
+				}
 
                 localCoordinates = current
                 robotCoordinates = calibrationManager.convertLocalToRobot(local: current)

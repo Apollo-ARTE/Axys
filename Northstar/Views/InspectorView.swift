@@ -166,18 +166,20 @@ struct InspectorView: View {
 
     private func allowedAxesBinding() -> Binding<AxisOptions> {
         Binding(get: {
-            selectedMode == .position
-            ? appModel.allowedPositionAxes
-            : appModel.allowedRotationAxes
+			guard let allowedPositionAxes = entity?.components[AxesComponent.self]?.allowedPositionAxes,
+					let allowedRotationAxes = entity?.components[AxesComponent.self]?.allowedRotationAxes else {
+				return .all
+			}
+
+            return selectedMode == .position ? allowedPositionAxes : allowedRotationAxes
         }, set: { newValue in
             if selectedMode == .position {
-                appModel.allowedPositionAxes = newValue
+				entity?.components[AxesComponent.self]?.allowedPositionAxes = newValue
             } else {
-                appModel.allowedRotationAxes = newValue
+				entity?.components[AxesComponent.self]?.allowedRotationAxes = newValue
             }
         })
     }
-
 }
 
 #Preview(windowStyle: .automatic) {
