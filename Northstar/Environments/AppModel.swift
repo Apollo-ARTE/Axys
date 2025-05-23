@@ -29,7 +29,7 @@ class AppModel {
 	var showRobotReach = false
     var isConnected = false
 
-	var selectedEntity: Entity?
+	var selectedEntities: [Entity] = []
     var showVirtualLab = false
 
     let robotReachRoot = Entity()

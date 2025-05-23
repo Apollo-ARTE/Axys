@@ -6,12 +6,18 @@
 //
 
 import SwiftUI
-
+import RealityKit
 
 struct InspectorView: View {
     @Environment(AppModel.self) private var appModel
     @Environment(RhinoConnectionManager.self) private var connectionManager
     @Environment(CalibrationManager.self) private var calibrationManager
+
+	@Binding var entityID: Int?
+	var entity: Entity? {
+		guard let entityID else { return nil }
+		return appModel.selectedEntities.first(where: { $0.id == entityID })
+	}
 
 	@State private var opacity: Double = 0
 
@@ -56,6 +62,9 @@ struct InspectorView: View {
         .textFieldStyle(.roundedBorder)
         .keyboardType(.numbersAndPunctuation)
         .padding(32)
+		.onDisappear {
+			appModel.selectedEntities.removeAll(where: { $0.id == entityID ?? 0 })
+		}
     }
 
 	/// Returns a binding to a robot-space coordinate for a given axis.
@@ -66,7 +75,7 @@ struct InspectorView: View {
 	/// 4. Updates the entity's local position.
 	private func objectPosition(axes: Axes) -> Binding<Float> {
 		Binding {
-			guard let entity = appModel.selectedEntity else { return 0 }
+			guard let entity else { return 0 }
 			let local = entity.position
 			let robot = calibrationManager.convertLocalToRobot(local: local)
 			switch axes {
@@ -78,7 +87,7 @@ struct InspectorView: View {
 				return robot.z * 1000
 			}
 		} set: { newRobotValue in
-			guard let entity = appModel.selectedEntity else { return }
+			guard let entity else { return }
 
             // Convert current local position to robot space.
             var currentRobot = calibrationManager.convertLocalToRobot(local: entity.position)
@@ -104,7 +113,7 @@ struct InspectorView: View {
 
     private func objectRotation(axes: Axes) -> Binding<Float> {
         Binding {
-            guard let entity = appModel.selectedEntity,
+            guard let entity,
                   let parent = entity.parent else {
                 return 0
             }
@@ -117,7 +126,7 @@ struct InspectorView: View {
             case .z: return angles.z
             }
         } set: { newDegrees in
-            guard let entity = appModel.selectedEntity,
+            guard let entity,
                   let parent = entity.parent else {
                 return
             }
@@ -170,7 +179,7 @@ struct InspectorView: View {
 }
 
 #Preview(windowStyle: .automatic) {
-	InspectorView()
+	InspectorView(entityID: .constant(0))
 		.environment(AppModel.shared)
 		.environment(RhinoConnectionManager.init(calibrationManager: .shared))
         .environment(CalibrationManager.shared)

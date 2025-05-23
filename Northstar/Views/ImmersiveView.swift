@@ -198,8 +198,9 @@ struct ImmersiveView: View {
         TapGesture()
             .targetedToAnyEntity()
             .onEnded { value in
-                appModel.selectedEntity = value.entity
-                openWindow(id: "inspector")
+				appModel.selectedEntities.append(value.entity)
+				let id = Int(value.entity.id)
+				openWindow(value: id)
             }
     }
 }

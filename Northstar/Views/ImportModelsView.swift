@@ -10,11 +10,15 @@ import SwiftUI
 struct ImportModelsView: View {
 	@Environment(RhinoConnectionManager.self) private var connectionManager
 
+	private var sortedObjects: [RhinoObject] {
+		connectionManager.trackedObjects!.sorted(using: KeyPathComparator(\.importDate, order: .forward))
+	}
+
     var body: some View {
 		List {
 			Section {
 				if let objects = connectionManager.trackedObjects, !objects.isEmpty {
-					ForEach(objects, id: \.objectId) { object in
+					ForEach(sortedObjects, id: \.objectId) { object in
 						VStack(alignment: .leading) {
 							Text(object.objectName)
 							Text(object.objectId)

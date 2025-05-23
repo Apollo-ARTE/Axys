@@ -44,8 +44,8 @@ struct NorthstarApp: App {
 			.init(.utilityPanel)
 		}
 
-		WindowGroup("Inspector", id: "inspector") {
-			InspectorView()
+		WindowGroup(for: Int.self) { entityID in
+			InspectorView(entityID: entityID)
 				.environment(appModel)
 				.environment(rhinoConnectionManager)
 				.environment(calibrationManager)
