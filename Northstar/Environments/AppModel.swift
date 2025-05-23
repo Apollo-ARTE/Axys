@@ -25,7 +25,7 @@ class AppModel {
     var immersiveSpaceState = ImmersiveSpaceState.closed
 
 	var showCalibrationWindow = false
-	var showModels = false
+	var showModels = true
 	var showRobotReach = false
     var isConnected = false
 
