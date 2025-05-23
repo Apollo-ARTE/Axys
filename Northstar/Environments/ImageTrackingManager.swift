@@ -98,14 +98,14 @@ class ImageTrackingManager {
 		return Int(imageName.dropFirst("marker".count))
 	}
 
-	func reset() {
-		rootEntity = Entity()
-		firstMarkerEntity = nil
-		secondMarkerEntity = nil
-		thirdMarkerEntity = nil
-
-		scannedMarkers = []
-		imageAnchors = [:]
-		entityMap = [:]
-	}
+//	func reset() {
+//		rootEntity = Entity()
+//		firstMarkerEntity = nil
+//		secondMarkerEntity = nil
+//		thirdMarkerEntity = nil
+//
+//		scannedMarkers = []
+//		imageAnchors = [:]
+//		entityMap = [:]
+//	}
 }

@@ -37,8 +37,8 @@ class CalibrationManager {
     var rotation = simd_float3x3(1) // Identity matrix as default.
 	var translation = simd_float3(0, 0, 0)
 
-	func reset() {
-		calibrationStep = .placeMarkers
-		isCalibrationCompleted = false
-	}
+//	func reset() {
+//		calibrationStep = .placeMarkers
+//		isCalibrationCompleted = false
+//	}
 }
