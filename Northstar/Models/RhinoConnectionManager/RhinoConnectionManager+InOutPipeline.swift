@@ -24,6 +24,7 @@ extension RhinoConnectionManager {
 						Logger.connection.error("Error sending message: \(error.localizedDescription)")
 					} else {
                         Logger.connection.debug("Command sent: \(value)")
+						self.isImportingObjects = true
 					}
 				}
 			}

@@ -26,7 +26,7 @@ struct ToolbarView: View {
 			}
 		}
 		.toggleStyle(.circluar)
-		.overlay(alignment: .topTrailing) {
+		.overlay(alignment: .topLeading) {
 			Button("Close", systemImage: "xmark") {
 				openWindow(id: "home")
 			}

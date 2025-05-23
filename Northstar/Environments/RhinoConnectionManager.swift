@@ -27,6 +27,7 @@ class RhinoConnectionManager {
     private let processingQueue = DispatchQueue(label: "com.app.websocket.processing", qos: .userInitiated)
 
     var createMessageReceived: Bool = false
+	var isImportingObjects: Bool = false
 
     var rhinoRootEntity: Entity
 
@@ -54,10 +55,8 @@ class RhinoConnectionManager {
         guard let url = URL(string: "ws://\(ipAddress):8765") else { return }
         webSocketTask = URLSession.shared.webSocketTask(with: url)
         webSocketTask?.resume()
-        Logger.connection.info("Connected to WebSocket")
         receiveMessages()
         receivedObjects = [:]
-		isConnected = true
     }
 
 	func isValidIPAddress() -> Bool {
@@ -108,6 +107,8 @@ class RhinoConnectionManager {
 
             switch result {
             case .success(let message):
+				isConnected = true
+				Logger.connection.info("Connected to WebSocket")
                 switch message {
                 case .string(let text):
                     Logger.connection.info("Received message: \(text)")
@@ -219,6 +220,7 @@ class RhinoConnectionManager {
 
                     // Add or update object using objectId as key
                     self.receivedObjects[object.objectId] = rhinoObject
+					isImportingObjects = false
 
                     Logger.connection.info("Object named \(object.objectName) with position: \(rhinoPosition) added/updated")
                 }
@@ -257,7 +259,6 @@ class RhinoConnectionManager {
 //                    Logger.connection.info("Disk-reported file size: \(diskSize) bytes")
                     // Send the command to get object tracking information
                     self.sendCommand(value: "TrackObject")
-
                 } catch {
                     Logger.calibration.error("Failed to save/load USDZ file: \(error.localizedDescription)")
                 }

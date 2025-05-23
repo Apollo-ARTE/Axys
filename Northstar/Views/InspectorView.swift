@@ -21,7 +21,7 @@ struct InspectorView: View {
 		return appModel.selectedEntities.first { String($0.id) == entityID }
 	}
 
-	@State private var opacity: Double = 0
+	@State private var opacity: Double = 1
 
     var body: some View {
         @Bindable var connectionManager = connectionManager

@@ -36,10 +36,16 @@ struct ImportModelsView: View {
 				}
 			}
 
-			Button("Import") {
+			Button {
 				connectionManager.sendCommand(value: "ExportUSDZ")
+			} label: {
+				if connectionManager.isImportingObjects {
+					ProgressView()
+				} else {
+					Text("Import")
+						.padding()
+				}
 			}
-			.buttonBorderShape(.capsule)
 			.controlSize(.extraLarge)
 		}
 		.padding(16)

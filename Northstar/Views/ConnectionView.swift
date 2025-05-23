@@ -29,7 +29,6 @@ struct ConnectionView: View {
 				Button("Connect") {
 					if connectionManager.isValidIPAddress() {
 						connectionManager.connectToWebSocket()
-						dismiss()
 					} else {
 						showWrongIPAlert = true
 					}
@@ -39,6 +38,7 @@ struct ConnectionView: View {
 				.buttonBorderShape(.capsule)
 				.controlSize(.extraLarge)
 				.frame(maxWidth: .infinity, alignment: .center)
+				.disabled(connectionManager.isConnected)
 			}
 
 		}
@@ -47,6 +47,11 @@ struct ConnectionView: View {
 
 		} message: {
 			Text("Make sure to input the correct IP address of your Rhino server and try again.")
+		}
+		.onChange(of: connectionManager.isConnected) { _, newValue in
+			if newValue {
+				dismiss()
+			}
 		}
 
     }
