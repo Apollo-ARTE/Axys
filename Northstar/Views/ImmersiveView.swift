@@ -26,13 +26,6 @@ struct ImmersiveView: View {
 
 	var body: some View {
         RealityView { content, attachments in
-
-            // MARK: ATTACHMENT TO DO
-//            if let coordinatesAttachment = attachments.entity(for: "coordinates") {
-//                coordinatesAttachment.position = [0, 0.4, 0]
-//                rhinoConnectionManager.importedEntity.addChild(coordinatesAttachment)
-//            }
-
             if let robotReachEntity = try? await ModelEntity.robotReach() {
                 self.robotReachEntity = robotReachEntity
             }
@@ -46,21 +39,6 @@ struct ImmersiveView: View {
             content.add(imageTracking.rootEntity)
         } update: { content, attachments in
 
-            if appModel.showModels { // Uncomment line for testing without calibration
-                if let model = content.entities.first(where: { $0.name == "rhino_root" }) {
-                    model.children.forEach { rhinoObject in
-                        rhinoObject.transform.scale = [0.001, 0.001, 0.001]
-//                        Logger.views.debug("Showing object: \(rhinoObject.name) at position \(rhinoObject.position)")
-                    }
-                }
-            } else {
-                if let model = content.entities.first(where: { $0.name == "rhino_root" }) {
-                    model.children.forEach { rhinoObject in
-//                        Logger.views.debug("Hiding object: \(rhinoObject.name)")
-                        rhinoObject.transform.scale = [0, 0, 0]
-                    }
-                }
-            }
 		} attachments: {
             Attachment(id: "coordinates") {
                 VStack {
@@ -81,9 +59,9 @@ struct ImmersiveView: View {
                 .glassBackgroundEffect()
             }
         }
+		.gesture(dragGesture3D())
         .gesture(tapGesture())
-        .simultaneousGesture(rotateGesture3D())
-        .simultaneousGesture(dragGesture3D())
+        .gesture(rotateGesture3D())
         .onChange(of: appModel.showRobotReach) { _, newValue in
             toggleRobotReachVisibility(isVisible: newValue)
         }
@@ -93,7 +71,7 @@ struct ImmersiveView: View {
     }
 
     private func toggleRobotReachVisibility(isVisible: Bool) {
-        if isVisible && calibrationManager.isCalibrationCompleted {
+        if isVisible {
             let position = calibrationManager.convertRobotToLocal(robot: [0, 0, 0])
             appModel.robotReachRoot.position = position
             appModel.robotReachRoot.addChild(robotReachEntity)
@@ -103,7 +81,7 @@ struct ImmersiveView: View {
     }
 
     private func toggleVirtualLabVisibility(isVisible: Bool) {
-        if isVisible && calibrationManager.isCalibrationCompleted {
+        if isVisible {
             let target = calibrationManager.convertRobotToLocal(robot: [0, 10, 0])
             let from = calibrationManager.convertRobotToLocal(robot: [0, 0, 0])
             appModel.virtualLabRoot.look(at: target, from: from, relativeTo: nil)

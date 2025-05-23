@@ -78,6 +78,8 @@ struct CalibrationStepView<Content: View>: View {
 
 				// Compute the rigid transformation using the new calibration system.
 				calibrationManager.calibrate()
+//				calibrationManager.reset()
+//				imageTrackingManager.reset()
 				dismiss()
 			}
 		} label: {

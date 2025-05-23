@@ -27,7 +27,7 @@ struct AxisControl: View {
 
             TextField(axis.label,
                       value: position,
-                      format: .number)
+					  format: .number.precision(.fractionLength(0)))
             .textFieldStyle(.roundedBorder)
             .keyboardType(.numbersAndPunctuation)
         }

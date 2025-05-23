@@ -100,9 +100,9 @@ class ImageTrackingManager {
 
 	func reset() {
 		rootEntity = Entity()
-		firstMarkerEntity = Entity()
-		secondMarkerEntity = Entity()
-		thirdMarkerEntity = Entity()
+		firstMarkerEntity = nil
+		secondMarkerEntity = nil
+		thirdMarkerEntity = nil
 
 		scannedMarkers = []
 		imageAnchors = [:]

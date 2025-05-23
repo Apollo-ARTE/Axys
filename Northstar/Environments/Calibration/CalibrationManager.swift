@@ -39,6 +39,6 @@ class CalibrationManager {
 
 	func reset() {
 		calibrationStep = .placeMarkers
-		
+		isCalibrationCompleted = false
 	}
 }
