@@ -11,7 +11,7 @@ struct ImportModelsView: View {
 	@Environment(RhinoConnectionManager.self) private var connectionManager
 
 	private var sortedObjects: [RhinoObject] {
-		connectionManager.trackedObjects!
+		connectionManager.trackedObjects
 			.sorted(using: KeyPathComparator(\.importDate, order: .forward))
 	}
 
@@ -19,7 +19,7 @@ struct ImportModelsView: View {
 		VStack {
 			List {
 				Section {
-					if let objects = connectionManager.trackedObjects, !objects.isEmpty {
+					if !connectionManager.trackedObjects.isEmpty {
 						ForEach(sortedObjects, id: \.objectId) { object in
 							VStack(alignment: .leading) {
 								Text(object.objectName)
@@ -37,7 +37,7 @@ struct ImportModelsView: View {
 			}
 
 			Button("Import") {
-				connectionManager.sendExportCommand()
+				connectionManager.sendCommand(value: "ExportUSDZ")
 			}
 			.buttonBorderShape(.capsule)
 			.controlSize(.extraLarge)
@@ -56,10 +56,12 @@ struct ImportModelsView: View {
 	}
 
 	private var footer: some View {
-		Text("Run the Rhino plugin and select the models you want to visualize. Tap `import` when you're ready.")
-			.multilineTextAlignment(.center)
-			.frame(maxWidth: .infinity, alignment: .center)
-			.padding()
+		VStack(spacing: 32) {
+			Text("Run the Rhino plugin and select the models you want to visualize. Tap `import` when you're ready.")
+				.multilineTextAlignment(.center)
+		}
+		.frame(maxWidth: .infinity, alignment: .center)
+		.padding()
 	}
 }
 
