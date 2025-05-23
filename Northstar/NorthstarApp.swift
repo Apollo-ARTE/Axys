@@ -44,7 +44,7 @@ struct NorthstarApp: App {
 			.init(.utilityPanel)
 		}
 
-		WindowGroup(for: String.self) { entityID in
+		WindowGroup(id: "inspector", for: String.self) { entityID in
 			InspectorView(entityID: entityID)
 				.environment(appModel)
 				.environment(rhinoConnectionManager)
@@ -52,8 +52,8 @@ struct NorthstarApp: App {
 				.frame(width: 300)
 		}
 		.windowResizability(.contentSize)
-		.defaultWindowPlacement { content, context in
-				.init(.utilityPanel)
+		.defaultWindowPlacement { _, _ in
+			.init(.utilityPanel)
 		}
 
 		ImmersiveSpace(id: appModel.immersiveSpaceID) {

@@ -138,6 +138,7 @@ class RhinoConnectionManager {
         Logger.connection.info("Removing all children from rhino root entity")
         for object in trackedObjects {
             if let rhinoObject = try? await ModelEntity.rhinoObject(name: object.objectId) {
+				rhinoObject.components.set(NameComponent(objectName: object.objectName))
                 rhinoObject.name = object.objectId // Setting the Rhino ID as name of the object for easy identification
                 let localPosition = self.calibrationManager.convertRobotToLocal(robot: object.rhinoPosition)
                 rhinoObject.look(

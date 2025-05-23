@@ -13,10 +13,12 @@ struct InspectorView: View {
     @Environment(RhinoConnectionManager.self) private var connectionManager
     @Environment(CalibrationManager.self) private var calibrationManager
 
+	@State var selectedMode: SegmentedMode = .position
+
 	@Binding var entityID: String?
 	var entity: Entity? {
 		guard let entityID else { return nil }
-		return appModel.selectedEntities.first(where: { String($0.id) == entityID })
+		return appModel.selectedEntities.first { String($0.id) == entityID }
 	}
 
 	@State private var opacity: Double = 0
@@ -24,7 +26,7 @@ struct InspectorView: View {
     var body: some View {
         @Bindable var connectionManager = connectionManager
 		VStack(spacing: 16) {
-            Text("Inspector")
+			Text(entity?.components[NameComponent.self]?.objectName ?? "Unnamed Object")
                 .font(.title2)
 
 			VStack(alignment: .leading) {
@@ -39,8 +41,8 @@ struct InspectorView: View {
 				Text("Transform")
 					.font(.headline)
 				Picker("", selection: Binding<SegmentedMode>(
-					get: { appModel.selectedMode },
-					set: { appModel.selectedMode = $0 }
+					get: { selectedMode },
+					set: { selectedMode = $0 }
 				)) {
 					Label("Position", systemImage: "move.3d")
 						.tag(SegmentedMode.position)
@@ -154,7 +156,7 @@ struct InspectorView: View {
     }
 
     private func valueBinding(for axis: Axes) -> Binding<Float> {
-        switch appModel.selectedMode {
+        switch selectedMode {
         case .position:
             return objectPosition(axes: axis)
         case .rotation:
@@ -164,11 +166,11 @@ struct InspectorView: View {
 
     private func allowedAxesBinding() -> Binding<AxisOptions> {
         Binding(get: {
-            appModel.selectedMode == .position
+            selectedMode == .position
             ? appModel.allowedPositionAxes
             : appModel.allowedRotationAxes
         }, set: { newValue in
-            if appModel.selectedMode == .position {
+            if selectedMode == .position {
                 appModel.allowedPositionAxes = newValue
             } else {
                 appModel.allowedRotationAxes = newValue

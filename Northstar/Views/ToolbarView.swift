@@ -29,7 +29,6 @@ struct ToolbarView: View {
 		.overlay(alignment: .topTrailing) {
 			Button("Close", systemImage: "xmark") {
 				openWindow(id: "home")
-				dismissWindow()
 			}
 			.buttonStyle(.bordered)
 			.buttonBorderShape(.circle)
@@ -39,22 +38,10 @@ struct ToolbarView: View {
 		.task {
 			await rhinoConnectionManager.addObjectsToView()
 		}
-		.onDisappear {
-			openWindow(id: "home")
-		}
 		.onAppear {
 			dismissWindow(id: "home")
 		}
 	}
-
-//	private func toggleCalibration() async {
-//		await toggleImmersiveSpace()
-//		if appModel.showCalibrationWindow {
-//			openCalibrationWindow()
-//		} else {
-//			dismissCalibrationWindow()
-//		}
-//	}
 }
 
 #Preview(windowStyle: .automatic) {

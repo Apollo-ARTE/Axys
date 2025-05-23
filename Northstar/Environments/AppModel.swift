@@ -24,7 +24,7 @@ class AppModel {
 
     var immersiveSpaceState = ImmersiveSpaceState.closed
 
-	var showCalibrationWindow = false
+	var useCalibration = false
 	var showModels = true
 	var showRobotReach = false
     var isConnected = false
@@ -34,8 +34,6 @@ class AppModel {
 
     let robotReachRoot = Entity()
     let virtualLabRoot = Entity()
-
-    var selectedMode: SegmentedMode = .position
 
     var allowedPositionAxes: AxisOptions = .all
     var allowedRotationAxes: AxisOptions = .all
