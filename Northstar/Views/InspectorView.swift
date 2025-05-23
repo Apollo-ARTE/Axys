@@ -6,19 +6,27 @@
 //
 
 import SwiftUI
-
+import RealityKit
 
 struct InspectorView: View {
     @Environment(AppModel.self) private var appModel
     @Environment(RhinoConnectionManager.self) private var connectionManager
     @Environment(CalibrationManager.self) private var calibrationManager
 
+	@State var selectedMode: SegmentedMode = .position
+
+	@Binding var entityID: String?
+	var entity: Entity? {
+		guard let entityID else { return nil }
+		return appModel.selectedEntities.first { String($0.id) == entityID }
+	}
+
 	@State private var opacity: Double = 0
 
     var body: some View {
         @Bindable var connectionManager = connectionManager
 		VStack(spacing: 16) {
-            Text("Inspector")
+			Text(entity?.components[NameComponent.self]?.objectName ?? "Unnamed Object")
                 .font(.title2)
 
 			VStack(alignment: .leading) {
@@ -33,8 +41,8 @@ struct InspectorView: View {
 				Text("Transform")
 					.font(.headline)
 				Picker("", selection: Binding<SegmentedMode>(
-					get: { appModel.selectedMode },
-					set: { appModel.selectedMode = $0 }
+					get: { selectedMode },
+					set: { selectedMode = $0 }
 				)) {
 					Label("Position", systemImage: "move.3d")
 						.tag(SegmentedMode.position)
@@ -56,6 +64,9 @@ struct InspectorView: View {
         .textFieldStyle(.roundedBorder)
         .keyboardType(.numbersAndPunctuation)
         .padding(32)
+		.onDisappear {
+			appModel.selectedEntities.removeAll(where: { String($0.id) == entityID ?? "" })
+		}
     }
 
 	/// Returns a binding to a robot-space coordinate for a given axis.
@@ -66,7 +77,7 @@ struct InspectorView: View {
 	/// 4. Updates the entity's local position.
 	private func objectPosition(axes: Axes) -> Binding<Float> {
 		Binding {
-			guard let entity = appModel.selectedEntity else { return 0 }
+			guard let entity else { return 0 }
 			let local = entity.position
 			let robot = calibrationManager.convertLocalToRobot(local: local)
 			switch axes {
@@ -78,7 +89,7 @@ struct InspectorView: View {
 				return robot.z * 1000
 			}
 		} set: { newRobotValue in
-			guard let entity = appModel.selectedEntity else { return }
+			guard let entity else { return }
 
             // Convert current local position to robot space.
             var currentRobot = calibrationManager.convertLocalToRobot(local: entity.position)
@@ -104,7 +115,7 @@ struct InspectorView: View {
 
     private func objectRotation(axes: Axes) -> Binding<Float> {
         Binding {
-            guard let entity = appModel.selectedEntity,
+            guard let entity,
                   let parent = entity.parent else {
                 return 0
             }
@@ -117,7 +128,7 @@ struct InspectorView: View {
             case .z: return angles.z
             }
         } set: { newDegrees in
-            guard let entity = appModel.selectedEntity,
+            guard let entity,
                   let parent = entity.parent else {
                 return
             }
@@ -145,7 +156,7 @@ struct InspectorView: View {
     }
 
     private func valueBinding(for axis: Axes) -> Binding<Float> {
-        switch appModel.selectedMode {
+        switch selectedMode {
         case .position:
             return objectPosition(axes: axis)
         case .rotation:
@@ -155,22 +166,24 @@ struct InspectorView: View {
 
     private func allowedAxesBinding() -> Binding<AxisOptions> {
         Binding(get: {
-            appModel.selectedMode == .position
-            ? appModel.allowedPositionAxes
-            : appModel.allowedRotationAxes
+			guard let allowedPositionAxes = entity?.components[AxesComponent.self]?.allowedPositionAxes,
+					let allowedRotationAxes = entity?.components[AxesComponent.self]?.allowedRotationAxes else {
+				return .all
+			}
+
+            return selectedMode == .position ? allowedPositionAxes : allowedRotationAxes
         }, set: { newValue in
-            if appModel.selectedMode == .position {
-                appModel.allowedPositionAxes = newValue
+            if selectedMode == .position {
+				entity?.components[AxesComponent.self]?.allowedPositionAxes = newValue
             } else {
-                appModel.allowedRotationAxes = newValue
+				entity?.components[AxesComponent.self]?.allowedRotationAxes = newValue
             }
         })
     }
-
 }
 
 #Preview(windowStyle: .automatic) {
-	InspectorView()
+	InspectorView(entityID: .constant(""))
 		.environment(AppModel.shared)
 		.environment(RhinoConnectionManager.init(calibrationManager: .shared))
         .environment(CalibrationManager.shared)

@@ -40,7 +40,7 @@ struct HomeView: View {
 							ImportModelsView()
 						} label: {
 							LabeledContent {
-								Text(connectionManager.trackedObjects?.count ?? 0, format: .number)
+								Text(connectionManager.trackedObjects.count, format: .number)
 							} label: {
 								Text("Imported Models")
 								Text("Run the plugin on Rhino and select your models")
@@ -49,14 +49,18 @@ struct HomeView: View {
 						}
 						.disabled(!connectionManager.isConnected)
 
-						Toggle(isOn: $appModel.showCalibrationWindow) {
+						Toggle(isOn: $appModel.useCalibration) {
 							Text("Calibration")
 							Text("Calibrate your models with real world coordinates")
 								.font(.footnote)
 						}
 						.tint(.blue)
-						.onChange(of: appModel.showCalibrationWindow) {
-							if appModel.showCalibrationWindow {
+						.onChange(of: appModel.useCalibration) {
+							Task {
+								await toggleImmersiveSpace()
+							}
+
+							if appModel.useCalibration {
 								showCalibrationView = true
 							} else {
 								showCalibrationView = false
@@ -83,8 +87,9 @@ struct HomeView: View {
 		}
 		.padding(16)
 		.frame(width: 550, height: 550)
-		.task {
-			await toggleImmersiveSpace()
+		.onAppear {
+			dismissWindow(id: "toolbar")
+			dismissWindow(id: "inspector")
 		}
     }
 
@@ -114,7 +119,7 @@ struct HomeView: View {
 		.controlSize(.extraLarge)
 		.frame(maxWidth: .infinity, alignment: .center)
 		.disabled(!connectionManager.isConnected)
-		.disabled(connectionManager.trackedObjects?.isEmpty ?? true)
+		.disabled(connectionManager.trackedObjects.isEmpty)
 	}
 
 	@MainActor

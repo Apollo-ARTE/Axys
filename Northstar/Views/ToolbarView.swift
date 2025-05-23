@@ -26,26 +26,22 @@ struct ToolbarView: View {
 			}
 		}
 		.toggleStyle(.circluar)
+		.overlay(alignment: .topTrailing) {
+			Button("Close", systemImage: "xmark") {
+				openWindow(id: "home")
+			}
+			.buttonStyle(.bordered)
+			.buttonBorderShape(.circle)
+			.labelStyle(.iconOnly)
+		}
 		.padding(32)
 		.task {
 			await rhinoConnectionManager.addObjectsToView()
-		}
-		.onDisappear {
-			openWindow(id: "home")
 		}
 		.onAppear {
 			dismissWindow(id: "home")
 		}
 	}
-
-//	private func toggleCalibration() async {
-//		await toggleImmersiveSpace()
-//		if appModel.showCalibrationWindow {
-//			openCalibrationWindow()
-//		} else {
-//			dismissCalibrationWindow()
-//		}
-//	}
 }
 
 #Preview(windowStyle: .automatic) {
