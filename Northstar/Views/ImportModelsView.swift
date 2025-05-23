@@ -13,8 +13,8 @@ struct ImportModelsView: View {
     var body: some View {
 		List {
 			Section {
-				if let objects = connectionManager.trackedObjects, !objects.isEmpty {
-					ForEach(objects, id: \.objectId) { object in
+				if !connectionManager.trackedObjects.isEmpty {
+					ForEach(connectionManager.trackedObjects, id: \.objectId) { object in
 						VStack(alignment: .leading) {
 							Text(object.objectName)
 							Text(object.objectId)
@@ -47,7 +47,7 @@ struct ImportModelsView: View {
 			Text("Run the Rhino plugin and select the models you want to visualize. Tap `import` when you're ready.")
 				.multilineTextAlignment(.center)
 			Button("Import") {
-				connectionManager.sendExportCommand()
+                connectionManager.sendCommand(value: "ExportUSDZ")
 			}
 			.buttonBorderShape(.capsule)
 			.controlSize(.extraLarge)
