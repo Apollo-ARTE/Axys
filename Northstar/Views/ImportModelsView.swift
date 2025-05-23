@@ -11,27 +11,36 @@ struct ImportModelsView: View {
 	@Environment(RhinoConnectionManager.self) private var connectionManager
 
 	private var sortedObjects: [RhinoObject] {
-		connectionManager.trackedObjects!.sorted(using: KeyPathComparator(\.importDate, order: .forward))
+		connectionManager.trackedObjects!
+			.sorted(using: KeyPathComparator(\.importDate, order: .forward))
 	}
 
     var body: some View {
-		List {
-			Section {
-				if let objects = connectionManager.trackedObjects, !objects.isEmpty {
-					ForEach(sortedObjects, id: \.objectId) { object in
-						VStack(alignment: .leading) {
-							Text(object.objectName)
-							Text(object.objectId)
-								.foregroundStyle(.secondary)
-								.font(.footnote)
+		VStack {
+			List {
+				Section {
+					if let objects = connectionManager.trackedObjects, !objects.isEmpty {
+						ForEach(sortedObjects, id: \.objectId) { object in
+							VStack(alignment: .leading) {
+								Text(object.objectName)
+								Text(object.objectId)
+									.foregroundStyle(.secondary)
+									.font(.footnote)
+							}
 						}
+					} else {
+						contentUnavailable
 					}
-				} else {
-					contentUnavailable
+				} footer: {
+					footer
 				}
-			} footer: {
-				footer
 			}
+
+			Button("Import") {
+				connectionManager.sendExportCommand()
+			}
+			.buttonBorderShape(.capsule)
+			.controlSize(.extraLarge)
 		}
 		.padding(16)
 		.navigationTitle("Imported Models")
@@ -47,21 +56,14 @@ struct ImportModelsView: View {
 	}
 
 	private var footer: some View {
-		VStack(spacing: 32) {
-			Text("Run the Rhino plugin and select the models you want to visualize. Tap `import` when you're ready.")
-				.multilineTextAlignment(.center)
-			Button("Import") {
-				connectionManager.sendExportCommand()
-			}
-			.buttonBorderShape(.capsule)
-			.controlSize(.extraLarge)
-		}
-		.frame(maxWidth: .infinity, alignment: .center)
-		.padding()
+		Text("Run the Rhino plugin and select the models you want to visualize. Tap `import` when you're ready.")
+			.multilineTextAlignment(.center)
+			.frame(maxWidth: .infinity, alignment: .center)
+			.padding()
 	}
 }
 
-#Preview {
+#Preview(traits: .fixedLayout(width: 550, height: 550)) {
 	NavigationStack {
 		ImportModelsView()
 	}

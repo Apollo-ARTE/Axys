@@ -30,17 +30,7 @@ struct CalibrationStepView<Content: View>: View {
 	var body: some View {
 		VStack(spacing: 0) {
 			content
-//			if step != .insertCoordinates {
-				doneButton
-//					.matchedGeometryEffect(id: "doneButton", in: namespace)
-//			}
 		}
-//		.overlay(alignment: .bottomTrailing){
-//			if step == .insertCoordinates {
-//				doneButton
-//					.matchedGeometryEffect(id: "doneButton", in: namespace)
-//			}
-//		}
 		.toolbar {
 			if calibrationManager.calibrationStep != .placeMarkers {
 				ToolbarItem(placement: .topBarTrailing) {
@@ -89,7 +79,7 @@ struct CalibrationStepView<Content: View>: View {
 				dismiss()
 			}
 		} label: {
-			Text("Done")
+			Text(step == .scanCompleted ? "Done" : "Next")
 				.padding(.horizontal, 32)
 		}
 		.buttonBorderShape(.capsule)
