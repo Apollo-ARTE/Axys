@@ -26,6 +26,15 @@ struct ToolbarView: View {
 			}
 		}
 		.toggleStyle(.circluar)
+		.overlay(alignment: .topTrailing) {
+			Button("Close", systemImage: "xmark") {
+				openWindow(id: "home")
+				dismissWindow()
+			}
+			.buttonStyle(.bordered)
+			.buttonBorderShape(.circle)
+			.labelStyle(.iconOnly)
+		}
 		.padding(32)
 		.task {
 			await rhinoConnectionManager.addObjectsToView()

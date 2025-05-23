@@ -13,10 +13,10 @@ struct InspectorView: View {
     @Environment(RhinoConnectionManager.self) private var connectionManager
     @Environment(CalibrationManager.self) private var calibrationManager
 
-	@Binding var entityID: Int?
+	@Binding var entityID: String?
 	var entity: Entity? {
 		guard let entityID else { return nil }
-		return appModel.selectedEntities.first(where: { $0.id == entityID })
+		return appModel.selectedEntities.first(where: { String($0.id) == entityID })
 	}
 
 	@State private var opacity: Double = 0
@@ -63,7 +63,7 @@ struct InspectorView: View {
         .keyboardType(.numbersAndPunctuation)
         .padding(32)
 		.onDisappear {
-			appModel.selectedEntities.removeAll(where: { $0.id == entityID ?? 0 })
+			appModel.selectedEntities.removeAll(where: { String($0.id) == entityID ?? "" })
 		}
     }
 
@@ -179,7 +179,7 @@ struct InspectorView: View {
 }
 
 #Preview(windowStyle: .automatic) {
-	InspectorView(entityID: .constant(0))
+	InspectorView(entityID: .constant(""))
 		.environment(AppModel.shared)
 		.environment(RhinoConnectionManager.init(calibrationManager: .shared))
         .environment(CalibrationManager.shared)

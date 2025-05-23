@@ -30,6 +30,7 @@ struct CalibrationStepView<Content: View>: View {
 	var body: some View {
 		VStack(spacing: 0) {
 			content
+			doneButton
 		}
 		.toolbar {
 			if calibrationManager.calibrationStep != .placeMarkers {
@@ -79,7 +80,7 @@ struct CalibrationStepView<Content: View>: View {
 				dismiss()
 			}
 		} label: {
-			Text(step == .scanCompleted ? "Done" : "Next")
+			Text(step == .insertCoordinates ? "Done" : "Next")
 				.padding(.horizontal, 32)
 		}
 		.buttonBorderShape(.capsule)

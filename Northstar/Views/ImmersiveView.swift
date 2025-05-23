@@ -199,7 +199,7 @@ struct ImmersiveView: View {
             .targetedToAnyEntity()
             .onEnded { value in
 				appModel.selectedEntities.append(value.entity)
-				let id = Int(value.entity.id)
+				let id = String(value.entity.id)
 				openWindow(value: id)
             }
     }
