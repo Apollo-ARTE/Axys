@@ -38,7 +38,6 @@ class RhinoConnectionManager {
         return Array(receivedObjects.values)
     }
 
-
     init(calibrationManager: CalibrationManager) {
         self.calibrationManager = calibrationManager
         self.rhinoRootEntity = Entity()
@@ -134,10 +133,17 @@ class RhinoConnectionManager {
     // TODO: Refactor to add objects on first open of the immersive view after calibration
     @MainActor
 	func addObjectsToView() async {
+		guard calibrationManager.isCalibrationCompleted else {
+			Logger.connection.info("Calibration not completed yet. Skipping adding objects to view.")
+			return
+		}
+
         self.rhinoRootEntity.children.removeAll()
         Logger.connection.info("Removing all children from rhino root entity")
         for object in trackedObjects {
             if let rhinoObject = try? await ModelEntity.rhinoObject(name: object.objectId) {
+				rhinoObject.components.set(NameComponent(objectName: object.objectName))
+				rhinoObject.components.set(AxesComponent())
                 rhinoObject.name = object.objectId // Setting the Rhino ID as name of the object for easy identification
                 let localPosition = self.calibrationManager.convertRobotToLocal(robot: object.rhinoPosition)
                 rhinoObject.look(
@@ -145,7 +151,7 @@ class RhinoConnectionManager {
                     from: calibrationManager.convertRobotToLocal(robot: [0, 0, 0]),
                     relativeTo: nil)
                 rhinoObject.position = localPosition
-                rhinoObject.transform.scale = [0, 0, 0]
+//                rhinoObject.transform.scale = [0, 0, 0]
                 self.rhinoRootEntity.addChild(rhinoObject)
                 Logger.connection.info("Object named \(object.objectName) moved to local coordinates: \(localPosition) robot coordinates: \(object.rhinoPosition), object scale: \(rhinoObject.transform.scale)")
             }

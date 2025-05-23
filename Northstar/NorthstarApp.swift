@@ -44,14 +44,17 @@ struct NorthstarApp: App {
 			.init(.utilityPanel)
 		}
 
-		WindowGroup("Inspector", id: "inspector") {
-			InspectorView()
+		WindowGroup(id: "inspector", for: String.self) { entityID in
+			InspectorView(entityID: entityID)
 				.environment(appModel)
 				.environment(rhinoConnectionManager)
 				.environment(calibrationManager)
 				.frame(width: 300)
 		}
 		.windowResizability(.contentSize)
+		.defaultWindowPlacement { _, _ in
+			.init(.utilityPanel)
+		}
 
 		ImmersiveSpace(id: appModel.immersiveSpaceID) {
 			ImmersiveView()

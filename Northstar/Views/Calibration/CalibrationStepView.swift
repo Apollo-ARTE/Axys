@@ -30,22 +30,14 @@ struct CalibrationStepView<Content: View>: View {
 	var body: some View {
 		VStack(spacing: 0) {
 			content
-//			if step != .insertCoordinates {
-				doneButton
-//					.matchedGeometryEffect(id: "doneButton", in: namespace)
-//			}
+			doneButton
 		}
-//		.overlay(alignment: .bottomTrailing){
-//			if step == .insertCoordinates {
-//				doneButton
-//					.matchedGeometryEffect(id: "doneButton", in: namespace)
-//			}
-//		}
 		.toolbar {
 			if calibrationManager.calibrationStep != .placeMarkers {
 				ToolbarItem(placement: .topBarTrailing) {
 					Button("Reset", systemImage: "arrow.clockwise") {
-						calibrationManager.calibrationStep = .placeMarkers
+//						calibrationManager.reset()
+//						imageTrackingManager.reset()
 					}
 					.labelStyle(.iconOnly)
 					.buttonStyle(.bordered)
@@ -86,10 +78,12 @@ struct CalibrationStepView<Content: View>: View {
 
 				// Compute the rigid transformation using the new calibration system.
 				calibrationManager.calibrate()
+//				calibrationManager.reset()
+//				imageTrackingManager.reset()
 				dismiss()
 			}
 		} label: {
-			Text("Done")
+			Text(step == .insertCoordinates ? "Done" : "Next")
 				.padding(.horizontal, 32)
 		}
 		.buttonBorderShape(.capsule)

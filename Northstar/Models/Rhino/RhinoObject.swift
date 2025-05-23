@@ -7,8 +7,9 @@
 
 import Foundation
 
-struct RhinoObject: Codable {
+struct RhinoObject: Codable, Hashable {
     let objectId: String
     var objectName: String
     var rhinoPosition: SIMD3<Float>
+	var importDate: Date = .now
 }

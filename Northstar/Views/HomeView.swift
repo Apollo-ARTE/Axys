@@ -49,14 +49,18 @@ struct HomeView: View {
 						}
 						.disabled(!connectionManager.isConnected)
 
-						Toggle(isOn: $appModel.showCalibrationWindow) {
+						Toggle(isOn: $appModel.useCalibration) {
 							Text("Calibration")
 							Text("Calibrate your models with real world coordinates")
 								.font(.footnote)
 						}
 						.tint(.blue)
-						.onChange(of: appModel.showCalibrationWindow) {
-							if appModel.showCalibrationWindow {
+						.onChange(of: appModel.useCalibration) {
+							Task {
+								await toggleImmersiveSpace()
+							}
+
+							if appModel.useCalibration {
 								showCalibrationView = true
 							} else {
 								showCalibrationView = false
@@ -83,8 +87,9 @@ struct HomeView: View {
 		}
 		.padding(16)
 		.frame(width: 550, height: 550)
-		.task {
-			await toggleImmersiveSpace()
+		.onAppear {
+			dismissWindow(id: "toolbar")
+			dismissWindow(id: "inspector")
 		}
     }
 

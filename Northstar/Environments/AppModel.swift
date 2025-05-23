@@ -24,21 +24,16 @@ class AppModel {
 
     var immersiveSpaceState = ImmersiveSpaceState.closed
 
-	var showCalibrationWindow = false
+	var useCalibration = false
 	var showModels = false
 	var showRobotReach = false
     var isConnected = false
 
-	var selectedEntity: Entity?
+	var selectedEntities: [Entity] = []
     var showVirtualLab = false
 
     let robotReachRoot = Entity()
     let virtualLabRoot = Entity()
-
-    var selectedMode: SegmentedMode = .position
-
-    var allowedPositionAxes: AxisOptions = .all
-    var allowedRotationAxes: AxisOptions = .all
 
     var rotationStore: [Entity: simd_quatf] = [:]
 }
