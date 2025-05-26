@@ -152,6 +152,10 @@ class RhinoConnectionManager {
                     from: calibrationManager.convertRobotToLocal(robot: [0, 0, 0]),
                     relativeTo: nil)
                 rhinoObject.position = localPosition
+                if rhinoObject.components[NameComponent.self]?.objectName == "Table" {
+                    var material = SimpleMaterial(color: .gray, isMetallic: false)
+                    rhinoObject.model?.materials = [material]
+                }
 //                rhinoObject.transform.scale = [0, 0, 0]
                 self.rhinoRootEntity.addChild(rhinoObject)
                 Logger.connection.info("Object named \(object.objectName) moved to local coordinates: \(localPosition) robot coordinates: \(object.rhinoPosition), object scale: \(rhinoObject.transform.scale)")
