@@ -28,6 +28,8 @@ class RhinoConnectionManager {
 
     var createMessageReceived: Bool = false
 	var isImportingObjects: Bool = false
+    var errorAlertShown: Bool = false
+    var rhinoErrorMessage: String?
 
     var rhinoRootEntity: Entity
 
@@ -111,7 +113,6 @@ class RhinoConnectionManager {
 				Logger.connection.info("Connected to WebSocket")
                 switch message {
                 case .string(let text):
-                    Logger.connection.info("Received message: \(text)")
                     self.processingQueue.async {
                         self.handleIncomingJSON(text)
                     }
@@ -131,7 +132,6 @@ class RhinoConnectionManager {
         }
     }
 
-    // TODO: Refactor to add objects on first open of the immersive view after calibration
     @MainActor
 	func addObjectsToView() async {
 		guard calibrationManager.isCalibrationCompleted else {
@@ -160,7 +160,7 @@ class RhinoConnectionManager {
     }
 
     func handleIncomingBinaryData(_ data: Data) {
-//        Logger.calibration.info("📦 Received binary data chunk. Size: \(data.count) bytes")
+//        Logger.connection.debug("Received binary data chunk. Size: \(data.count) bytes")
         self.receivedUSDZData.append(data)
         func applyDebugMaterial(to entity: Entity) {
             if let modelEntity = entity as? ModelEntity {
@@ -182,27 +182,7 @@ class RhinoConnectionManager {
     func handleIncomingJSON(_ text: String) {
         guard let data = text.data(using: .utf8) else { return }
         let decoder = JSONDecoder()
-        if let message = try? decoder.decode(RhinoMessage.self, from: data) {
-            if message.type == "create" {
-                Logger.connection.debug("Message position center: \(message.center.x), \(message.center.y), \(message.center.z)")
-                let rhinoPosition = SIMD3<Float>(
-                    Float(message.center.x),
-                    Float(message.center.y),
-                    Float(message.center.z)
-                )
-
-                let rhinoObject = RhinoObject(
-                    objectId: message.objectId,
-                    objectName: message.objectName,
-                    rhinoPosition: rhinoPosition
-                )
-
-                // Add or update object using objectId as key
-                self.receivedObjects[String(message.objectId)] = rhinoObject
-
-                Logger.connection.info("Object \(message.objectName) with ID \(message.objectId) added/updated")
-            }
-        } else if let message = try? decoder.decode(BatchRhinoMessage.self, from: data) {
+        if let message = try? decoder.decode(BatchRhinoMessage.self, from: data) {
             if message.type == "batch_create" {
                 for object in message.objects {
                     Logger.connection.debug("Message position center: \(object.center.x), \(object.center.y), \(object.center.z)")
@@ -225,6 +205,15 @@ class RhinoConnectionManager {
                     Logger.connection.info("Object named \(object.objectName) with position: \(rhinoPosition) added/updated")
                 }
             }
+        } else if let message = try? decoder.decode(InfoMessage.self, from: data) {
+            if message.type == "error" {
+                Logger.rhino.error("Rhino error: \(message.description) at \(message.timestamp)")
+                isImportingObjects = false
+                errorAlertShown = true
+                rhinoErrorMessage = message.description
+            } else if message.type == "info" {
+                Logger.rhino.info("Rhino info: \(message.description) at \(message.timestamp)")
+            }
         } else {
             if let metadata = try? decoder.decode(USDZMetadata.self, from: data), metadata.type == "usdz_metadata" {
                 let fileManager = FileManager.default
@@ -236,8 +225,8 @@ class RhinoConnectionManager {
                 }
 
                 // Log received data size and expected metadata size
-//                Logger.connection.info("Total USDZ bytes received: \(self.receivedUSDZData.count)")
-//                Logger.connection.info("Expected size from metadata: \(metadata.size) bytes")
+                Logger.connection.debug("Total USDZ bytes received: \(self.receivedUSDZData.count)")
+                Logger.connection.debug("Expected size from metadata: \(metadata.size) bytes")
 
                 if self.receivedUSDZData.count != metadata.size {
                     Logger.connection.warning("Mismatch between received and expected size. Waiting for more data?")
@@ -253,21 +242,22 @@ class RhinoConnectionManager {
                         try? fileManager.removeItem(at: fileURL)
                     }
                     try self.receivedUSDZData.write(to: fileURL)
-                    Logger.connection.info("USDZ file saved to: \(fileURL.path)")
+                    Logger.connection.info("Model file written successfully at \(fileURL.path)")
+
                     let fileAttributes = try? FileManager.default.attributesOfItem(atPath: fileURL.path)
                     let diskSize = fileAttributes?[.size] as? Int ?? -1
 //                    Logger.connection.info("Disk-reported file size: \(diskSize) bytes")
                     // Send the command to get object tracking information
                     self.sendCommand(value: "TrackObject")
                 } catch {
-                    Logger.calibration.error("Failed to save/load USDZ file: \(error.localizedDescription)")
+                    Logger.connection.error("Failed to save/load USDZ file: \(error.localizedDescription)")
                 }
 
                 // Clear the buffer for the next file
                 self.receivedUSDZData = Data()
                 return
             } else {
-                Logger.calibration.error("Failed to decode JSON: \(text)")
+                Logger.connection.error("Failed to decode JSON: \(text)")
             }
         }
     }

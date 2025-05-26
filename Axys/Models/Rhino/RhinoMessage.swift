@@ -20,3 +20,9 @@ struct RhinoMessage: Codable {
     let center: Position
     let timestamp: Double
 }
+
+struct InfoMessage: Codable {
+    let type: String
+    let description: String
+    let timestamp: Double
+}
