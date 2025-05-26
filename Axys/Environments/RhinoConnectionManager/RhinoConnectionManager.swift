@@ -28,6 +28,8 @@ class RhinoConnectionManager {
 
     var createMessageReceived: Bool = false
 	var isImportingObjects: Bool = false
+    var errorAlertShown: Bool = false
+    var rhinoErrorMessage: String?
 
     var rhinoRootEntity: Entity
 
@@ -206,6 +208,9 @@ class RhinoConnectionManager {
         } else if let message = try? decoder.decode(InfoMessage.self, from: data) {
             if message.type == "error" {
                 Logger.rhino.error("Rhino error: \(message.description) at \(message.timestamp)")
+                isImportingObjects = false
+                errorAlertShown = true
+                rhinoErrorMessage = message.description
             } else if message.type == "info" {
                 Logger.rhino.info("Rhino info: \(message.description) at \(message.timestamp)")
             }

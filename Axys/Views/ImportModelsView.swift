@@ -16,37 +16,49 @@ struct ImportModelsView: View {
 	}
 
     var body: some View {
-		VStack {
-			List {
-				Section {
-					if !connectionManager.trackedObjects.isEmpty {
-						ForEach(sortedObjects, id: \.objectId) { object in
-							VStack(alignment: .leading) {
-								Text(object.objectName)
-								Text(object.objectId)
-									.foregroundStyle(.secondary)
-									.font(.footnote)
-							}
-						}
-					} else {
-						contentUnavailable
-					}
-				} footer: {
-					footer
-				}
-			}
+        @Bindable var connectionManager = connectionManager
+        VStack {
+            List {
+                Section {
+                    if !connectionManager.trackedObjects.isEmpty {
+                        ForEach(sortedObjects, id: \.objectId) { object in
+                            VStack(alignment: .leading) {
+                                Text(object.objectName)
+                                Text(object.objectId)
+                                    .foregroundStyle(.secondary)
+                                    .font(.footnote)
+                            }
+                        }
+                    } else {
+                        contentUnavailable
+                    }
+                } footer: {
+                    footer
+                }
+            }
 
-			Button {
-				connectionManager.sendCommand(value: "ExportUSDZ")
-			} label: {
-				if connectionManager.isImportingObjects {
-					ProgressView()
-				} else {
-					Text("Import")
-						.padding()
-				}
-			}
-			.controlSize(.extraLarge)
+            Button {
+                connectionManager.sendCommand(value: "ExportUSDZ")
+            } label: {
+                if connectionManager.isImportingObjects {
+                    ProgressView()
+                } else {
+                    Text("Import")
+                        .padding()
+                }
+            }
+            .controlSize(.extraLarge)
+//            .alert("Import Error", isPresented: $connectionManager.errorAlertShown, presenting: connectionManager.rhinoErrorMessage) { error in
+//                Text(error)
+//            }
+            .alert("Import Error", isPresented: $connectionManager.errorAlertShown, presenting: connectionManager.rhinoErrorMessage) { _ in
+                Button("OK") {
+                    connectionManager.errorAlertShown = false
+                }
+            } message: { error in
+                Text(error)
+            }
+
 		}
 		.padding(16)
 		.navigationTitle("Imported Models")
