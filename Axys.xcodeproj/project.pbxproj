@@ -11,27 +11,27 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		6A1AF9DE2D79925300355D3A /* axys.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = axys.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		6A1AF9DE2D79925300355D3A /* Axys.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Axys.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		6A1AF9E22D79925300355D3A /* RealityKitContent */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = RealityKitContent; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		6A1AF9F52D79925400355D3A /* Exceptions for "axys" folder in "axys" target */ = {
+		6A1AF9F52D79925400355D3A /* Exceptions for "Axys" folder in "Axys" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
 			);
-			target = 6A1AF9DD2D79925300355D3A /* axys */;
+			target = 6A1AF9DD2D79925300355D3A /* Axys */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		6A1AF9E02D79925300355D3A /* axys */ = {
+		6A1AF9E02D79925300355D3A /* Axys */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				6A1AF9F52D79925400355D3A /* Exceptions for "axys" folder in "axys" target */,
+				6A1AF9F52D79925400355D3A /* Exceptions for "Axys" folder in "Axys" target */,
 			);
-			path = axys;
+			path = Axys;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -51,7 +51,7 @@
 		6A1AF9D52D79925300355D3A = {
 			isa = PBXGroup;
 			children = (
-				6A1AF9E02D79925300355D3A /* axys */,
+				6A1AF9E02D79925300355D3A /* Axys */,
 				6A1AF9E12D79925300355D3A /* Packages */,
 				6A1AF9DF2D79925300355D3A /* Products */,
 			);
@@ -60,7 +60,7 @@
 		6A1AF9DF2D79925300355D3A /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				6A1AF9DE2D79925300355D3A /* axys.app */,
+				6A1AF9DE2D79925300355D3A /* Axys.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -76,9 +76,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		6A1AF9DD2D79925300355D3A /* axys */ = {
+		6A1AF9DD2D79925300355D3A /* Axys */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 6A1AF9F62D79925400355D3A /* Build configuration list for PBXNativeTarget "axys" */;
+			buildConfigurationList = 6A1AF9F62D79925400355D3A /* Build configuration list for PBXNativeTarget "Axys" */;
 			buildPhases = (
 				6A1AF9DA2D79925300355D3A /* Sources */,
 				6A1AF9DB2D79925300355D3A /* Frameworks */,
@@ -90,14 +90,14 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				6A1AF9E02D79925300355D3A /* axys */,
+				6A1AF9E02D79925300355D3A /* Axys */,
 			);
-			name = axys;
+			name = Axys;
 			packageProductDependencies = (
 				6A1AF9E32D79925300355D3A /* RealityKitContent */,
 			);
 			productName = Northstar;
-			productReference = 6A1AF9DE2D79925300355D3A /* axys.app */;
+			productReference = 6A1AF9DE2D79925300355D3A /* Axys.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -115,7 +115,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 6A1AF9D92D79925300355D3A /* Build configuration list for PBXProject "axys" */;
+			buildConfigurationList = 6A1AF9D92D79925300355D3A /* Build configuration list for PBXProject "Axys" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -129,7 +129,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				6A1AF9DD2D79925300355D3A /* axys */,
+				6A1AF9DD2D79925300355D3A /* Axys */,
 			);
 		};
 /* End PBXProject section */
@@ -356,7 +356,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		6A1AF9D92D79925300355D3A /* Build configuration list for PBXProject "axys" */ = {
+		6A1AF9D92D79925300355D3A /* Build configuration list for PBXProject "Axys" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				6A1AF9F92D79925400355D3A /* Debug */,
@@ -365,7 +365,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		6A1AF9F62D79925400355D3A /* Build configuration list for PBXNativeTarget "axys" */ = {
+		6A1AF9F62D79925400355D3A /* Build configuration list for PBXNativeTarget "Axys" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				6A1AF9F72D79925400355D3A /* Debug */,
