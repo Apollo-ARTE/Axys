@@ -48,17 +48,17 @@ struct ImportModelsView: View {
                 }
             }
             .controlSize(.extraLarge)
-//            .alert("Import Error", isPresented: $connectionManager.errorAlertShown, presenting: connectionManager.rhinoErrorMessage) { error in
-//                Text(error)
-//            }
-            .alert("Import Error", isPresented: $connectionManager.errorAlertShown, presenting: connectionManager.rhinoErrorMessage) { _ in
+			.alert(
+				"Import Error",
+				isPresented: $connectionManager.errorAlertShown,
+				presenting: connectionManager.rhinoErrorMessage
+			) { _ in
                 Button("OK") {
                     connectionManager.errorAlertShown = false
                 }
             } message: { error in
                 Text(error)
             }
-
 		}
 		.padding(16)
 		.navigationTitle("Imported Models")

@@ -70,7 +70,7 @@ class ImageTrackingManager {
 		}
 
 		if entityMap[anchor.id] == nil {
-			let entity = ModelEntity.movableSphere()
+			let entity = ModelEntity.markerSphere()
 			entityMap[anchor.id] = entity
 			imageAnchors[anchor.id] = anchor
 			rootEntity.addChild(entity)

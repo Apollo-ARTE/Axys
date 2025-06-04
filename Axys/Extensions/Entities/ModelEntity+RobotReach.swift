@@ -5,10 +5,9 @@
 //  Created by Alessandro Bortoluzzi on 08/04/25.
 //
 
-import RealityKit
+import RealityFoundation
 
 extension ModelEntity {
-
     static func robotReach() async throws -> ModelEntity? {
         guard let object = try? await ModelEntity(named: "robot_reach") else {
             return nil
@@ -20,16 +19,6 @@ extension ModelEntity {
         object.model?.materials = [material]
         object.components.set(OpacityComponent(opacity: 0.2))
         object.transform.scale = [0.001, 0.001, 0.001]
-        return object
-    }
-
-    static func virtualLab() async throws -> ModelEntity? {
-        guard let object = try? await ModelEntity(named: "virtual_lab_empty") else {
-            return nil
-        }
-        object.name = "virtual_lab"
-        object.transform.scale = [0.001, 0.001, 0.001]
-
         return object
     }
 }

@@ -13,7 +13,7 @@ struct ConnectionView: View {
 
 	@State private var showWrongIPAlert: Bool = false
 
-    var body: some View {
+	var body: some View {
 		@Bindable var connectionManager = connectionManager
 		List {
 			Section {
@@ -40,11 +40,9 @@ struct ConnectionView: View {
 				.frame(maxWidth: .infinity, alignment: .center)
 				.disabled(connectionManager.isConnected)
 			}
-
 		}
 		.navigationTitle("Rhino Connection")
 		.alert("Wrong IP", isPresented: $showWrongIPAlert) {
-
 		} message: {
 			Text("Make sure to input the correct IP address of your Rhino server and try again.")
 		}
@@ -53,8 +51,7 @@ struct ConnectionView: View {
 				dismiss()
 			}
 		}
-
-    }
+	}
 }
 
 #Preview {

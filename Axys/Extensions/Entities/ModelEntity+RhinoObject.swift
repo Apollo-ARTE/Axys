@@ -5,12 +5,11 @@
 //  Created by Ilia Sedelkin on 15/04/25.
 //
 
-import RealityKit
+import RealityFoundation
 import OSLog
 
 extension ModelEntity {
     static func rhinoObject(name: String) async throws -> ModelEntity? {
-
         let fileManager = FileManager.default
         let tempDir = fileManager.temporaryDirectory
         let fileURL = tempDir.appendingPathComponent("\(name).usdz")
@@ -19,9 +18,7 @@ extension ModelEntity {
 		do {
 			object = try await ModelEntity(contentsOf: fileURL)
 		} catch {
-			Logger().info("File URL is \(fileURL)")
-			Logger().info("Failed to load \(name)")
-			Logger.calibration.info("Could not import model \(error.localizedDescription)")
+			Logger.models.error("Failed to load model \(name) from URL \(fileURL): \(error.localizedDescription)")
 			return nil
 		}
 

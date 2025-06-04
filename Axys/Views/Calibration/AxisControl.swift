@@ -25,9 +25,11 @@ struct AxisControl: View {
             }
             .buttonBorderShape(.circle)
 
-            TextField(axis.label,
-                      value: position,
-					  format: .number.precision(.fractionLength(0)))
+			TextField(
+				axis.label,
+				value: position,
+				format: .number.precision(.fractionLength(0))
+			)
             .textFieldStyle(.roundedBorder)
             .keyboardType(.numbersAndPunctuation)
         }
