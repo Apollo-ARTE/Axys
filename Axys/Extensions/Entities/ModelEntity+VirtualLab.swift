@@ -9,12 +9,11 @@ import RealityFoundation
 
 extension ModelEntity {
 	static func virtualLab() async throws -> ModelEntity? {
-		guard let object = try? await ModelEntity(named: "virtual_lab_empty") else {
+		guard let object = try? await ModelEntity(named: "virtual_lab") else {
 			return nil
 		}
-		object.name = "virtual_lab"
-		object.transform.scale = [0.001, 0.001, 0.001]
 
+		object.name = "virtual_lab"
 		return object
 	}
 }

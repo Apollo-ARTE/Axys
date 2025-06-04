@@ -135,12 +135,13 @@ class RhinoConnectionManager {
     @MainActor
 	func addObjectsToView() async {
 		guard calibrationManager.isCalibrationCompleted else {
-			Logger.connection.info("Calibration not completed yet. Skipping adding objects to view.")
+			Logger.models.info("Calibration not completed yet. Skipping adding objects to view.")
 			return
 		}
 
         self.rhinoRootEntity.children.removeAll()
-        Logger.connection.info("Removing all children from rhino root entity")
+        Logger.models.info("Removing all children from rhino root entity")
+
         for object in trackedObjects {
             if let rhinoObject = try? await ModelEntity.rhinoObject(name: object.objectId) {
 				rhinoObject.components.set(NameComponent(objectName: object.objectName))
@@ -233,7 +234,7 @@ class RhinoConnectionManager {
                 Logger.connection.debug("Expected size from metadata: \(metadata.size) bytes")
 
                 if self.receivedUSDZData.count != metadata.size {
-                    Logger.connection.warning("Mismatch between received and expected size. Waiting for more data?")
+                    Logger.connection.warning("Mismatch between received and expected size, waiting for more data")
                     return
                 }
 
@@ -250,8 +251,6 @@ class RhinoConnectionManager {
 
                     let fileAttributes = try? FileManager.default.attributesOfItem(atPath: fileURL.path)
                     let diskSize = fileAttributes?[.size] as? Int ?? -1
-//                    Logger.connection.info("Disk-reported file size: \(diskSize) bytes")
-                    // Send the command to get object tracking information
                     self.sendCommand(value: "TrackObject")
                 } catch {
                     Logger.connection.error("Failed to save/load USDZ file: \(error.localizedDescription)")

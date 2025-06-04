@@ -39,18 +39,16 @@ struct ImmersiveView: View {
 			content.add(rhinoConnectionManager.rhinoRootEntity)
 			content.add(imageTracking.rootEntity)
 		} update: { content in
-			if appModel.showModels {
-				if let model = content.entities.first(where: { $0.name == "rhino_root" }) {
-					model.children.forEach { rhinoObject in
-						rhinoObject.transform.scale = [0.001, 0.001, 0.001]
-					}
-				}
-			} else {
-				if let model = content.entities.first(where: { $0.name == "rhino_root" }) {
-					model.children.forEach { rhinoObject in
-						rhinoObject.transform.scale = [0, 0, 0]
-					}
-				}
+			if let model = content.entities.first(where: { $0.name == "rhino_root" }) {
+				model.isEnabled = appModel.showModels
+			}
+
+			if let model = content.entities.first(where: { $0.name == "robot_reach" }) {
+				model.isEnabled = appModel.showRobotReach
+			}
+
+			if let model = content.entities.first(where: { $0.name == "virtual_lab" }) {
+				model.isEnabled = appModel.showVirtualLab
 			}
 		}
 		.gesture(dragGesture3D())
@@ -128,7 +126,7 @@ extension ImmersiveView {
 					let ey = allowedRotationAxes.contains(.y) ? e.y : 0
 					let ez = allowedRotationAxes.contains(.z) ? e.z : 0
 
-					let filteredDelta = simd_quatf(angle: ez, axis: [0, 0 ,1]) *
+					let filteredDelta = simd_quatf(angle: ez, axis: [0, 0, 1]) *
 					simd_quatf(angle: ey, axis: [0, 1, 0]) *
 					simd_quatf(angle: ex, axis: [1, 0, 0])
 

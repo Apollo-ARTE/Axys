@@ -32,8 +32,11 @@ struct InspectorView: View {
 			VStack(alignment: .leading) {
 				Text("Opacity")
 					.font(.headline)
-				Slider(value: $opacity) {
+				Slider(value: $opacity, in: 0.25...1) {
 					Label("Opacity", systemImage: "lightspectrum.horizontal")
+				}
+				.onChange(of: opacity) { _, newValue in
+					entity?.components[OpacityComponent.self] = OpacityComponent(opacity: Float(newValue))
 				}
 			}
 
