@@ -7,6 +7,7 @@
 
 import Foundation
 
+/// Represents a 3D position coordinate send from Rhino.
 struct Position: Codable {
     let x: Double
     let y: Double

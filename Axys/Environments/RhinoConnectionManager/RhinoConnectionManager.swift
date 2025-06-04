@@ -10,6 +10,9 @@ import RealityKit
 import OSLog
 import SwiftUI
 
+/// Manages the WebSocket connection and object synchronization between Vision Pro and Rhino.
+///
+/// Handles connection setup, message parsing, calibration-based coordinate conversion, and rendering Rhino objects in the AR scene.
 @Observable
 class RhinoConnectionManager {
     let calibrationManager: CalibrationManager
@@ -24,7 +27,6 @@ class RhinoConnectionManager {
 	}
 
 	var isConnected: Bool = false
-    private let processingQueue = DispatchQueue(label: "com.app.websocket.processing", qos: .userInitiated)
 
     var createMessageReceived: Bool = false
 	var isImportingObjects: Bool = false
@@ -33,7 +35,9 @@ class RhinoConnectionManager {
 
     var rhinoRootEntity: Entity
 
-	private var receivedUSDZData = Data()
+	var receivedUSDZData = Data()
+
+	private let processingQueue = DispatchQueue(label: "com.app.websocket.processing", qos: .userInitiated)
 
     var receivedObjects: [String: RhinoObject] = [:]
     // Computed property to get array of objects when needed to display
@@ -47,12 +51,14 @@ class RhinoConnectionManager {
         self.rhinoRootEntity.name = "rhino_root"
     }
 
+	/// Disconnects the WebSocket connection to the Rhino server and updates connection state.
     func disconnectFromWebSocket() {
         webSocketTask?.cancel()
         Logger.connection.info("Disconnected from WebSocket")
 		isConnected = false
     }
 
+	/// Establishes a WebSocket connection to the Rhino server using the current IP address.
     func connectToWebSocket() {
         guard let url = URL(string: "ws://\(ipAddress):8765") else { return }
         webSocketTask = URLSession.shared.webSocketTask(with: url)
@@ -61,6 +67,8 @@ class RhinoConnectionManager {
         receivedObjects = [:]
     }
 
+	/// Validates the format of the current IP address string.
+	/// - Returns: `true` if the IP address is valid, `false` otherwise.
 	func isValidIPAddress() -> Bool {
 		let pattern = #"^((25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)\.){3}(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)$"#
 		let regex = try! NSRegularExpression(pattern: pattern)
@@ -68,6 +76,10 @@ class RhinoConnectionManager {
 		return regex.firstMatch(in: ipAddress, options: [], range: range) != nil
 	}
 
+	/// Sends a position update message to Rhino for a specific object.
+	/// - Parameters:
+	///   - model: The entity whose position was updated.
+	///   - newPosition: The new position of the object in robot coordinates.
     func sendPositionUpdate(for model: Entity, newPosition: SIMD3<Float>) {
         guard let webSocketTask = webSocketTask else { return }
 
@@ -103,6 +115,7 @@ class RhinoConnectionManager {
         }
     }
 
+	/// Continuously listens for incoming messages on the WebSocket and dispatches them for processing.
     private func receiveMessages() {
         webSocketTask?.receive { [weak self] result in
             guard let self = self else { return }
@@ -121,7 +134,7 @@ class RhinoConnectionManager {
                         self.handleIncomingBinaryData(data)
                     }
                 @unknown default:
-                    fatalError()
+					Logger.connection.error("Unknown message received")
                 }
             case .failure(let error):
                 Logger.connection.error("WebSocket error: \(error.localizedDescription)")
@@ -132,6 +145,9 @@ class RhinoConnectionManager {
         }
     }
 
+	/// Adds all currently tracked Rhino objects to the AR scene using local coordinates.
+	/// Requires a completed calibration.
+	/// - Note: This method removes previously added objects.
     @MainActor
 	func addObjectsToView() async {
 		guard calibrationManager.isCalibrationCompleted else {
@@ -142,30 +158,46 @@ class RhinoConnectionManager {
         self.rhinoRootEntity.children.removeAll()
         Logger.models.info("Removing all children from rhino root entity")
 
-        for object in trackedObjects {
-            if let rhinoObject = try? await ModelEntity.rhinoObject(name: object.objectId) {
+		for object in trackedObjects {
+			// Attempt to asynchronously load the ModelEntity for the object using its unique ID
+			if let rhinoObject = try? await ModelEntity.rhinoObject(name: object.objectId) {
+				// Set identifying components for debugging or tracking
 				rhinoObject.components.set(NameComponent(objectName: object.objectName))
-				rhinoObject.components.set(AxesComponent())
-                rhinoObject.name = object.objectId // Setting the Rhino ID as name of the object for easy identification
-                let localPosition = self.calibrationManager.convertRobotToLocal(robot: object.rhinoPosition)
-                rhinoObject.look(
-                    at: calibrationManager.convertRobotToLocal(robot: [0, 10, 0]),
-                    from: calibrationManager.convertRobotToLocal(robot: [0, 0, 0]),
-                    relativeTo: nil)
-                rhinoObject.position = localPosition
-                if rhinoObject.components[NameComponent.self]?.objectName == "Table" {
-                    var material = SimpleMaterial(color: .gray, isMetallic: false)
-                    rhinoObject.model?.materials = [material]
-                }
-//                rhinoObject.transform.scale = [0, 0, 0]
-                self.rhinoRootEntity.addChild(rhinoObject)
-                Logger.connection.info("Object named \(object.objectName) moved to local coordinates: \(localPosition) robot coordinates: \(object.rhinoPosition), object scale: \(rhinoObject.transform.scale)")
-            }
-        }
+				rhinoObject.components.set(AxesComponent()) // Adds XYZ axes for orientation visualization
+				rhinoObject.name = object.objectId // Assign the object ID as the entity's name for easy reference
+
+				// Convert the object's position from robot space to local (Vision Pro) coordinates
+				let localPosition = self.calibrationManager.convertRobotToLocal(robot: object.rhinoPosition)
+
+				// Orient the object to look in a fixed direction (toward world Y+ in robot space)
+				rhinoObject.look(
+					at: calibrationManager.convertRobotToLocal(robot: [0, 10, 0]),
+					from: calibrationManager.convertRobotToLocal(robot: [0, 0, 0]),
+					relativeTo: nil
+				)
+
+				// Set the object's position in the AR scene
+				rhinoObject.position = localPosition
+
+				// If the object is named "Table", apply a gray non-metallic material
+				if rhinoObject.components[NameComponent.self]?.objectName == "Table" {
+					let material = SimpleMaterial(color: .gray, isMetallic: false)
+					rhinoObject.model?.materials = [material]
+				}
+
+				// Add the object to the root entity for the Rhino AR scene
+				self.rhinoRootEntity.addChild(rhinoObject)
+
+				Logger.connection.info("Placing object: \(object.objectName)")
+				Logger.connection.info("Object Local position: \(localPosition)")
+				Logger.connection.info("Object Robot coordinates: \(object.rhinoPosition)")
+			}
+		}
     }
 
+	/// Appends binary data received from the WebSocket. Currently used for assembling USDZ files.
+	/// - Parameter data: The binary data chunk received.
     func handleIncomingBinaryData(_ data: Data) {
-//        Logger.connection.debug("Received binary data chunk. Size: \(data.count) bytes")
         self.receivedUSDZData.append(data)
         func applyDebugMaterial(to entity: Entity) {
             if let modelEntity = entity as? ModelEntity {
@@ -177,91 +209,25 @@ class RhinoConnectionManager {
         }
     }
 
-    struct USDZMetadata: Decodable {
-        let type: String
-        let fileName: String
-        let size: Int
-        let timestamp: Int
-    }
+	/// Parses and routes incoming JSON messages received from the WebSocket.
+	///
+	/// This method attempts to decode the JSON string into one of the known message types (`BatchRhinoMessage`, `InfoMessage`, or `USDZMetadata`)
+	/// and delegates further handling to the appropriate internal method.
+	///
+	/// - Parameter text: A JSON-encoded string received from the WebSocket connection.
+	func handleIncomingJSON(_ text: String) {
+		guard let data = text.data(using: .utf8) else { return }
+		let decoder = JSONDecoder()
 
-    func handleIncomingJSON(_ text: String) {
-        guard let data = text.data(using: .utf8) else { return }
-        let decoder = JSONDecoder()
-        if let message = try? decoder.decode(BatchRhinoMessage.self, from: data) {
-            if message.type == "batch_create" {
-                for object in message.objects {
-                    Logger.connection.debug("Message position center: \(object.center.x), \(object.center.y), \(object.center.z)")
-                    let rhinoPosition = SIMD3<Float>(
-                        Float(object.center.x),
-                        Float(object.center.y),
-                        Float(object.center.z)
-                    )
-
-                    let rhinoObject = RhinoObject(
-                        objectId: object.objectId,
-                        objectName: object.objectName,
-                        rhinoPosition: rhinoPosition
-                    )
-
-                    // Add or update object using objectId as key
-                    self.receivedObjects[object.objectId] = rhinoObject
-					isImportingObjects = false
-
-                    Logger.connection.info("Object named \(object.objectName) with position: \(rhinoPosition) added/updated")
-                }
-            }
-        } else if let message = try? decoder.decode(InfoMessage.self, from: data) {
-            if message.type == "error" {
-                Logger.rhino.error("Rhino error: \(message.description) at \(message.timestamp)")
-                isImportingObjects = false
-                errorAlertShown = true
-                rhinoErrorMessage = message.description
-            } else if message.type == "info" {
-                Logger.rhino.info("Rhino info: \(message.description) at \(message.timestamp)")
-            }
-        } else {
-            if let metadata = try? decoder.decode(USDZMetadata.self, from: data), metadata.type == "usdz_metadata" {
-                let fileManager = FileManager.default
-                let tempDir = fileManager.temporaryDirectory
-                let fileURL = tempDir.appendingPathComponent("\(metadata.fileName)")
-
-                if fileManager.fileExists(atPath: fileURL.path) {
-                    try? fileManager.removeItem(at: fileURL)
-                }
-
-                // Log received data size and expected metadata size
-                Logger.connection.debug("Total USDZ bytes received: \(self.receivedUSDZData.count)")
-                Logger.connection.debug("Expected size from metadata: \(metadata.size) bytes")
-
-                if self.receivedUSDZData.count != metadata.size {
-                    Logger.connection.warning("Mismatch between received and expected size, waiting for more data")
-                    return
-                }
-
-                do {
-                    let fileManager = FileManager.default
-                    let tempDir = fileManager.temporaryDirectory
-                    let fileURL = tempDir.appendingPathComponent("\(metadata.fileName)")
-
-                    if fileManager.fileExists(atPath: fileURL.path) {
-                        try? fileManager.removeItem(at: fileURL)
-                    }
-                    try self.receivedUSDZData.write(to: fileURL)
-                    Logger.connection.info("Model file written successfully at \(fileURL.path)")
-
-                    let fileAttributes = try? FileManager.default.attributesOfItem(atPath: fileURL.path)
-                    let diskSize = fileAttributes?[.size] as? Int ?? -1
-                    self.sendCommand(value: "TrackObject")
-                } catch {
-                    Logger.connection.error("Failed to save/load USDZ file: \(error.localizedDescription)")
-                }
-
-                // Clear the buffer for the next file
-                self.receivedUSDZData = Data()
-                return
-            } else {
-                Logger.connection.error("Failed to decode JSON: \(text)")
-            }
-        }
-    }
+		// Attempt to decode and dispatch to the correct handler
+		if let batchMessage = try? decoder.decode(BatchRhinoMessage.self, from: data), batchMessage.type == "batch_create" {
+			handleBatchCreateMessage(batchMessage)
+		} else if let infoMessage = try? decoder.decode(InfoMessage.self, from: data) {
+			handleInfoOrErrorMessage(infoMessage)
+		} else if let metadata = try? decoder.decode(USDZMetadata.self, from: data), metadata.type == "usdz_metadata" {
+			handleUSDZMetadata(metadata)
+		} else {
+			Logger.connection.error("Failed to decode JSON: \(text)")
+		}
+	}
 }

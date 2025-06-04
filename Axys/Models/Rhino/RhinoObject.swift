@@ -7,6 +7,7 @@
 
 import Foundation
 
+/// Represents a Rhino object used internally with a 3D position.
 struct RhinoObject: Codable, Hashable {
     let objectId: String
     var objectName: String

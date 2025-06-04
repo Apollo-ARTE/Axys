@@ -9,8 +9,16 @@ import Foundation
 import RealityKit
 
 extension CalibrationManager {
-	/// Computes the rigid (rotation + translation) transform that maps local (Vision Pro) coordinates to robot coordinates.
-	/// It uses the three markers stored in the class.
+	/// Computes the rigid transform (rotation and translation) that maps Vision Pro local coordinates to robot coordinates.
+	///
+	/// This method uses three predefined markers with known positions in both coordinate systems to:
+	/// - Construct orthonormal bases for both local and robot frames.
+	/// - Compute the rotation matrix aligning the two bases.
+	/// - Calculate the translation vector using one marker as reference.
+	///
+	/// The result is stored in the `rotation` and `translation` properties and enables coordinate conversion.
+	///
+	/// Must be called before using `convertLocalToRobot` or `convertRobotToLocal`.
 	func calibrate() {
 		// Convert marker coordinates to simd_float3 for math operations.
 		let v1 = simd_float3(marker1.localX, marker1.localY, marker1.localZ)
@@ -61,21 +69,35 @@ extension CalibrationManager {
 		calibrationStep = .placeMarkers
 	}
 
-	/// Converts a point from the local (Vision Pro) coordinate system to the robot coordinate system.
-	/// - Parameter local: A simd_float3 representing a point in local coordinates.
-	/// - Returns: The corresponding point in robot coordinates.
+	/// Converts a point from the Vision Pro local coordinate system to the robot coordinate system.
+	///
+	/// Applies the calibrated rotation and translation to the input point.
+	/// - Parameter local: A `simd_float3` point in local (Vision Pro) coordinates.
+	/// - Returns: A `simd_float3` point in robot coordinates.
 	func convertLocalToRobot(local: simd_float3) -> simd_float3 {
 		return rotation * local + translation
 	}
 
-	/// Converts a point from the robot coordinate system to the local (Vision Pro) coordinate system.
-	/// - Parameter robot: A simd_float3 representing a point in robot coordinates.
-	/// - Returns: The corresponding point in local coordinates.
+	/// Converts a point from the robot coordinate system to the Vision Pro local coordinate system.
+	///
+	/// Applies the inverse of the calibrated transform to the input point.
+	/// - Parameter robot: A `simd_float3` point in robot coordinates.
+	/// - Returns: A `simd_float3` point in local (Vision Pro) coordinates.
 	func convertRobotToLocal(robot: simd_float3) -> simd_float3 {
 		// Since rotation is orthonormal, the inverse is the transpose.
 		return simd_transpose(rotation) * (robot - translation)
 	}
 
+	/// Converts a `Coordinate` to a `simd_float3` value with an optional Z-axis offset.
+	///
+	/// This function transforms the `robotX`, `robotY`, and `robotZ` values of a `Coordinate`
+	/// from millimeters to meters by dividing by 1000. An additional Z-axis offset, specified
+	/// in millimeters, is subtracted (also converted to meters).
+	///
+	/// - Parameters:
+	///   - coordinate: The `Coordinate` instance containing `robotX`, `robotY`, and `robotZ` in millimeters.
+	///   - zOffset: The Z-axis offset in millimeters to subtract from `robotZ`.
+	/// - Returns: A `simd_float3` representing the (x, y, z) position in meters.
 	func convertToSimdFloat3(from coordinate: Coordinate, zOffset: Double) -> simd_float3 {
 		return simd_float3(
 			Float(coordinate.robotX) / 1000,

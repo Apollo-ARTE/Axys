@@ -14,7 +14,7 @@ extension ModelEntity {
 			mesh: .generateSphere(radius: 0.01),
 			materials: [UnlitMaterial(color: .white)]
 		)
-		
+
 		return sphere
 	}
 }

@@ -9,6 +9,15 @@ import RealityKit
 import OSLog
 
 extension RhinoConnectionManager {
+	/// Sends a command string to the Rhino WebSocket server.
+	///
+	/// This method constructs a JSON message in the format `{"command": "<value>"}`
+	/// and sends it over the active WebSocket connection. It logs success or failure
+	/// and sets `isImportingObjects` to `true` if the message was sent successfully.
+	///
+	/// - Parameter value: A `String` representing the command to send (e.g., `"TrackObject"`).
+	///
+	/// - Note: If the WebSocket connection is not initialized, the method logs an error and returns early.
     func sendCommand(value: String) {
 		guard let webSocketTask = webSocketTask else {
             Logger.connection.error("WebSocket not initialized.")

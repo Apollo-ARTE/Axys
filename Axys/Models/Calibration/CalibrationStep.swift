@@ -7,6 +7,12 @@
 
 import SwiftUICore
 
+/// Represents the different steps involved in the calibration workflow.
+///
+/// Each step includes an identifier, UI-related properties (icon, title, description),
+/// and navigation helpers to move between steps.
+///
+/// - Steps include placing markers, scanning specific markers, completion, and coordinate insertion.
 enum CalibrationStep: Identifiable, Equatable {
 	case placeMarkers
 	case scanMarker(number: Int)

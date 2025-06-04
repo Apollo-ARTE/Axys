@@ -7,22 +7,11 @@
 
 import Foundation
 
-struct BatchRhinoMessage: Codable {
-    let type: String
-    let objects: [RhinoMessage]
-    let timestamp: Double
-}
-
+/// Represents data about a single Rhino object.
 struct RhinoMessage: Codable {
     let type: String
     let objectName: String
     let objectId: String
     let center: Position
-    let timestamp: Double
-}
-
-struct InfoMessage: Codable {
-    let type: String
-    let description: String
     let timestamp: Double
 }

@@ -7,6 +7,9 @@
 
 import Foundation
 
+/// Represents the 3D coordinate axes used in the inspector UI.
+///
+/// Each case maps to a human-readable label and a corresponding value in the `AxisOptions` `OptionSet`.
 enum Axes: CaseIterable, Identifiable {
     case x, y, z
 

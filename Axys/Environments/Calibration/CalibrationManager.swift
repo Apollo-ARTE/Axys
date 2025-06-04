@@ -11,7 +11,7 @@ import simd
 import RealityFoundation
 import OSLog
 
-/// Manages the calibration and coordinate conversion between the Vision Pro (local) and ABB robot systems.
+/// Manages the calibration and coordinate conversion between the Vision Pro (local) and robot systems.
 /// It uses three markers (non-collinear points) to compute a 3D rigid transformation.
 @Observable
 class CalibrationManager {
@@ -29,6 +29,7 @@ class CalibrationManager {
 	var marker2 = Coordinate.load(key: "marker2") ?? .init()
 	var marker3 = Coordinate.load(key: "marker3") ?? .init()
 
+	// Calibration state for the CalibrationView
 	var calibrationStep: CalibrationStep = .placeMarkers
     var isCalibrationCompleted = false
 

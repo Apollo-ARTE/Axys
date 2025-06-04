@@ -8,6 +8,7 @@
 import Foundation
 import RealityKit
 
+/// Represents a point's coordinate with both robot and local coordinate spaces.
 class Coordinate {
 	var robotX: Float
 	var robotY: Float
