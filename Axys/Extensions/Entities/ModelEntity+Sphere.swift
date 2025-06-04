@@ -1,6 +1,6 @@
 //
 //  ModelEntity+Sphere.swift
-//  Northstar
+//  Axys
 //
 //  Created by Alessandro Bortoluzzi on 14/03/25.
 //

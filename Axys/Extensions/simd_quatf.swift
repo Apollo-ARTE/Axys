@@ -1,6 +1,6 @@
 //
 //  simd_quatf.swift
-//  Northstar
+//  Axys
 //
 //  Created by Guillermo Kramsky on 06/05/25.
 //

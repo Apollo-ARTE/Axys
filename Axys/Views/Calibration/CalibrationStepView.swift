@@ -1,6 +1,6 @@
 //
 //  CalibrationStepView.swift
-//  Northstar
+//  Axys
 //
 //  Created by Alessandro Bortoluzzi on 20/03/25.
 //

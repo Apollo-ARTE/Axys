@@ -1,6 +1,6 @@
 //
 //  ImmersiveView.swift
-//  Northstar
+//  Axys
 //
 //  Created by Alessandro Bortoluzzi on 06/03/25.
 //

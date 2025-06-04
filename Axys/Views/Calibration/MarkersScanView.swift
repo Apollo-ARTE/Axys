@@ -1,6 +1,6 @@
 //
 //  MarkersScanView.swift
-//  Northstar
+//  Axys
 //
 //  Created by Alessandro Bortoluzzi on 20/05/25.
 //

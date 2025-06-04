@@ -1,6 +1,6 @@
 //
 //  InfoView.swift
-//  Northstar
+//  Axys
 //
 //  Created by Alessandro Bortoluzzi on 21/03/25.
 //

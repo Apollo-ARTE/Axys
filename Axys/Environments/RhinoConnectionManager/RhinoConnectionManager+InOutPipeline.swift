@@ -1,5 +1,5 @@
 //  RhinoConnectionManager+InOutPipeline.swift
-//  Northstar
+//  Axys
 //
 //  Created by Salvatore Flauto on 01/04/25.
 //

@@ -1,6 +1,6 @@
 //
-//  NorthstarApp.swift
-//  Northstar
+//  AxysApp.swift
+//  Axys
 //
 //  Created by Alessandro Bortoluzzi on 06/03/25.
 //
@@ -8,7 +8,7 @@
 import SwiftUI
 
 @main
-struct NorthstarApp: App {
+struct AxysApp: App {
 	@State private var appModel: AppModel
 	@State private var imageTrackingManager: ImageTrackingManager
 	@State private var rhinoConnectionManager: RhinoConnectionManager
@@ -25,7 +25,7 @@ struct NorthstarApp: App {
 	}
 
 	var body: some Scene {
-		WindowGroup("Northstar", id: "home") {
+		WindowGroup("Axys", id: "home") {
 			HomeView()
 				.environment(rhinoConnectionManager)
 				.environment(appModel)

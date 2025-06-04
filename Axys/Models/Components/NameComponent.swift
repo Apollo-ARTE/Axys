@@ -1,6 +1,6 @@
 //
 //  NameComponent.swift
-//  Northstar
+//  Axys
 //
 //  Created by Alessandro Bortoluzzi on 23/05/25.
 //

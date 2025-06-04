@@ -1,6 +1,6 @@
 //
 //  ModelEntity+RhinoObject.swift
-//  Northstar
+//  Axys
 //
 //  Created by Ilia Sedelkin on 15/04/25.
 //
@@ -15,10 +15,16 @@ extension ModelEntity {
         let tempDir = fileManager.temporaryDirectory
         let fileURL = tempDir.appendingPathComponent("\(name).usdz")
 
-        guard let object = try? await ModelEntity(contentsOf: fileURL) else {
-            Logger().info("Failed to load \(name)")
+		var object: ModelEntity
+		do {
+			object = try await ModelEntity(contentsOf: fileURL)
+		} catch {
+			Logger().info("File URL is \(fileURL)")
+			Logger().info("Failed to load \(name)")
+			Logger.calibration.info("Could not import model \(error.localizedDescription)")
 			return nil
 		}
+
 		object.components.set(InputTargetComponent())
 		object.components.set(HoverEffectComponent())
 		object.generateCollisionShapes(recursive: true)

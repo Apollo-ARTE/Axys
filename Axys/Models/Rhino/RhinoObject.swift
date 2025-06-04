@@ -1,6 +1,6 @@
 //
 //  RhinoObject.swift
-//  Northstar
+//  Axys
 //
 //  Created by Ilia Sedelkin on 28/04/25.
 //
