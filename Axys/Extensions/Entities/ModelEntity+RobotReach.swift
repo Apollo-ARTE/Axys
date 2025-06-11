@@ -5,7 +5,7 @@
 //  Created by Alessandro Bortoluzzi on 08/04/25.
 //
 
-import RealityFoundation
+import RealityKit
 
 extension ModelEntity {
     static func robotReach() async throws -> ModelEntity? {

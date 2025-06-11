@@ -5,7 +5,7 @@
 //  Created by Alessandro Bortoluzzi on 04/06/25.
 //
 
-import RealityFoundation
+import RealityKit
 
 extension ModelEntity {
 	static func virtualLab() async throws -> ModelEntity? {

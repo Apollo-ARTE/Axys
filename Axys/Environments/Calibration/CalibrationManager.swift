@@ -8,7 +8,7 @@
 import Foundation
 import SwiftUI
 import simd
-import RealityFoundation
+import RealityKit
 import OSLog
 
 /// Manages the calibration and coordinate conversion between the Vision Pro (local) and robot systems.
