@@ -9,5 +9,3 @@ xcrun docc process-archive transform-for-static-hosting \
     "$PWD/.derivedData/Build/Products/Debug-xros/Axys.doccarchive" \
     --output-path ".docs" \
     --hosting-base-path "Axys"
-
-echo '<script>window.location.href += "/documentation/axys"</script>' > .docs/index.html
