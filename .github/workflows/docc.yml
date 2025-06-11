@@ -38,7 +38,7 @@ jobs:
           xcodebuild docbuild \
             -scheme Northstar \
             -derivedDataPath /tmp/docbuild \
-            -destination 'generic/platform=xros'
+            -destination 'platform=visionOS Simulator,name=Apple Vision Pro,OS=2.2' \
 
           $(xcrun --find docc) process-archive transform-for-static-hosting \
             /tmp/docbuild/Build/Products/Debug-xros/Northstar.doccarchive \
