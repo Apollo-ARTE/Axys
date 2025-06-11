@@ -2,7 +2,7 @@ name: DocC Runner
 
 on:
   push:
-    branches: ["main"]
+    branches: ["docs/DocC"]
 
 permissions:
   contents: read
