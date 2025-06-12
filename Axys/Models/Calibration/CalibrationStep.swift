@@ -5,7 +5,7 @@
 //  Created by Alessandro Bortoluzzi on 20/03/25.
 //
 
-import SwiftUICore
+import SwiftUI
 
 /// Represents the different steps involved in the calibration workflow.
 ///
