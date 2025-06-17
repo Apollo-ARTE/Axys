@@ -1,7 +1,6 @@
 # Contributing to Axys
 
-Thank you for your interest in contributing to **Axys**, the VisionOS companion to (RhinoPlugin)[https://github.com/Apollo-ARTE/Axys-RhinoPlugin]!
-We welcome feature requests, bug reports, and contributions to enhance the AR experience.
+Thank you for your interest in contributing to **Axys**, the visionOS companion to [RhinoPlugin](https://github.com/Apollo-ARTE/Axys-RhinoPlugin). We welcome feature requests, bug reports, and contributions.
 
 ---
 
@@ -48,10 +47,10 @@ When your implementation is ready:
    git push origin feature/your-feature-name
    ```
 2. Open a Pull Request (PR) on GitHub.
-3. In the PR description, include:
+3. Follow the pull request template and make sure to include:
    - What you changed
    - Why you did it
-   - How to test on Vision Pro
+   - How to test it
 
 Draft PRs are encouraged for early feedback.
 
@@ -66,30 +65,13 @@ Please be open to feedback and iterative improvement.
 - Maintain respectful dialogue
 - Give context (“see line X…”)
 - Explain suggestions constructively
-- Tag small style fixes with `(nitpick)`
 - Keep commits focused and meaningful
-
-### Reviewer Checklist
-(Optional to copy into PR):
-
-```
-## Review Checklist
-
-- [ ] Feature addresses the stated goal
-- [ ] Code is well-structured and idiomatic Swift
-- [ ] AR/visionOS flows tested on device
-- [ ] Edge cases are considered
-- [ ] Tests added or existing ones updated
-- [ ] Commit messages are clear
-- [ ] README or docs updated if needed
-```
 
 ---
 
 ## Reporting Issues
-
-Please include in bug reports:
-- Device (Vision Pro) and visionOS version
+You can create issues with the provided template for a more structured format, making sure to include:
+- Device and visionOS version
 - Steps to reproduce
 - Error messages or logs
 - Screenshots, if helpful
@@ -102,7 +84,11 @@ Check existing issues before submitting a new one.
 
 This project is developed and maintained by:
 
-- The [Apollo ARTE](https://github.com/Apollo-ARTE) team
+- [Ilia Sedelkin]
+- [Bruna Avellar]
+- [Alessandro Bortoluzzi](https://bortoluzzi.dev)
+- [Madina Malsagova]
+- [Guillermo Kramsky]
 - [Salvatore Flauto](https://github.com/XlSolver)
 
 We thank all contributors who help improve this project through their code, feedback, and ideas.
