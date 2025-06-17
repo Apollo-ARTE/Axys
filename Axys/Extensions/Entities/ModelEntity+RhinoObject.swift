@@ -5,7 +5,7 @@
 //  Created by Ilia Sedelkin on 15/04/25.
 //
 
-import RealityFoundation
+import RealityKit
 import OSLog
 
 extension ModelEntity {
