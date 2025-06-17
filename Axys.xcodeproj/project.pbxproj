@@ -8,11 +8,13 @@
 
 /* Begin PBXBuildFile section */
 		6A1AF9E42D79925300355D3A /* RealityKitContent in Frameworks */ = {isa = PBXBuildFile; productRef = 6A1AF9E32D79925300355D3A /* RealityKitContent */; };
+		6A578CF22DFAC69300673083 /* Axys.docc in Sources */ = {isa = PBXBuildFile; fileRef = 6A578CF12DFAC69300673083 /* Axys.docc */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		6A1AF9DE2D79925300355D3A /* Axys.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Axys.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		6A1AF9E22D79925300355D3A /* RealityKitContent */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = RealityKitContent; sourceTree = "<group>"; };
+		6A578CF12DFAC69300673083 /* Axys.docc */ = {isa = PBXFileReference; lastKnownFileType = folder.documentationcatalog; path = Axys.docc; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -51,6 +53,7 @@
 		6A1AF9D52D79925300355D3A = {
 			isa = PBXGroup;
 			children = (
+				6A578CF12DFAC69300673083 /* Axys.docc */,
 				6A1AF9E02D79925300355D3A /* Axys */,
 				6A1AF9E12D79925300355D3A /* Packages */,
 				6A1AF9DF2D79925300355D3A /* Products */,
@@ -172,6 +175,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6A578CF22DFAC69300673083 /* Axys.docc in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
