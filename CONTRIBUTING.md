@@ -84,11 +84,11 @@ Check existing issues before submitting a new one.
 
 This project is developed and maintained by:
 
-- [Ilia Sedelkin]
-- [Bruna Avellar]
+- [Ilia Sedelkin](https://www.linkedin.com/in/iliasedelkin)
+- [Bruna Avellar](https://www.linkedin.com/in/brunaavellar)
 - [Alessandro Bortoluzzi](https://bortoluzzi.dev)
-- [Madina Malsagova]
-- [Guillermo Kramsky]
+- [Madina Malsagova](https://www.linkedin.com/in/madina-malsague)
+- [Guillermo Kramsky](https://www.linkedin.com/in/guillermo-kramsky-5a9ba3246)
 - [Salvatore Flauto](https://github.com/XlSolver)
 
 We thank all contributors who help improve this project through their code, feedback, and ideas.
