@@ -1,6 +1,6 @@
 # Contributing to Axys
 
-Thank you for your interest in contributing to **Axys**, the VisionOS companion to RhinoPlugin!  
+Thank you for your interest in contributing to **Axys**, the VisionOS companion to (RhinoPlugin)[https://github.com/Apollo-ARTE/Axys-RhinoPlugin]!
 We welcome feature requests, bug reports, and contributions to enhance the AR experience.
 
 ---
@@ -98,13 +98,11 @@ Check existing issues before submitting a new one.
 
 ---
 
-## Code of Conduct
+## Credits
 
-All contributors must follow our [Code of Conduct](CODE_OF_CONDUCT.md).  
-We strive for an inclusive, supportive environment.
+This project is developed and maintained by:
 
----
+- The [Apollo ARTE](https://github.com/Apollo-ARTE) team
+- [Salvatore Flauto](https://github.com/XlSolver)
 
-## Questions or Feedback?
-
-Feel free to open an issue or contact [Salvatore Flauto](https://github.com/XlSolver) or the [Apollo ARTE](https://github.com/Apollo-ARTE) team directly.
+We thank all contributors who help improve this project through their code, feedback, and ideas.
